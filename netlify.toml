@@ -1,0 +1,21 @@
+# Netlify configuration for menendezmorro.com
+# See BUILD_SPEC.md §3 (tech stack) and §11 (deployment plan).
+# The site is static — no build command. Files in public/ are served as-is.
+# Redirects live in public/_redirects (Phase 12 will populate the 301s for legacy hash URLs).
+
+[build]
+  publish = "public"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Basic security headers. A Content-Security-Policy header is intentionally
+# deferred to Phase 11/12, once we know the exact origins Decap CMS and
+# Google Analytics need to talk to.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
