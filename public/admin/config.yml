@@ -1,0 +1,18 @@
+# Decap CMS configuration — stub.
+# The full collection schema (Site settings + Projects) lands in Phase 11.
+# See BUILD_SPEC.md §7 for the authoritative field list.
+
+backend:
+  name: github
+  # TODO Phase 11: replace with the real GitHub repo slug (owner/repo).
+  repo: OWNER/REPO
+  branch: main
+
+media_folder: assets/media
+public_folder: /assets/media
+
+# Phase 11 will define:
+#   collections:
+#     - name: site        # singleton — site-wide settings (BUILD_SPEC.md §6.2)
+#     - name: projects    # list, drag-to-reorder (BUILD_SPEC.md §6.1 and §7)
+collections: []
