@@ -25,5 +25,8 @@ yarn-error.log*
 *.swp
 *.swo
 
+# Claude Code local settings (per-machine)
+.claude/settings.local.json
+
 # Build artifacts (generated; never committed)
 public/sitemap.xml
