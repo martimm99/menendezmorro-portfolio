@@ -1,0 +1,333 @@
+/* Fonts */
+/* What I learned; first start with structuring the website, then apply design, and then interactivity.*/
+/* When starting and designing structure, pay special attention to responsiveness. Set responsive values (not fixed mesures like PX) for spaces, font sizes, etc.*/
+/* Note: asset folder is lowercase 'assets' to match filesystem on case-sensitive servers */
+@font-face{font-family:"Geist";src:url("assets/fonts/Geist-Medium.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"Geist";src:url("assets/fonts/Geist-Regular.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Geist";src:url("assets/fonts/Geist-Light.woff2") format("woff2");font-weight:300;font-style:normal;font-display:swap}
+@font-face{font-family:"Geist";src:url("assets/fonts/Geist-ExtraLight.woff2") format("woff2");font-weight:200;font-style:normal;font-display:swap}
+
+/* Basic reset and vars */
+:root{
+  --bg:#000;
+  --fg:#fff;
+  --accent:#04FF00; /* green */
+  --font-family: 'Geist', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  --project-sweep-duration: 1s;
+  --project-sweep-ease: cubic-bezier(.77,0,.175,1);
+  /* Mobile menu icon (hamburger/X) */
+  --menu-icon-duration: .5s;
+  --menu-icon-ease: cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box}
+html,body,#app{height:100%}
+body{
+  margin:0;
+  font-family:var(--font-family);
+  background:var(--bg);
+  color:var(--fg);
+  overflow:hidden; /* we manage scroll inside gallery */
+  /* soft theme fade when switching light/dark */
+  transition: background-color .3s ease, color .3s ease;
+}
+/* ensure controls inherit Geist */
+button,input,select,textarea{font-family:inherit}
+
+/* Preloader */
+.preloader{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;z-index:999;clip-path:inset(0 0 0 0)}
+.preloader.dismissing{animation:preloader-close 1s var(--project-sweep-ease) forwards}
+.preloader-content{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(2px,0.5vh,6px);width:100%}
+.preloader-copyright{margin:0;font-size:clamp(12px,2vw,16px);font-weight:400;color:#000;text-align:center;line-height:1.4}
+.preloader-animated{position:relative;height:clamp(30px,6vw,50px);display:flex;align-items:center;justify-content:center;width:100%;overflow:hidden}
+.preloader-text{position:absolute;font-size:clamp(14px,3vw,32px);font-weight:400;color:#000;white-space:nowrap;margin:0;width:100%;text-align:center;display:flex;align-items:center;justify-content:center;height:100%;transform:translateY(40px);clip-path:inset(0 0 100% 0)}
+.preloader-text-1{animation:preloader-reveal 4s var(--project-sweep-ease) infinite}
+.preloader-text-2{animation:preloader-reveal 4s var(--project-sweep-ease) infinite 2s}
+@keyframes preloader-reveal{0%{transform:translateY(40px);clip-path:inset(0 0 100% 0)}25%{transform:translateY(0);clip-path:inset(0 0 0 0)}50%{transform:translateY(0);clip-path:inset(0 0 0 0)}75%{transform:translateY(-40px);clip-path:inset(100% 0 0 0)}100%{transform:translateY(-40px);clip-path:inset(100% 0 0 0)}}
+@keyframes preloader-close{from{clip-path:inset(0 0 0 0)}to{clip-path:inset(100% 0 0 0)}}
+@media (max-width:600px){
+  .preloader-text{font-size:clamp(20px,5vw,48px)}
+  .preloader-animated{height:clamp(40px,8vw,60px)}
+}
+
+/* Header */
+.site-header{position:fixed;top:0;left:0;right:0;z-index:80;padding:20px 40px}
+.header-inner{
+  display:flex;align-items:center;justify-content:space-between;
+}
+.logo{font-weight:400;text-decoration:none;color:inherit;font-size:clamp(20px,1.85vw,20px)}
+.main-nav ul{display:flex;gap:0;align-items:center;list-style:none;padding:0;margin:0;font-size:17px;position:relative}
+/* Animated underline for desktop filters; positioned via JS-updated CSS vars */
+@media (min-width:601px){
+  .main-nav ul::before{
+    content:'';
+    position:absolute;
+    left:var(--uline-left,0);
+    bottom:0;
+    height:1.5px;
+    width:var(--uline-width,0);
+    background:currentColor;
+    transition:left .4s cubic-bezier(.77,0,.175,1), width .25s ease;
+    pointer-events:none;
+  }
+  /* During nav lock, disable pointer events to prevent flicker on collapsing */
+  .main-nav ul.nav-lock{ pointer-events: none; }
+  .main-nav ul.uline-freeze::before{transition:none}
+}
+/* Subcategory reveal in desktop nav: gentle vertical sweep without opacity */
+.main-nav .reveal-line-clip{overflow:hidden;display:block;line-height:inherit}
+.main-nav .reveal-line{display:inline-block;transform:translateY(100%);transition:transform .24s cubic-bezier(.22,1,.36,1);will-change:transform;line-height:inherit}
+.main-nav .reveal-in .reveal-line{transform:none;transition-delay:var(--delay,0ms)}
+.main-nav .nav-item{background:none;border:0;color:inherit;font:inherit;cursor:pointer;padding:6px 4px;font-size:13px;letter-spacing:1px;text-transform:uppercase;opacity:.7;font-weight:400;--after-content: ',';transition:opacity .2s ease;line-height:1;display:flex;align-items:center}
+/* Hovering filters: bring to 100% */
+.main-nav .nav-item:hover{opacity:1}
+.main-nav li .nav-item:not(.subcat)::after{content: var(--after-content); margin-right:1px; text-decoration: none}
+.main-nav li .nav-item.no-comma::after{content: none; margin:0}
+/* Subcategory commas are inline elements so they animate with the label */
+.main-nav .nav-item.subcat .comma{display:inline-block;margin-right:1px}
+/* remove comma after the last filter (the one before contact) */
+/* :has is not supported in some browsers; keep a safe fallback by hiding trailing comma with a class on the last item via JS if needed */
+.main-nav li:has(+ .contact-link) .nav-item:not(.subcat)::after{content: none; margin:0}
+.main-nav .nav-item.active{opacity:1}
+.contact-link a{color:inherit;text-decoration:none;font-weight:400;margin-left:8px}
+
+.menu-toggle{background:none;border:0;display:none;width:45px;height:32px;position:relative;color:inherit}
+/* Smooth, gentle hamburger -> X animation */
+.menu-toggle .line{
+  display:block;height:2px;width:55px;background:currentColor;position:absolute;
+  /* Use numeric left value to allow smooth animation (avoid auto) */
+  left:calc(100% - 55px); right:auto;
+  /* Start without rotation; position changes are done via transform so they can interpolate */
+  transform:none;
+  transform-origin:center;
+  will-change: transform, left, top, background-color;
+  transition:
+    transform var(--menu-icon-duration) var(--menu-icon-ease),
+    top var(--menu-icon-duration) var(--menu-icon-ease),
+    left var(--menu-icon-duration) var(--menu-icon-ease),
+    background-color var(--menu-icon-duration) linear;
+}
+.menu-toggle .line-1{top:10px}
+.menu-toggle .line-2{top:20px}
+/* animate to black cross when menu is open */
+.menu-open .menu-toggle .line{background:#000}
+/* Move both lines to center and rotate */
+.menu-open .menu-toggle .line-1{top:50%;left:50%;transform:translate(-50%, -50%) rotate(45deg)}
+.menu-open .menu-toggle .line-2{top:50%;left:50%;transform:translate(-50%, -50%) rotate(-45deg)}
+
+/* Mobile menu overlay */
+.mobile-menu{
+  position:fixed;inset:0;background:#fff;color:#000;padding-top:0;display:none;flex-direction:column;align-items:stretch;z-index:90;clip-path:inset(0 0 100% 0);-webkit-clip-path:inset(0 0 100% 0);animation:none
+}
+.mobile-menu.open{display:flex;animation:contact-bg-sweep var(--project-sweep-duration) var(--project-sweep-ease) forwards}
+.mobile-menu.open.closing{animation:contact-bg-close var(--project-sweep-duration) var(--project-sweep-ease) forwards}
+.mobile-menu-header{display:flex;align-items:center;justify-content:space-between;width:100%;padding:20px 40px}
+.mobile-nav{display:flex;flex-direction:column;flex:1}
+.mobile-nav ul{list-style:none;padding:0;margin:0 40px;width:100%;display:flex;flex-direction:column;justify-content:center;flex:1;transform:translateY(-3%)}
+.mobile-nav .mobile-item{display:block;background:none;border:0;font-size:clamp(55px,10vw,80px);text-align:left;padding:12px;line-height:1.08;width:100%;color:#999;font-weight:200}
+.mobile-nav .mobile-item.active{color:#000;position:relative;font-weight:400;padding-left:48px}
+.mobile-nav .mobile-item.active:before{content:'';width:34px;height:34px;border-radius:50%;background:var(--accent);position:absolute;left:0;top:50%;transform:translateY(-50%)}
+.mobile-contact{display:block;text-decoration:none;color:#999;font-size:clamp(55px,10vw,80px);text-align:left;padding:12px;line-height:1.08;width:100%;font-weight:200}
+.mobile-footer{margin-top:auto;width:100%;text-align:center;padding:20px 0;font-size:14px;opacity:.7}
+
+/* Gallery viewport */
+.gallery-viewport{position:fixed;inset:0;overflow:hidden}
+.slides{height:100%;width:100%;position:relative}
+.slide{position:absolute;inset:0;background-size:cover;background-position:center center;display:flex;align-items:center;justify-content:center;will-change:transform,clip-path;clip-path: inset(0 0 0 0);-webkit-clip-path: inset(0 0 0 0)}
+.slide img, .slide video{width:100%;height:100%;object-fit:cover;max-width:100%}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.001ms !important;animation-iteration-count:1 !important;transition-duration:0.001ms !important;scroll-behavior:auto !important}
+}
+
+/* Side labels (layout only; no animation) */
+.side-label{position:fixed;top:0;bottom:0;display:flex;align-items:center;z-index:70;pointer-events:auto;transform:translateY(-2%)}
+.side-label.left{left:40px}
+.side-label.right{right:40px}
+.slot-inner{overflow:hidden;height:4.2rem;display:flex;align-items:center}
+/* Removed .slot animation rules; text updates instantly */
+#project-title{font-weight:400;font-size:clamp(32px,5.5vw,50px); pointer-events:auto; cursor:pointer}
+#project-role{font-weight:200;font-size:clamp(22px,2vw,25px); pointer-events:auto; cursor:pointer}
+
+/* Bottom info */
+.project-info{position:fixed;left:40px;transform:none;bottom:32px;display:flex;gap:48px;z-index:70}
+.info-block{display:flex;flex-direction:column;align-items:flex-start}
+.info-title{font-size:13px;letter-spacing:1px;opacity:.7;font-weight:300}
+.project-info .info-title{min-width:90px;}
+.info-value{font-size:17px;font-weight:300;margin-top:6px}
+/* Project single page: larger values for Links/Duration/Cost only on project pages */
+.project-page .contact-wrap .info-value{font-size: clamp(20px, 1.8vw, 40px)}
+/* Project single page: ensure project links render black (inherit) instead of blue */
+.project-page .contact-wrap .info-value a{color:inherit}
+/* Contact page: match project page link styling */
+.contact-page .contact-wrap .info-value{font-size: clamp(20px, 1.8vw, 40px)}
+.contact-page .contact-wrap .info-value a{color:inherit}
+
+/* Themes */
+.theme-dark{--bg:#000;--fg:#fff}
+.theme-light{--bg:#fff;--fg:#000}
+
+/* Responsive rules */
+/* removed 768px breakpoint; rules merged into 600px */
+@media (max-width:600px){
+  .site-header{padding:20px 40px}
+  .side-label{pointer-events:none}
+  /* Re-enable clicks on title and role for mobile */
+  #project-title, #project-role{pointer-events:auto; cursor:pointer}
+  .main-nav{display:none}
+  .menu-toggle{display:block}
+  /* mobile layout: title above, role below */
+  .side-label.left{position:fixed;left:0;right:0;height:auto;bottom:96px;top:auto;display:flex;justify-content:flex-start;padding:0 40px;transform:none}
+  .side-label.right{position:fixed;left:0;right:0;height:auto;bottom:56px;top:auto;display:flex;justify-content:flex-start;padding:0 40px;transform:none}
+  .slot-inner{height:auto}
+  .slot{font-size:clamp(16px,4vw,20px)}
+  .logo{font-size:clamp(20px,1.85vw,20px)}
+  #project-title{line-height:1;font-weight:400;font-size:60px}
+  /* Hide home bottom info on mobile, but keep it visible on project and contact pages */
+  .project-info{display:none}
+  .project-page .contact-wrap .project-info{display:flex}
+  .contact-page .contact-wrap .project-info{display:flex}
+}
+
+/* Utility */
+
+/* Contact page layout */
+.contact-page .contact-wrap{position:fixed;inset:0;display:grid;grid-template-rows:auto 1fr auto;background:#fff;color:#000;clip-path: inset(0 0 100% 0);animation: contact-bg-sweep var(--project-sweep-duration) var(--project-sweep-ease) forwards}
+.contact-page .contact-top{display:flex;align-items:flex-start;justify-content:space-between;padding:20px 40px;gap:clamp(150px,6vw,200px)}
+.contact-page .contact-text{max-width:clamp(33ch,58vw,72ch);font-weight:300;text-align:justify;font-size:clamp(24px,2.8vw,80px);line-height:1.15;letter-spacing:-0.01em;max-height:calc(100vh - 160px);overflow:auto;scrollbar-width:none;-ms-overflow-style:none}
+.contact-page .contact-text::-webkit-scrollbar{width:0;height:0}
+/* style superscript TM inside contact text */
+.contact-page .contact-text .tm{font-size:0.4em;vertical-align:text-top;line-height:2.2}
+/* increase paragraph spacing for manual line breaks */
+.contact-page .contact-text p{margin:0}
+.contact-page .contact-text p + p{margin-top:0.9em}
+.contact-page .contact-cta{display:flex;align-items:center;gap:8px;font-weight:400;color:#000;text-decoration:none;white-space:nowrap;flex:0 0 auto;font-size:clamp(18px,1.6vw,24px);margin-top:8px}
+.contact-page .contact-cta .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);display:inline-block}
+.contact-page .contact-cta .label{text-decoration:underline;text-underline-offset:0.25em;text-decoration-thickness:1px}
+.contact-page .contact-bottom{display:flex;align-items:flex-end;justify-content:flex-end;padding:20px 40px 48px}
+.contact-page .back{color:inherit;text-decoration:none;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:10px;min-width:44px;min-height:44px}
+.contact-page .back .icon-back{display:block;height:24px;width:auto;transform:rotate(90deg)}
+
+/* Project page layout */
+.project-page .contact-wrap{position:fixed;inset:0;display:grid;grid-template-rows:auto 1fr auto;background:#fff;color:#000;clip-path: inset(100% 0 0 0);animation: project-bg-sweep var(--project-sweep-duration) var(--project-sweep-ease) forwards}
+.project-page .contact-wrap.closing{animation-name: project-bg-close}
+.project-page .contact-top{display:flex;align-items:flex-start;justify-content:space-between;padding:20px 40px;gap:clamp(150px,6vw,200px)}
+.project-page .contact-text{max-width:clamp(33ch,58vw,72ch);font-weight:300;text-align:justify;font-size:clamp(24px,2.8vw,80px);line-height:1.15;letter-spacing:-0.01em;max-height:calc(100vh - 160px);overflow:auto;scrollbar-width:none;-ms-overflow-style:none}
+.project-page .contact-text::-webkit-scrollbar{width:0;height:0}
+/* style superscript TM inside contact text */
+.project-page .contact-text .tm{font-size:0.4em;vertical-align:text-top;line-height:2.2}
+/* increase paragraph spacing for manual line breaks */
+.project-page .contact-text p{margin:0}
+.project-page .contact-text p + p{margin-top:0.9em}
+.project-page .contact-cta{display:flex;align-items:center;gap:8px;font-weight:400;color:#000;text-decoration:none;white-space:nowrap;flex:0 0 auto;font-size:clamp(18px,1.6vw,24px);margin-top:8px}
+.project-page .contact-cta .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);display:inline-block}
+.project-page .contact-cta .label{text-decoration:underline;text-underline-offset:0.25em;text-decoration-thickness:1px}
+.project-page .contact-bottom{display:flex;align-items:flex-end;padding:20px 40px}
+.project-page .back{color:inherit;text-decoration:none;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:10px;min-width:44px;min-height:44px}
+.project-page .back .icon-back{display:block;height:24px;width:auto}
+.project-page .back .icon-back{transform:rotate(90deg)}
+/* Project page: place arrow bottom-left on desktop/tablet */
+.project-page .back{position:fixed;right:40px;bottom:48px}
+
+/* Project page UI reveal (phase 2) */
+.project-page .reveal-line-clip,
+.contact-page .contact-text .reveal-line-clip{overflow:hidden;display:block}
+.project-page .contact-text .reveal-line-clip,
+.contact-page .contact-text .reveal-line-clip{display:inline-block;vertical-align:baseline;line-height:inherit}
+.project-page .reveal-line,
+.contact-page .contact-text .reveal-line{display:inline-block;transform:translateY(100%);transition:transform .55s cubic-bezier(.33,1,.55,1);will-change:transform;line-height:inherit}
+.project-page .reveal-in .reveal-line,
+.contact-page .contact-text .reveal-in .reveal-line{transform:none;transition-delay:var(--delay,0ms)}
+
+/* Contact page CTA reveal (match project CTA behavior) */
+.contact-page .contact-cta .reveal-line-clip{overflow:hidden;display:inline-block;vertical-align:baseline;line-height:inherit}
+.contact-page .contact-cta .reveal-line{display:inline-block;transform:translateY(100%);transition:transform .55s cubic-bezier(.33,1,.55,1);will-change:transform;line-height:inherit}
+.contact-page .contact-cta .reveal-in .reveal-line{transform:none;transition-delay:var(--delay,0ms)}
+
+/* Remove obsolete word-level rules (animation now line-based); intentionally left empty */
+
+@media (max-width:600px){
+  /* Project page: move arrow to top-left on mobile, fixed */
+  .project-page .back{position:absolute;top:20px;right:40px;left:auto;bottom:auto}
+  /* Contact page mobile layout */
+  .contact-page .contact-top{padding:100px 40px 20px}
+  .contact-page .contact-text{font-weight:300;text-align:left;font-size:clamp(50px,4vw,50px);line-height:1.13;letter-spacing:-0.01em;margin-top:8px;max-height:calc(100vh - 210px);overflow:auto}
+  .contact-page .contact-cta{position:absolute;top:20px;left:40px;font-size:clamp(20px,1.85vw,20px);font-weight:400}
+  .contact-page .contact-cta .dot{width:8px;height:8px}
+  .contact-page .contact-bottom{position:absolute;top:20px;right:40px;padding:0}
+  .contact-page .back{padding:0}
+  .contact-page .back .icon-back{height:48px;transform:rotate(90deg)}
+  /* Project page mobile layout */
+  .project-page .contact-top{padding:100px 40px 20px;flex-direction:column}
+  .project-page .contact-text{font-weight:300;text-align:left;font-size:clamp(50px,4vw,50px);line-height:1.13;letter-spacing:-0.01em;margin-top:8px;max-height:calc(100vh - 240px);overflow:auto}
+  .project-page .contact-cta{position:absolute;top:20px;left:40px;font-size:clamp(20px,1.85vw,20px);font-weight:400}
+  .project-page .contact-cta .dot{width:8px;height:8px}
+  .project-page .contact-bottom{position:absolute;top:20px;right:40px;padding:0}
+  .project-page .back{padding:0}
+  .project-page .back .icon-back{height:48px}
+  /* Project page: fix mobile info section overflow and positioning */
+  .project-page .contact-wrap .project-info{position:absolute;bottom:20px;left:40px;right:40px;gap:clamp(12px,2vw,24px);flex-wrap:nowrap;overflow:hidden}
+  .project-page .contact-wrap .info-block{flex:1 1 auto;min-width:0;overflow:hidden}
+  .project-page .contact-wrap .info-title{font-size:clamp(14px,2.5vw,18px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .project-page .contact-wrap .info-value{font-size:clamp(16px,3vw,26px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
+
+  .project-temp-layer{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+  .project-temp-layer[data-snapshot-role="home"]{z-index:120}
+  .project-temp-layer>img{width:100%;height:100%;object-fit:cover;display:block}
+  .project-temp-ui{position:absolute;inset:0;pointer-events:none;z-index:1}
+
+/* project page background sweep (bottom -> top) */
+@keyframes project-bg-sweep{from{clip-path: inset(100% 0 0 0)}to{clip-path: inset(0 0 0 0)}}
+@keyframes project-bg-close{from{clip-path: inset(0 0 0 0)}to{clip-path: inset(100% 0 0 0)}}
+/* contact page background sweep (top -> bottom) */
+@keyframes contact-bg-sweep{from{clip-path: inset(0 0 100% 0)}to{clip-path: inset(0 0 0 0)}}
+/* contact page close (bottom -> top) */
+/* Animate bottom inset from 0 to 100% so the panel retracts upward, revealing home from bottom to top */
+@keyframes contact-bg-close{from{clip-path: inset(0 0 0 0)}to{clip-path: inset(0 0 100% 0)}}
+@media (prefers-reduced-motion: reduce){
+  .project-page .contact-wrap, .contact-page .contact-wrap{animation:none;clip-path:none}
+}
+/* contact page closing (bottom -> top) */
+.contact-page .contact-wrap.closing{animation-name: contact-bg-close}
+
+/* Mobile menu reveal lines reuse project CTA animation style (scoped to avoid global impact) */
+.mobile-menu .reveal-line-clip{overflow:hidden;display:inline-block;vertical-align:baseline;line-height:inherit}
+.mobile-menu .reveal-line{display:inline-block;transform:translateY(100%);transition:transform .55s cubic-bezier(.33,1,.55,1);will-change:transform}
+.mobile-menu .reveal-in .reveal-line{transform:none;transition-delay:var(--delay,0ms)}
+/* Animate active green circle with text: hidden at first, slide in when item is revealed */
+.mobile-menu .mobile-nav .mobile-item.active::before{opacity:0;transform:translateY(-50%) translateY(6px);transition:transform .55s cubic-bezier(.33,1,.55,1), opacity .3s ease}
+.mobile-menu .mobile-nav .mobile-item.mm-revealed.active::before{opacity:1;transform:translateY(-50%) translateY(-5px)}
+@media (prefers-reduced-motion: reduce){
+  .mobile-menu{animation:none;clip-path:none}
+  .mobile-menu .reveal-line{transform:none;transition:none}
+}
+
+/* Gallery info slide animations */
+.slide-up-out {
+  animation: slideUpOut var(--project-sweep-duration) var(--project-sweep-ease) forwards;
+}
+.slide-up-in {
+  animation: slideUpIn var(--project-sweep-duration) var(--project-sweep-ease) forwards;
+}
+.slide-down-out {
+  animation: slideDownOut var(--project-sweep-duration) var(--project-sweep-ease) forwards;
+}
+.slide-down-in {
+  animation: slideDownIn var(--project-sweep-duration) var(--project-sweep-ease) forwards;
+}
+
+@keyframes slideUpOut {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-40px); clip-path: inset(0 0 100% 0); }
+}
+@keyframes slideUpIn {
+  0% { transform: translateY(40px); clip-path: inset(0 0 100% 0); }
+  100% { transform: translateY(0); clip-path: inset(0 0 0 0); }
+}
+@keyframes slideDownOut {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(40px); clip-path: inset(100% 0 0 0); }
+}
+@keyframes slideDownIn {
+  0% { transform: translateY(-40px); clip-path: inset(100% 0 0 0); }
+  100% { transform: translateY(0); clip-path: inset(0 0 0 0); }
+}

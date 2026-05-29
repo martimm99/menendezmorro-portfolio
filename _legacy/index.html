@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Menéndez Morro — Portfolio of design and photography projects by Martí Menéndez. Branding, UX/UI, web design, and architecture photography." />
+    <title>MENÉNDEZ MORRO</title>
+    <link rel="icon" href="assets/favicon.png" sizes="256x256" />
+    <link rel="stylesheet" href="styles.css" />
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-J5D6SHTPS7');
+    </script>
+  </head>
+  <body>
+    <!-- Preloader -->
+    <div id="preloader" class="preloader">
+      <div class="preloader-content">
+        <p class="preloader-copyright">©2026 — <span id="preloader-percent">0%</span></p>
+        <div class="preloader-animated">
+          <div class="preloader-text preloader-text-1">MENÉNDEZ</div>
+          <div class="preloader-text preloader-text-2">MORRO</div>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Hide preloader immediately if returning from navigation (before it renders)
+      if(sessionStorage.getItem('navigatingFromHome') === 'true'){
+        const preloader = document.getElementById('preloader');
+        if(preloader) preloader.style.display = 'none';
+      }
+    </script>
+    <header class="site-header">
+      <div class="header-inner">
+  <a class="logo" href="index.html">MENÉNDEZ MORRO</a>
+        <nav class="main-nav" aria-label="Main">
+          <ul>
+            <li><button data-filter="all" class="nav-item active" aria-pressed="true">All</button></li>
+            <li><button data-filter="design" class="nav-item" aria-pressed="false">Design</button></li>
+            <li><button data-filter="photo" class="nav-item" aria-pressed="false">Photo</button></li>
+            <li class="contact-link">—<a href="contact.html">Contact</a></li>
+          </ul>
+        </nav>
+
+        <button class="menu-toggle" aria-label="Open menu" aria-controls="mobile-menu" aria-expanded="false">
+          <span class="line line-1"></span>
+          <span class="line line-2"></span>
+        </button>
+      </div>
+    </header>
+
+    <main id="app">
+      <!-- Gallery canvas fills viewport -->
+      <section class="gallery-viewport" id="gallery">
+        <div class="slides" id="slides">
+          <!-- SSR: first project, first media; JS will take over after load -->
+          <div class="slide" data-projectindex="0" data-mediaindex="0" data-projectid="morro" style="z-index:10">
+            <img src="assets/media/morro_1.jpg" alt="MORRO image 1" loading="eager" fetchpriority="high" decoding="async" />
+          </div>
+        </div>
+      </section>
+
+      <!-- left title (vertical center) -->
+      <aside class="side-label left" id="title-slot">
+        <div class="slot-inner">
+          <div class="slot" id="project-title">MORRO</div>
+        </div>
+      </aside>
+
+      <!-- right role (vertical center) -->
+      <aside class="side-label right" id="role-slot">
+        <div class="slot-inner">
+          <div class="slot" id="project-role">Branding &amp; UX/UI Design</div>
+        </div>
+      </aside>
+
+      <!-- bottom info -->
+      <div class="project-info" id="project-info">
+        <div class="info-block">
+          <div class="info-title">LOCATION</div>
+          <div class="info-value" id="project-location">Mallorca</div>
+        </div>
+        <div class="info-block">
+          <div class="info-title">YEAR</div>
+          <div class="info-value" id="project-year">2024</div>
+        </div>
+        <div class="info-block">
+          <div class="info-title">DESCRIPTION</div>
+          <div class="info-value" id="project-description">Digital design studio.</div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Mobile menu overlay -->
+    <div class="mobile-menu" id="mobile-menu" aria-hidden="true" role="dialog" aria-modal="true">
+      <header class="mobile-menu-header">
+  <a class="logo" href="index.html">MENÉNDEZ MORRO</a>
+  <button class="menu-toggle" aria-label="Close menu" aria-controls="mobile-menu" aria-expanded="true">
+          <span class="line line-1"></span>
+          <span class="line line-2"></span>
+        </button>
+      </header>
+      <nav class="mobile-nav">
+        <ul>
+          <li><button data-filter="all" class="mobile-item active" aria-pressed="true">All</button></li>
+          <li><button data-filter="design" class="mobile-item" aria-pressed="false">Design</button></li>
+          <li><button data-filter="photo" class="mobile-item" aria-pressed="false">Photo</button></li>
+          <li><a class="mobile-contact" href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+      <footer class="mobile-footer">©2026. MENÉNDEZ MORRO.</footer>
+    </div>
+
+    
+    <script src="analytics.js" defer></script>
+    <script src="app.js" defer></script>
+    <noscript>This site requires JavaScript for interactive gallery navigation. You can still view the contact page.</noscript>
+  </body>
+</html>

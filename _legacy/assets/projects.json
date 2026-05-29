@@ -1,0 +1,311 @@
+[
+  {
+    "id": "morro",
+    "title": "MORRO",
+    "role": "Branding & UX/UI Design",
+    "year": "2024",
+    "location": "Mallorca",
+    "type": "design",
+    "subcategory": "branding",
+    "description": "Digital design studio.",
+    "longDescription": "Branding and UX/UI design for MORRO, a digital design studio based in Mallorca.\n\nThe goal was to represent the traditional background of the brand through a clean and modern visual identity.\n\nThe typography used for the logo was custom made for the project, created in a modular layout to mimic the traditional Mallorcan sewing patterns and techniques.\n\nThe orange color has been carefully selected as a representation of the color of Marés, a sandstone used in the Balearic Islands to construct traditional buildings.\n\nThe UX/UI design of the website focuses on simplicity and ease of navigation, ensuring a seamless user experience while showcasing the studio's portfolio effectively.",
+    "link": "https://morrostudio.com/",
+    "linkText": "morrostudio.com",
+    "duration": "3 months",
+  "cost": "1900€",
+    "media": [
+      { "type": "image", "src": "assets/media/morro/morro_1.jpg" },
+      { "type": "image", "src": "assets/media/morro/morro_2.jpg" },
+      { "type": "image", "src": "assets/media/morro/morro_3.jpg" },
+      { "type": "image", "src": "assets/media/morro/morro_4.jpg" },
+      { "type": "image", "src": "assets/media/morro/morro_5.jpg" },
+      { "type": "image", "src": "assets/media/morro/morro_6.jpg" },
+      { "type": "image", "src": "assets/media/morro/morro_7.gif" }
+    ]
+  },
+    {
+      "id": "gestion_reaviva",
+      "title": "GESTIÓN REAVIVA",
+      "role": "Branding & Web Design",
+      "year": "2025",
+      "location": "Mallorca",
+      "type": "design",
+      "subcategory": ["branding", "web"],
+      "description": "Branding and web design.",
+      "longDescription": "Gestión Reaviva is a specialized company based in the Balearic Islands, focused on providing technical services for building projects.\n\nThe briefing for this project was to redesign both the visual identity and the website, reconnecting the brand with its current values after more than 15 years of evolution.\n\nThe project began with a strategic phase, redefining the values that had shifted over time and translating them into a renewed visual approach. From this foundation, a complete visual system was developed, including a new logo, color palette, typography, signage system, business cards, and website.\n\nFor the digital side, the client required an easy-to-customize and flexible backend. The website was therefore designed and built using a CMS that allowed a modern, consistent visual identity to coexist with simple content management and long-term scalability.",
+      "link": "https://www.gestionreaviva.com/",
+      "linkText": "Website",
+      "duration": "3 months",
+      "cost": "4000€",
+      "media": [
+        { "type": "image", "src": "assets/media/gestion_reaviva/reaviva_1.jpg" },
+        { "type": "image", "src": "assets/media/gestion_reaviva/reaviva_2.jpg" },
+        { "type": "image", "src": "assets/media/gestion_reaviva/reaviva_3.jpg" },
+        { "type": "image", "src": "assets/media/gestion_reaviva/reaviva_4.jpg" },
+        { "type": "image", "src": "assets/media/gestion_reaviva/reaviva_5.jpg" }
+      ]
+    }
+    ,
+{
+      "id": "festivalz",
+      "title": "FESTIVAL Z",
+      "role": "Branding",
+      "year": "2025",
+      "location": "Girona",
+      "type": "design",
+      "subcategory": "branding",
+      "description": "Creative direction",
+      "longDescription": "Festival Z is a performing arts festival that takes place annually over the course of one week in Girona. The festival is committed to supporting companies and artists under 30 years of age, with the aim of reaching diverse audiences and fostering emerging creative voices. We have been collaborating for the past four years on the creative and art direction of the festival’s overall visual identity, as well as each individual edition.\n\nThis project corresponds to the 2025 edition, developed under the concept “Per amor a l’art” (“For the love of art”). The concept focuses on the precarious conditions many artists face across disciplines, often justified by the idea that they are doing what they love, and the resulting normalization of exploitation within the cultural sector.\n\nAs with every edition, we defined the visual concept and produced the full range of online and offline communication materials, including roll-ups, banners, programs, tickets, posters, accreditations, and social media assets, ensuring a cohesive and expressive identity across all touchpoints.",
+      "link": "https://www.festivalz.org/es/",
+      "linkText": "Website",
+      "duration": "5 months",
+      "cost": "3500€",
+      "media": [
+        { "type": "image", "src": "assets/media/festivalz/festivalz_1.jpg" },
+        { "type": "image", "src": "assets/media/festivalz/festivalz_2.jpg" },
+        { "type": "image", "src": "assets/media/festivalz/festivalz_3.jpg" },
+        { "type": "image", "src": "assets/media/festivalz/festivalz_4.jpg" },
+        { "type": "image", "src": "assets/media/festivalz/festivalz_5.jpg" },
+        { "type": "image", "src": "assets/media/festivalz/festivalz_6.jpg" }
+      ]
+    }
+    ,
+    {
+      "id": "un_altre_peto",
+      "title": "UN ALTRE PETÓ",
+      "role": "Titles",
+      "year": "2023",
+      "location": "Girona",
+      "type": "design",
+      "subcategory": "titles",
+      "description": "Titles design",
+      "longDescription": "Titles design for Jost Jou’s music video Un altre petó.\n\nThe starting point of the project was the concept behind the song and the music video. Taking this into account, and with the aim of building a graphic identity that matched the existing visuals, ephemeral titles were designed and animated to represent the concepts of movement and the passage of time referenced in the song. Accompanying the main titles, credit titles were also designed to showcase the team involved in the production of the project.",
+      "link": "https://www.youtube.com/watch?v=D46HaA131vU",
+      "linkText": "Music video",
+      "duration": "2 weeks",
+      "cost": "800€",
+      "media": [
+        { "type": "video", "src": "assets/media/un_altre_peto/un_altre_peto_1.mp4" },
+        { "type": "video", "src": "assets/media/un_altre_peto/un_altre_peto_2.mp4" }
+      ]
+    }
+    ,
+    {
+      "id": "me_olvido",
+      "title": "ME OLVIDO",
+      "role": "Titles",
+      "year": "2023",
+      "location": "Mallorca",
+      "type": "design",
+      "subcategory": "titles",
+      "description": "Titles design",
+      "longDescription": "Titles design for Me olvido, a song by Pau Vizcaino and Oscar Puigcercós.\n\nThe starting point of the project was the atmosphere and message of the song, characterized by a calm, introspective tone focused on change and personal transformation. The titles were designed with the aim of translating this mood into a cohesive visual language. Both the main titles and the credit titles were designed to coexist within the same frame, appearing together as a unified graphic composition that complements the overall aesthetic of the piece.",
+      "link": "https://www.youtube.com/watch?v=SzteXtJIies&list=RDSzteXtJIies&start_radio=1",
+      "linkText": "Music video",
+      "duration": "2 weeks",
+      "cost": "800€",
+      "media": [
+        { "type": "video", "src": "assets/media/me_olvido/me_olvido.mp4" },
+        { "type": "image", "src": "assets/media/me_olvido/me_olvido.jpg" }
+      ]
+    }
+    ,
+  {
+    "id": "binifaldo",
+    "title": "BINIFALDÓ",
+    "role": "Photography & Post-production",
+    "year": "2025",
+    "location": "Mallorca",
+    "type": "photo",
+    "subcategory": "architecture",
+    "description": "Architecture photography.",
+    "longDescription": "Architecture photography in Binifaldó, a residence located in the prestigious Son Vida neighborhood of Mallorca.\n\nThe project involved one day of on-site shooting and one day of post-production, resulting in a series of high-quality images delivered for marketing and promotional use.",
+    "link": "-",
+    "linkText": "-",
+    "duration": "2 days",
+  "cost": "800€",
+    "media": [
+      { "type": "image", "src": "assets/media/binifaldo/binifaldo_1.jpg" },
+      { "type": "image", "src": "assets/media/binifaldo/binifaldo_2.jpg" },
+      { "type": "image", "src": "assets/media/binifaldo/binifaldo_3.jpg" },
+      { "type": "image", "src": "assets/media/binifaldo/binifaldo_4.jpg" },
+      { "type": "image", "src": "assets/media/binifaldo/binifaldo_5.jpg" }
+    ]
+  }
+    ,
+    {
+      "id": "gloosito",
+      "title": "GLOOSITO",
+      "role": "Photography & Art Direction",
+      "year": "2023",
+      "location": "Madrid",
+      "type": ["design", "photo"],
+      "subcategory": ["branding", "live"],
+      "description": "Gloosito in concert",
+      "longDescription": "Art Direction, Graphic Design, and Photography for Gloosito's concert in Madrid.\n\nThe project started with the conceptualization and design of marketing assets to promote the event (poster and social media posts), and finalised taking photographs and post-producing the concert images for the artist and Fleek Magazine.",
+      "link": "https://fleek.25gramos.com/live_show/live-show-w-gloosito/",
+      "linkText": "Fleek Magazine",
+      "duration": "2 days",
+      "cost": "Collaboration",
+      "media": [
+        { "type": "image", "src": "assets/media/gloosito/gloosito_0-mobile.jpg" },
+        { "type": "image", "src": "assets/media/gloosito/gloosito_1-mobile.jpg" },
+        { "type": "image", "src": "assets/media/gloosito/gloosito_2-mobile.jpg" },
+        { "type": "image", "src": "assets/media/gloosito/gloosito_3-mobile.jpg" },
+        { "type": "image", "src": "assets/media/gloosito/gloosito_4-mobile.jpg" },
+        { "type": "image", "src": "assets/media/gloosito/gloosito_5-mobile.jpg" },
+        { "type": "image", "src": "assets/media/gloosito/gloosito_1.webp" },
+        { "type": "image", "src": "assets/media/gloosito/gloosito_2.webp" },
+        { "type": "image", "src": "assets/media/gloosito/gloosito_3.webp" },
+        { "type": "image", "src": "assets/media/gloosito/gloosito_4.webp" },
+        { "type": "image", "src": "assets/media/gloosito/gloosito_5.webp" }
+      ]
+    }
+    ,
+    {
+      "id": "madison_beer",
+      "title": "MADISON BEER",
+      "role": "Photography",
+      "year": "2022",
+      "location": "Madrid",
+      "type": "photo",
+      "subcategory": "live",
+      "description": "Live concert photography.",
+      "longDescription": "Concert photography for Sala La Riviera of Madison Beer's The Life Support Tour.\n\nPhotography of the event and post-production of the images for the venue's marketing and promotional use.",
+      "link": "-",
+      "linkText": "-",
+      "duration": "2 days",
+      "cost": "Collaboration",
+      "media": [
+        { "type": "image", "src": "assets/media/madison_beer/madison_beer_1.jpg" },
+        { "type": "image", "src": "assets/media/madison_beer/madison_beer_2.jpg" },
+        { "type": "image", "src": "assets/media/madison_beer/madison_beer_3.jpg" },
+        { "type": "image", "src": "assets/media/madison_beer/madison_beer_4.webp" },
+        { "type": "image", "src": "assets/media/madison_beer/madison_beer_5.jpg" },
+        { "type": "image", "src": "assets/media/madison_beer/madison_beer_5-mobile.jpg" }
+      ]
+    }
+    ,
+    {
+      "id": "alequi",
+      "title": "ALEQUI",
+      "role": "Photography",
+      "year": "2022",
+      "location": "Madrid",
+      "type": "photo",
+      "subcategory": "live",
+      "description": "Live concert photography.",
+      "longDescription": "Photography for Alequi’s concert at Café La Palma in Madrid.\n\nThe project involved the photography of the live event, capturing both the performance and the atmosphere of the venue, as well as the post-production of the images. The final photographs were delivered to the artist and later published in Fleek Magazine.",
+      "link": "https://fleek.25gramos.com/live-show-w-alequi/",
+      "linkText": "Fleek Magazine",
+      "duration": "2 days",
+      "cost": "Collaboration",
+      "media": [
+        { "type": "image", "src": "assets/media/alequi/alequi_1.jpg" },
+        { "type": "image", "src": "assets/media/alequi/alequi_2.jpg" },
+        { "type": "image", "src": "assets/media/alequi/alequi_3.jpg" },
+        { "type": "image", "src": "assets/media/alequi/alequi_4.jpg" },
+        { "type": "image", "src": "assets/media/alequi/alequi_5.jpg" },
+        { "type": "image", "src": "assets/media/alequi/alequi_6.jpg" }
+      ]
+    }
+    ,
+    {
+      "id": "delaossa",
+      "title": "DELAOSSA",
+      "role": "Photography",
+      "year": "2022",
+      "location": "Madrid",
+      "type": "photo",
+      "subcategory": "live",
+      "description": "Live concert photography.",
+      "longDescription": "Art Direction, Graphic Design, and Photography for Delaossa’s concert at Sala But in Madrid.\n\nThe project involved the photography of the live event, as well as the post-production of the images. Additionally, graphic design work was developed after the concert using the visual material for marketing and promotional purposes for both the artist and Fleek Magazine.",
+      "link": "https://fleek.25gramos.com/live_show/live-show-w-delaossa/",
+      "linkText": "Fleek Magazine",
+      "duration": "4 days",
+      "cost": "Collaboration",
+      "media": [
+        { "type": "image", "src": "assets/media/delaossa/delaossa_1.jpg" },
+        { "type": "image", "src": "assets/media/delaossa/delaossa_2.jpg" },
+        { "type": "image", "src": "assets/media/delaossa/delaossa_3.jpg" },
+        { "type": "image", "src": "assets/media/delaossa/delaossa_4.jpg" },
+        { "type": "image", "src": "assets/media/delaossa/delaossa_5.jpg" },
+        { "type": "image", "src": "assets/media/delaossa/delaossa_6.jpg" },
+        { "type": "image", "src": "assets/media/delaossa/delaossa_7.jpg" }
+      ]
+    }
+    ,
+    {
+      "id": "maylaya",
+      "title": "MAYLAYA",
+      "role": "Photography",
+      "year": "2023",
+      "location": "Madrid",
+      "type": "photo",
+      "subcategory": "live",
+      "description": "Live concert photography.",
+      "longDescription": "Concert photography and studio photoshoot for Maylaya, an emerging indie/pop-rock band from Alcalá.\n\nThe concert images were used to promote the band’s series of shows in Madrid, while the studio photoshoot was published across their social media and Spotify, and was also used as the album cover.",
+      "link": "https://open.spotify.com/intl-es/artist/2AjQkWh3OXg3t5Se8k3Me7?si=UutJCrk_SKWrtOgXTOYvgA",
+      "linkText": "Spotify",
+      "duration": "3 days",
+      "cost": "1200€",
+      "media": [
+        { "type": "image", "src": "assets/media/maylaya/maylaya_1.jpeg" },
+        { "type": "image", "src": "assets/media/maylaya/maylaya_2.jpeg" },
+        { "type": "image", "src": "assets/media/maylaya/maylaya_3.jpeg" },
+        { "type": "image", "src": "assets/media/maylaya/maylaya_4.jpg" },
+        { "type": "image", "src": "assets/media/maylaya/maylaya_5.jpg" },
+        { "type": "image", "src": "assets/media/maylaya/maylaya_6.jpg" },
+        { "type": "image", "src": "assets/media/maylaya/maylaya_7.jpg" },
+        { "type": "image", "src": "assets/media/maylaya/maylaya_8.jpg" }
+      ]
+    }
+    ,
+    {
+      "id": "mda",
+      "title": "MDA",
+      "role": "Photography",
+      "year": "2025",
+      "location": "Madrid",
+      "type": "photo",
+      "subcategory": "live",
+      "description": "Live concert photography.",
+      "longDescription": "Photography of the concert in Madrid of MDA and other artists at Independance Club.\n\nThe project involved taking photographs and post-producing the concert images, that were sent to the artist and Fleek Magazine.",
+      "link": "-",
+      "linkText": "-",
+      "duration": "2 days",
+      "cost": "Collaboration",
+      "media": [
+        { "type": "image", "src": "assets/media/mda/mda_1.jpg" },
+        { "type": "image", "src": "assets/media/mda/mda_2.jpg" },
+        { "type": "image", "src": "assets/media/mda/mda_3.jpg" },
+        { "type": "image", "src": "assets/media/mda/mda_4.jpg" }
+      ]
+    }
+    ,
+    {
+      "id": "coaatmca",
+      "title": "COAATMCA",
+      "role": "Photography",
+      "year": "2025",
+      "location": "Mallorca",
+      "type": "photo",
+      "subcategory": "architecture",
+      "description": "Architecture photography.",
+      "longDescription": "The Colegio Oficial de Aparejadores y Arquitectos Técnicos de Mallorca (COAATMCA) commissioned a series of photographs of its main building, as well as a newly built space dedicated to a coworking area.\n\nThe project involved photographing both spaces within a short timeframe, with the material intended to showcase the construction work carried out in the main building and the completed coworking space. A total of 35 images were delivered in maximum quality, ready for use in both online and offline communications.",
+      "link": "https://www.coaatmca.com/",
+      "linkText": "Website",
+      "duration": "3 days",
+      "cost": "800€",
+      "media": [
+        { "type": "image", "src": "assets/media/COAATMCA/COAATMCA_1.jpg" },
+        { "type": "image", "src": "assets/media/COAATMCA/COAATMCA_3.jpg" },
+        { "type": "image", "src": "assets/media/COAATMCA/COAATMCA_4.jpg" },
+        { "type": "image", "src": "assets/media/COAATMCA/COAATMCA_5.jpg" },
+        { "type": "image", "src": "assets/media/COAATMCA/COAATMCA_6.jpg" },
+        { "type": "image", "src": "assets/media/COAATMCA/COAATMCA_7.jpg" },
+        { "type": "image", "src": "assets/media/COAATMCA/COAATMCA_7-mobile.jpg" },
+        { "type": "image", "src": "assets/media/COAATMCA/COAATMCA_8-mobile.jpg" }
+      ]
+    }
+]

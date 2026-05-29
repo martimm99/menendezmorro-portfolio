@@ -1,0 +1,13 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  
+  # Remove index.html from URLs
+  RewriteCond %{THE_REQUEST} ^GET\s+/index\.html [NC]
+  RewriteRule ^index\.html$ / [L,R=301]
+  
+  # Route all requests to index.html for client-side routing
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(.*)$ index.html [L]
+</IfModule>
