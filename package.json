@@ -1,0 +1,20 @@
+{
+  "name": "menendezmorro-portfolio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Portfolio of design and photography projects by Martí Menéndez. Vanilla HTML/CSS/JS, deployed on Netlify, edited through Decap CMS.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "validate": "node scripts/validate-data.js",
+    "optimize-images": "node scripts/optimize-images.js",
+    "build-sitemap": "node scripts/build-sitemap.js"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "sharp": "^0.33.5"
+  }
+}
