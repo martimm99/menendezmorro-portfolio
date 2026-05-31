@@ -1,0 +1,370 @@
+/*
+ * home.css — Home page layout and motion.
+ *
+ * Scoped to body.home-page so other pages can share the same shell HTML
+ * without inheriting Home-specific styles. Tokens come from tokens.css;
+ * page-level padding is defined here because 40px / 20px don't fit the
+ * 8px global spacing scale but are page-wide concerns.
+ *
+ * BUILD_SPEC.md §5.1 (Home), §2 (animation vocabulary).
+ *
+ * Layered structure (z-index from tokens):
+ *   .cover-stage (--z-content) — two .cover-layer siblings for the sweep
+ *   .home-content (--z-info)   — title, role, info row sit above the cover
+ *   .site-header (--z-header)
+ *   .placeholder-screen (--z-fullscreen) — shown only when route !== home
+ */
+
+.home-page {
+  --page-pad-x: 40px;
+  --page-pad-y: 20px;
+  overflow: hidden; /* Home is fixed-bleed; nothing scrolls */
+}
+
+/* ---------- Cover stage ---------- */
+
+.cover-stage {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-content);
+  background-color: var(--color-bg-dark);
+}
+
+.cover-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* Hidden by default; the active layer gets its clip-path cleared by JS. */
+  clip-path: inset(0 0 0 100%);
+  -webkit-clip-path: inset(0 0 0 100%);
+}
+
+.cover-layer.is-active {
+  clip-path: inset(0 0 0 0);
+  -webkit-clip-path: inset(0 0 0 0);
+}
+
+.cover-layer.is-animating {
+  transition:
+    clip-path var(--dur-sweep) var(--ease-sweep),
+    -webkit-clip-path var(--dur-sweep) var(--ease-sweep);
+}
+
+.cover-layer > picture,
+.cover-layer > video,
+.cover-layer > img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.cover-layer img,
+.cover-layer video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* ---------- Site header ---------- */
+
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-header);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--page-pad-y) var(--page-pad-x);
+  color: var(--color-fg-dark);
+  pointer-events: none; /* re-enabled on actionable children */
+}
+
+.site-logo,
+.site-nav a {
+  pointer-events: auto;
+}
+
+.site-logo {
+  font-size: var(--fs-logo);
+  font-weight: var(--fw-regular);
+  letter-spacing: 0.02em;
+  color: inherit;
+  text-decoration: none;
+}
+
+.site-nav a {
+  font-size: var(--fs-logo);
+  font-weight: var(--fw-regular);
+  color: inherit;
+  text-decoration: none;
+  transition: opacity var(--dur-ui) var(--ease-ui);
+}
+
+.site-nav a:hover,
+.site-nav a:focus-visible {
+  opacity: 0.7;
+}
+
+/* ---------- Home content (title, role, info row) ---------- */
+
+.home-content {
+  position: relative;
+  z-index: var(--z-info);
+  color: var(--color-fg-dark);
+  height: 100vh;
+  height: 100dvh;
+  pointer-events: none;
+}
+
+.home-content > * {
+  pointer-events: auto;
+}
+
+.project-title,
+.project-role {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0;
+  cursor: pointer;
+}
+
+.project-title {
+  left: var(--page-pad-x);
+  font-size: var(--fs-title);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-display);
+  max-width: min(58vw, 70ch);
+}
+
+.project-role {
+  right: var(--page-pad-x);
+  font-size: var(--fs-role);
+  font-weight: var(--fw-extralight);
+  line-height: var(--lh-tight);
+  text-align: right;
+  max-width: 40vw;
+}
+
+/* ---------- Info row ---------- */
+
+.info-row {
+  position: fixed;
+  left: var(--page-pad-x);
+  right: var(--page-pad-x);
+  bottom: calc(var(--page-pad-y) + var(--space-2));
+  margin: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(16px, 3vw, 48px);
+  color: var(--color-fg-dark);
+}
+
+.info-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  flex: 0 1 auto;
+}
+
+.info-cell:last-child {
+  flex: 1 1 auto; /* DESCRIPTION absorbs slack; never truncates */
+}
+
+.info-cell dt {
+  font-size: clamp(10px, 0.7vw, 12px);
+  font-weight: var(--fw-light);
+  letter-spacing: var(--ls-label);
+  opacity: 0.7;
+}
+
+.info-cell dd {
+  margin: var(--space-1) 0 0;
+  font-size: clamp(12px, 0.95vw, 16px);
+  font-weight: var(--fw-light);
+  line-height: var(--lh-snug);
+  white-space: normal;
+}
+
+@media (max-width: 599px) {
+  .info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+  .info-cell {
+    width: 100%;
+  }
+  .info-cell dt {
+    font-size: 12px;
+  }
+  .info-cell dd {
+    font-size: 14px;
+  }
+
+  .project-title {
+    font-size: var(--fs-title-mobile);
+    top: auto;
+    bottom: calc(var(--page-pad-y) + 22vh);
+    transform: none;
+    left: var(--page-pad-x);
+    right: var(--page-pad-x);
+    max-width: none;
+  }
+
+  .project-role {
+    position: fixed;
+    top: auto;
+    bottom: calc(var(--page-pad-y) + 17vh);
+    transform: none;
+    left: var(--page-pad-x);
+    right: var(--page-pad-x);
+    text-align: left;
+    max-width: none;
+  }
+}
+
+/* ---------- Text slot animation (legacy slide-up-out / slide-up-in) ----------
+ * Each text element wraps two .slot-clip layers: the visible one (data-slot-current)
+ * and the queued one (data-slot-next). On project change the current slides out
+ * (up for "next" direction, down for "prev") while the next slides in from below
+ * (or above). Duration and easing match the cover sweep so the motion is unified.
+ */
+
+.slot-clip {
+  display: block;
+  overflow: hidden;
+  line-height: inherit;
+}
+
+.project-title .slot-clip,
+.project-role .slot-clip {
+  display: inline-block;
+  vertical-align: baseline;
+}
+
+.info-cell dd .slot-clip {
+  display: inline-block;
+  vertical-align: baseline;
+}
+
+/* Stack the two slot-clips so the next slot doesn't reserve flow space.
+ * The "next" clip is positioned absolutely inside the parent. */
+.project-title,
+.project-role,
+.info-cell dd {
+  position: relative;
+}
+
+.project-title .slot-clip[aria-hidden="true"],
+.project-role .slot-clip[aria-hidden="true"],
+.info-cell dd .slot-clip[aria-hidden="true"] {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* For .project-title and .project-role the wrapper retains its fixed position;
+ * info-cell dd is in normal flow so the absolutely-positioned overlay anchors
+ * to the dd box. */
+.project-title .slot-clip[aria-hidden="true"],
+.project-role .slot-clip[aria-hidden="true"] {
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.slot {
+  display: inline-block;
+  transform: translateY(0);
+  clip-path: inset(0 0 0 0);
+  -webkit-clip-path: inset(0 0 0 0);
+  line-height: inherit;
+  will-change: transform, clip-path;
+}
+
+.slot.is-leaving-up {
+  transform: translateY(-40px);
+  clip-path: inset(0 0 100% 0);
+  -webkit-clip-path: inset(0 0 100% 0);
+}
+
+.slot.is-leaving-down {
+  transform: translateY(40px);
+  clip-path: inset(100% 0 0 0);
+  -webkit-clip-path: inset(100% 0 0 0);
+}
+
+.slot.is-entering-up-prep {
+  transform: translateY(40px);
+  clip-path: inset(0 0 100% 0);
+  -webkit-clip-path: inset(0 0 100% 0);
+  transition: none;
+}
+
+.slot.is-entering-down-prep {
+  transform: translateY(-40px);
+  clip-path: inset(100% 0 0 0);
+  -webkit-clip-path: inset(100% 0 0 0);
+  transition: none;
+}
+
+.slot.is-animating {
+  transition:
+    transform var(--dur-sweep) var(--ease-sweep),
+    clip-path var(--dur-sweep) var(--ease-sweep),
+    -webkit-clip-path var(--dur-sweep) var(--ease-sweep);
+}
+
+/* ---------- Placeholder screen (non-Home routes in Phase 5) ---------- */
+
+.placeholder-screen {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-fullscreen);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+  padding: var(--page-pad-y) var(--page-pad-x);
+  background-color: var(--color-bg-dark);
+  color: var(--color-fg-dark);
+  text-align: center;
+}
+
+.placeholder-screen[hidden] {
+  display: none;
+}
+
+.placeholder-message {
+  margin: 0;
+  font-size: var(--fs-cta);
+  font-weight: var(--fw-light);
+  letter-spacing: var(--ls-display);
+  opacity: 0.85;
+}
+
+.placeholder-back {
+  font-size: var(--fs-body);
+  font-weight: var(--fw-regular);
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+/* ---------- Reduced motion ----------
+ * reset.css already nukes long animations and transitions; this rule makes
+ * sure cover layers don't get stuck in their hidden clip-path state.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .cover-layer:not(.is-active) {
+    visibility: hidden;
+  }
+}
