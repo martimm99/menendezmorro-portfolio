@@ -198,25 +198,16 @@
 }
 
 @media (max-width: 599px) {
+  /* Mobile Home matches the legacy layout: info row is hidden, title and
+   * role move to the bottom-left corner stacked, both left-aligned. */
   .info-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-2);
-  }
-  .info-cell {
-    width: 100%;
-  }
-  .info-cell dt {
-    font-size: 12px;
-  }
-  .info-cell dd {
-    font-size: 14px;
+    display: none;
   }
 
   .project-title {
     font-size: var(--fs-title-mobile);
     top: auto;
-    bottom: calc(var(--page-pad-y) + 22vh);
+    bottom: 96px;
     transform: none;
     left: var(--page-pad-x);
     right: var(--page-pad-x);
@@ -224,14 +215,14 @@
   }
 
   .project-role {
-    position: fixed;
     top: auto;
-    bottom: calc(var(--page-pad-y) + 17vh);
+    bottom: 56px;
     transform: none;
     left: var(--page-pad-x);
     right: var(--page-pad-x);
     text-align: left;
     max-width: none;
+    font-size: clamp(16px, 4vw, 20px);
   }
 }
 
@@ -259,31 +250,45 @@
   vertical-align: baseline;
 }
 
-/* Stack the two slot-clips so the next slot doesn't reserve flow space.
- * The "next" clip is positioned absolutely inside the parent. */
-.project-title,
-.project-role,
+/* info-cell dd is in normal flow inside the flex row; promote it to a
+ * positioned ancestor so the absolute overlay anchors to the dd box. The
+ * title and role are already position: fixed (above), which suffices. */
 .info-cell dd {
   position: relative;
 }
 
+/* The aria-hidden slot-clip overlays the visible slot during a sweep.
+ * width: max-content lets it fit its own (potentially longer) text instead
+ * of being constrained to the current text's width, which would force the
+ * incoming text to clip or wrap. The anchor (left vs right) matches the
+ * parent's text-align so the overlay sits exactly where the in-flow current
+ * slot-clip does. */
 .project-title .slot-clip[aria-hidden="true"],
-.project-role .slot-clip[aria-hidden="true"],
 .info-cell dd .slot-clip[aria-hidden="true"] {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: max-content;
   pointer-events: none;
 }
 
-/* For .project-title and .project-role the wrapper retains its fixed position;
- * info-cell dd is in normal flow so the absolutely-positioned overlay anchors
- * to the dd box. */
-.project-title .slot-clip[aria-hidden="true"],
 .project-role .slot-clip[aria-hidden="true"] {
+  position: absolute;
   top: 0;
-  left: 0;
   right: 0;
   bottom: 0;
+  width: max-content;
+  pointer-events: none;
+}
+
+/* On mobile the role becomes left-aligned (see media query above), so its
+ * overlay anchor flips too. */
+@media (max-width: 599px) {
+  .project-role .slot-clip[aria-hidden="true"] {
+    right: auto;
+    left: 0;
+  }
 }
 
 .slot {
