@@ -1,8 +1,11 @@
 # MENÉNDEZ MORRO — Portfolio Rebuild Build Spec
 
-**Version:** 1.2 (Approved)
-**Date:** May 30, 2026
+**Version:** 1.3 (Approved)
+**Date:** May 31, 2026
 **Status:** Approved — build authorized
+
+**Changes from v1.2:**
+- Appendix C year fields normalized to a single (latest) year. Ranges like "2025–2026" become "2026" so the Info row's middle column has a consistent width and the description column doesn't shift between projects.
 
 **Changes from v1.1:**
 - New project list (8 projects, replaces 13 legacy projects) — see Appendix C.
@@ -399,7 +402,7 @@ For each project, fields:
 - Title (text, required)
 - Slug (text, auto-generated from title, editable)
 - Role (text, required)
-- Year (text, required) — supports ranges (e.g., "2023–2026")
+- Year (text, required) — a single year (e.g., "2026"). Ranges are no longer used; pick the latest year of work on the project.
 - Location (text) — supports compound values (e.g., "Madrid — Berlin")
 - Type (select: design / photo)
 - Subcategory (multi-select: branding, web, titles, architecture, live — preserved for future filtering; UI not exposed in v1.2)
@@ -688,7 +691,7 @@ For each project, all metadata fields are listed. Long descriptions are delibera
 - **Slug:** `lufthansa-innovation-hub`
 - **Type:** `design`
 - **Role:** Graphic Design & Motion Graphics
-- **Year:** 2025–2026
+- **Year:** 2026
 - **Location:** Berlin
 - **Short description:** Digital solutions for the next in travel and mobility.
 - **Links:** `[{ url: "https://lh-innovationhub.de/en/", text: "Website" }]`
@@ -721,7 +724,7 @@ For each project, all metadata fields are listed. Long descriptions are delibera
 - **Slug:** `festival-z`
 - **Type:** `design`
 - **Role:** Creative Direction
-- **Year:** 2021–2026
+- **Year:** 2026
 - **Location:** Girona
 - **Short description:** Performing arts festival.
 - **Links:** `[{ url: "https://www.festivalz.org/en/", text: "Website" }]`
@@ -744,7 +747,7 @@ For each project, all metadata fields are listed. Long descriptions are delibera
 - **Slug:** `architecture`
 - **Type:** `photo`
 - **Role:** Photography and Postproduction
-- **Year:** 2024–2026
+- **Year:** 2026
 - **Location:** Mallorca
 - **Short description:** Photography service for real estate agencies.
 - **Links:** `[]` (none)
@@ -756,7 +759,7 @@ For each project, all metadata fields are listed. Long descriptions are delibera
 - **Slug:** `concerts`
 - **Type:** `photo`
 - **Role:** Photography and Postproduction
-- **Year:** 2023–2026
+- **Year:** 2026
 - **Location:** Madrid — Berlin
 - **Short description:** Concert photography for artists, labels and media.
 - **Links:** `[{ url: "https://fleek.25gramos.com/live_show/live-show-w-gloosito/", text: "25Gramos" }]`
