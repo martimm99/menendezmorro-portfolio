@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#000000">
+
+    <title>{{siteTitle}}</title>
+    <meta name="description" content="{{siteDescription}}">
+    <link rel="canonical" href="{{siteUrl}}/">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{siteTitle}}">
+    <meta property="og:description" content="{{siteDescription}}">
+    <meta property="og:url" content="{{siteUrl}}/">
+    <meta property="og:image" content="{{siteUrl}}/{{ogImage}}">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{siteTitle}}">
+    <meta name="twitter:description" content="{{siteDescription}}">
+    <meta name="twitter:image" content="{{siteUrl}}/{{ogImage}}">
+
+    <link rel="icon" href="/assets/favicon.png" sizes="256x256">
+    <link rel="preload" href="/assets/fonts/Geist-Regular.woff2" as="font" type="font/woff2" crossorigin>
+
+    <link rel="stylesheet" href="/css/tokens.css">
+    <link rel="stylesheet" href="/css/reset.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/home.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+
+    <script type="module" src="/js/main.js"></script>
+  </head>
+  <body class="home-page">
+    <div class="cover-stage" aria-hidden="true">
+      <div class="cover-layer" data-layer="a"></div>
+      <div class="cover-layer" data-layer="b"></div>
+    </div>
+
+    <header class="site-header">
+      <a class="site-logo" href="/" data-nav-home aria-label="Home — MENÉNDEZ MORRO">MENÉNDEZ MORRO</a>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="/contact" data-nav-contact>Contact</a>
+      </nav>
+    </header>
+
+    <main class="home-content">
+      <h1 class="project-title" data-clickable-to-project>
+        <span class="slot-clip"><span class="slot is-active" data-slot-current data-project-title></span></span>
+        <span class="slot-clip" aria-hidden="true"><span class="slot" data-slot-next></span></span>
+      </h1>
+
+      <p class="project-role" data-clickable-to-project>
+        <span class="slot-clip"><span class="slot is-active" data-slot-current data-project-role></span></span>
+        <span class="slot-clip" aria-hidden="true"><span class="slot" data-slot-next></span></span>
+      </p>
+
+      <dl class="info-row" aria-label="Project info">
+        <div class="info-cell">
+          <dt>LOCATION</dt>
+          <dd>
+            <span class="slot-clip"><span class="slot is-active" data-slot-current data-info-location></span></span>
+            <span class="slot-clip" aria-hidden="true"><span class="slot" data-slot-next></span></span>
+          </dd>
+        </div>
+        <div class="info-cell">
+          <dt>YEAR</dt>
+          <dd>
+            <span class="slot-clip"><span class="slot is-active" data-slot-current data-info-year></span></span>
+            <span class="slot-clip" aria-hidden="true"><span class="slot" data-slot-next></span></span>
+          </dd>
+        </div>
+        <div class="info-cell">
+          <dt>DESCRIPTION</dt>
+          <dd>
+            <span class="slot-clip"><span class="slot is-active" data-slot-current data-info-description></span></span>
+            <span class="slot-clip" aria-hidden="true"><span class="slot" data-slot-next></span></span>
+          </dd>
+        </div>
+      </dl>
+    </main>
+
+    <div class="placeholder-screen" hidden data-placeholder>
+      <p class="placeholder-message" data-placeholder-message></p>
+      <a class="placeholder-back" href="/" data-nav-home>Back to home</a>
+    </div>
+
+    <noscript>
+      <div class="noscript-notice">
+        This site needs JavaScript to render its gallery and navigation. Please enable JS or switch to a modern browser.
+      </div>
+    </noscript>
+  </body>
+</html>
