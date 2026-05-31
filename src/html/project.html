@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#000000">
+
+    <title>{{siteTitle}}</title>
+    <meta name="description" content="{{siteDescription}}">
+    <link rel="canonical" href="{{siteUrl}}/">
+
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="{{siteTitle}}">
+    <meta property="og:description" content="{{siteDescription}}">
+    <meta property="og:url" content="{{siteUrl}}/">
+    <meta property="og:image" content="{{siteUrl}}/{{ogImage}}">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{siteTitle}}">
+    <meta name="twitter:description" content="{{siteDescription}}">
+    <meta name="twitter:image" content="{{siteUrl}}/{{ogImage}}">
+
+    <link rel="icon" href="/assets/favicon.png" sizes="256x256">
+    <link rel="preload" href="/assets/fonts/Geist-Regular.woff2" as="font" type="font/woff2" crossorigin>
+
+    <link rel="stylesheet" href="/css/tokens.css">
+    <link rel="stylesheet" href="/css/reset.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/project.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+
+    <script type="module" src="/js/main.js"></script>
+  </head>
+  <body class="project-page">
+    <header class="site-header">
+      <a class="site-logo" href="/" data-nav-home aria-label="Home — MENÉNDEZ MORRO">MENÉNDEZ MORRO</a>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="/contact" data-nav-contact>Contact</a>
+      </nav>
+    </header>
+
+    <section class="gallery" data-gallery aria-label="Project gallery">
+      <div class="gallery-track" data-gallery-track></div>
+      <button class="gallery-arrow gallery-arrow-prev" data-gallery-prev type="button" aria-label="Previous image" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button class="gallery-arrow gallery-arrow-next" data-gallery-next type="button" aria-label="Next image" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </section>
+
+    <!-- Phase 7 will add: .description section, .static-info-row, .static-back-arrow, .static-get-in-touch -->
+
+    <noscript>
+      <div class="noscript-notice">
+        This site needs JavaScript to render its gallery and navigation. Please enable JS or switch to a modern browser.
+      </div>
+    </noscript>
+  </body>
+</html>

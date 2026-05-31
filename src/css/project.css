@@ -1,0 +1,192 @@
+/*
+ * project.css — Project page layout.
+ *
+ * Phase 6 covers the Gallery section. Phase 7 will add the Description
+ * section, static info row, static back arrow, and static Get in touch
+ * link below.
+ *
+ * Scoped to body.project-page. Tokens come from tokens.css; page padding
+ * is the same 40px / 20px convention shared with Home.
+ *
+ * BUILD_SPEC.md §5.2 (Project page), §2 (Captions, animations).
+ */
+
+.project-page {
+  --page-pad-x: 40px;
+  --page-pad-y: 20px;
+  background-color: var(--color-bg-dark);
+  color: var(--color-fg-dark);
+}
+
+/* ---------- Site header (same shape as Home) ---------- */
+
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-header);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--page-pad-y) var(--page-pad-x);
+  color: var(--color-fg-dark);
+  pointer-events: none;
+}
+
+.site-logo,
+.site-nav a {
+  pointer-events: auto;
+}
+
+.site-logo {
+  font-size: var(--fs-logo);
+  font-weight: var(--fw-regular);
+  letter-spacing: 0.02em;
+  color: inherit;
+  text-decoration: none;
+}
+
+.site-nav a {
+  font-size: var(--fs-logo);
+  font-weight: var(--fw-regular);
+  color: inherit;
+  text-decoration: none;
+  transition: opacity var(--dur-ui) var(--ease-ui);
+}
+
+.site-nav a:hover,
+.site-nav a:focus-visible {
+  opacity: 0.7;
+}
+
+/* ---------- Gallery section ---------- */
+
+.gallery {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-content);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: hidden;
+  touch-action: pan-y;            /* allow vertical browser gestures; horizontal handled in JS */
+  background-color: var(--color-bg-dark);
+}
+
+.gallery-track {
+  display: flex;
+  align-items: center;
+  gap: 20px;                       /* spec §5.2 — "small consistent gap ~20px" */
+  height: 70vh;                    /* fixed-height row with breathing room */
+  padding-left: var(--page-pad-x); /* row starts at left page padding */
+  padding-right: var(--page-pad-x);
+  flex: 0 0 auto;
+  will-change: transform;
+}
+
+.gallery-item {
+  position: relative;
+  flex: 0 0 auto;
+  height: 100%;
+  width: auto;
+  margin: 0;
+  cursor: zoom-in;                 /* Phase 8 wires this to fullscreen */
+  background-color: var(--color-bg-dark);
+}
+
+.gallery-item img,
+.gallery-item video,
+.gallery-item picture {
+  display: block;
+  height: 100%;
+  width: auto;
+  object-fit: cover;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+/* ---------- Caption overlay ----------
+ * Per spec §2: bottom-left, white text, subtle backdrop, gracefully absent
+ * when empty (no placeholder, no blank space).
+ */
+.gallery-caption {
+  position: absolute;
+  bottom: var(--space-3);
+  left: var(--space-3);
+  max-width: calc(100% - var(--space-5));
+  padding: var(--space-2) var(--space-3);
+  background-color: rgba(0, 0, 0, 0.45);
+  color: var(--color-fg-dark);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-light);
+  letter-spacing: var(--ls-label);
+  line-height: var(--lh-snug);
+  pointer-events: none;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.gallery-caption:empty {
+  display: none;
+}
+
+/* ---------- Mobile arrow buttons ----------
+ * Hidden by default (desktop has no arrows per spec §5.2). Shown only at
+ * narrow widths where touch is the dominant input. Anchored to viewport
+ * sides for thumb reach.
+ */
+.gallery-arrow {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: var(--z-info);
+  width: 44px;
+  height: 44px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-fg-dark);
+  background-color: rgba(0, 0, 0, 0.45);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: opacity var(--dur-ui) var(--ease-ui);
+}
+
+.gallery-arrow:hover,
+.gallery-arrow:focus-visible {
+  opacity: 0.85;
+}
+
+.gallery-arrow svg {
+  width: 22px;
+  height: 22px;
+}
+
+.gallery-arrow-prev { left: var(--space-3); }
+.gallery-arrow-next { right: var(--space-3); }
+
+@media (max-width: 768px) {
+  /* Spec §5.2 mobile: arrows visible, small and tappable */
+  .gallery-arrow:not([hidden]) {
+    display: flex;
+  }
+  /* Slightly smaller fixed height to leave more breathing room on phones */
+  .gallery-track {
+    height: 60vh;
+    gap: 16px;
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+}
+
+/* ---------- Reduced motion ----------
+ * Gallery scrolling is JS-driven so it picks up prefers-reduced-motion at
+ * runtime (gallery.js). The CSS only needs to make sure transitions don't
+ * keep running.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .gallery-track {
+    scroll-behavior: auto;
+  }
+}
