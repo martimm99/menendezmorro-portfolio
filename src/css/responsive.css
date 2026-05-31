@@ -1,0 +1,16 @@
+/*
+ * responsive.css — placeholder.
+ *
+ * Page-specific media queries land here as Phases 5–10 build the Home,
+ * Project, and Contact layouts. Intentionally empty in Phase 4 — putting
+ * speculative breakpoints here before any page exists would be dead code.
+ *
+ * Breakpoints used across the site (single source of truth: tokens.css
+ * top-of-file comment):
+ *   600px — Home Info row stacks vertically (BUILD_SPEC §5.1)
+ *   768px — Mobile gallery layout, Image fullscreen contain/cover switch
+ *           (BUILD_SPEC §5.2, §5.4)
+ *
+ * The prefers-reduced-motion override lives in reset.css; page-specific
+ * motion adjustments belong here when they appear.
+ */

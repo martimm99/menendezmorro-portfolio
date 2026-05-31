@@ -1,0 +1,87 @@
+/*
+ * base.css — font loading, body defaults, and the dark/light surface system.
+ *
+ * The "dark surface" applies to Home, the Project Gallery section, and the
+ * Contact page background outside of the white panel. The "light surface"
+ * applies to the Project Description section and the Contact page text panel.
+ *
+ * Phase 5+ HTML files should add font preload hints in <head> for the
+ * Regular weight (used by the logo and cover labels) ahead of the other
+ * weights:
+ *
+ *   <link rel="preload" href="/assets/fonts/Geist-Regular.woff2"
+ *         as="font" type="font/woff2" crossorigin>
+ *
+ * Font src paths below are absolute from site root (/assets/...). The
+ * loading mechanism — Netlify publish-root, build-time copy into public/,
+ * or a redirect rule — is settled in Phase 5 when HTML pages first reference
+ * these stylesheets.
+ */
+
+@font-face {
+  font-family: 'Geist';
+  src: url('/assets/fonts/Geist-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist';
+  src: url('/assets/fonts/Geist-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist';
+  src: url('/assets/fonts/Geist-ExtraLight.woff2') format('woff2');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+body {
+  font-family: var(--font-primary);
+  font-weight: var(--fw-regular);
+  font-size: var(--fs-body);
+  line-height: var(--lh-base);
+  background-color: var(--color-bg-dark);
+  color: var(--color-fg-dark);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  transition:
+    background-color var(--dur-theme) var(--ease-ui),
+    color var(--dur-theme) var(--ease-ui);
+}
+
+/* Switches the body to the white description surface. Phase 7 toggles this
+ * class on the Project Description section; it lives here so the token
+ * system stays coherent end-to-end. */
+.surface-description {
+  background-color: var(--color-bg-light);
+  color: var(--color-fg-light);
+}
+
+/* Typography baseline. Page-specific phases override sizes via tokens. */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-snug);
+}
+
+p {
+  line-height: var(--lh-base);
+}
+
+::selection {
+  background-color: var(--color-accent);
+  color: var(--color-bg-dark);
+}
+
+/* Visible focus rings on keyboard interaction; preserved across surfaces. */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}

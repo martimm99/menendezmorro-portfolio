@@ -49,7 +49,14 @@ The site has no build step — files in `public/`, `src/`, `assets/`, and `conte
 
 ## Project structure
 
-See `BUILD_SPEC.md` §8 for the authoritative file layout.
+See `BUILD_SPEC.md` §8 for the authoritative file layout. The CSS layer in
+`src/css/` is organized as `tokens.css` (design vocabulary — colors,
+typography, spacing, animation, z-index), `reset.css` (minimal modern
+reset), `base.css` (font loading, body defaults, dark/light surface system),
+and `responsive.css` (media queries; populated as page-specific styles land
+in later phases). Page-specific stylesheets (`home.css`, `project.css`,
+`contact.css`, `fullscreen.css`) pull from the tokens rather than hardcoding
+values.
 
 ## Deployment
 
