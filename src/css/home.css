@@ -37,17 +37,23 @@
   /* Hidden by default; the active layer gets its clip-path cleared by JS. */
   clip-path: inset(0 0 0 100%);
   -webkit-clip-path: inset(0 0 0 100%);
+  z-index: 0;
 }
 
 .cover-layer.is-active {
   clip-path: inset(0 0 0 0);
   -webkit-clip-path: inset(0 0 0 0);
+  z-index: 1;
 }
 
+/* The animating layer always sits above the active one. Without this, a
+ * "prev" sweep (where the new active layer is earlier in DOM order) would
+ * wipe behind the currently-visible layer and be invisible. */
 .cover-layer.is-animating {
   transition:
     clip-path var(--dur-sweep) var(--ease-sweep),
     -webkit-clip-path var(--dur-sweep) var(--ease-sweep);
+  z-index: 2;
 }
 
 .cover-layer > picture,

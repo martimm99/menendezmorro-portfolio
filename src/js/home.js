@@ -43,10 +43,9 @@ function renderInitial() {
   const project = state.data.projects[state.index];
   paintCover(activeLayer, project.media[0], project.title, /* high priority */ true);
   activeLayer.classList.add('is-active');
-  // Initial text values (the "current" slot in each pair).
+  // Only the "current" slot in each pair gets text. The "next" slot stays
+  // empty until a navigation populates it (and promoteSlots clears it again).
   setSlotText('current', project);
-  // Mirror to next slot so any first-paint quirks have safe values.
-  setSlotText('next', project);
 }
 
 function setSlotText(role, project) {
@@ -66,14 +65,15 @@ function collectSlotPairs() {
   }));
 }
 
-// Promote the next-slot pair to current after a sweep.
+// Promote the next-slot pair to current after a sweep. We copy the just-
+// animated-in text onto the current slot and clear the next slot, so the
+// next slot is invisible (empty) at default position — ready to be re-
+// populated and re-animated on the following navigation.
 function promoteSlots() {
   const pairs = collectSlotPairs();
   for (const { current, next } of pairs) {
-    const currentText = current.textContent;
-    const nextText = next.textContent;
-    current.textContent = nextText;
-    next.textContent = currentText;
+    current.textContent = next.textContent;
+    next.textContent = '';
     current.classList.add('is-active');
     next.classList.remove('is-active');
   }
