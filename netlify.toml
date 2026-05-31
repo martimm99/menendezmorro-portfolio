@@ -1,9 +1,10 @@
 # Netlify configuration for menendezmorro.com
 # See BUILD_SPEC.md §3 (tech stack) and §11 (deployment plan).
-# The site is static — no build command. Files in public/ are served as-is.
-# Redirects live in public/_redirects (Phase 12 will populate the 301s for legacy hash URLs).
+# `npm run build` assembles the publish tree at public/ from src/, assets/,
+# and content/ (see scripts/build.js). Redirects live in public/_redirects.
 
 [build]
+  command = "npm run build"
   publish = "public"
 
 [build.environment]

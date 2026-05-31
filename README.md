@@ -18,9 +18,11 @@ Vanilla HTML, CSS, and native ES modules. No framework, no bundler, no npm runti
 ```sh
 npm install                   # installs dev tooling (sharp, ajv)
 npm run validate              # validates content/projects.json against the schema
-npm run generate-placeholders # writes placeholder JPEGs to assets/media/<slug>/ for any project lacking final media (see BUILD_SPEC.md Appendix D)
+npm run generate-placeholders # writes placeholder JPEGs for projects lacking final media plus the OG image (see BUILD_SPEC.md Appendix D)
 npm run optimize-images       # generates responsive WebP variants from assets/media/
 npm run build-sitemap         # regenerates public/sitemap.xml from content/projects.json
+npm run build                 # assembles the publish tree at public/ from src/, assets/, content/
+npm run preview               # builds then serves public/ at http://localhost:8080
 ```
 
 ### Optimize images
@@ -39,13 +41,21 @@ at smaller dimensions before publishing.
 
 ## Local preview
 
-Serve the `public/` directory with any static server, for example:
-
 ```sh
-npx serve public
+npm run preview
 ```
 
-The site has no build step — files in `public/`, `src/`, `assets/`, and `content/` are served as-is once the structure is wired up in later phases.
+Builds the publish tree into `public/` (from `src/css/`, `src/js/`, `src/html/`, `assets/`, and `content/`) and starts a tiny static HTTP server at **http://localhost:8080**. Press Ctrl+C to stop.
+
+The preview server mirrors Netlify's SPA fallback: any path without a file extension that doesn't match a real file is served as `index.html`, so direct URL access to `/<slug>` or `/contact` works locally exactly like it will in production.
+
+To rebuild without the server (e.g. to inspect what would land on Netlify), use `npm run build`. Outputs go to `public/`; static placeholders like `public/404.html`, `public/admin/`, and `public/_redirects` are preserved across builds.
+
+To change the port, set `PORT`:
+
+```sh
+PORT=3000 npm run preview
+```
 
 ## Project structure
 

@@ -1,22 +1,22 @@
 /**
  * generate-placeholders.js
  *
- * Generates placeholder JPEG media for every project in content/projects.json.
- * Used during Phase 2 to bootstrap the site visually before the owner uploads
- * real photography and design assets via the CMS.
+ * Generates placeholder media used during early phases, before the owner
+ * uploads finals via the CMS. Two artifacts are produced:
  *
- * See BUILD_SPEC.md Appendix D for the placeholder strategy. Per project,
- * four placeholders are produced under assets/media/<slug>/:
+ * 1. Per-project gallery placeholders (BUILD_SPEC.md Appendix D):
+ *      assets/media/<slug>/<slug>-1.jpg   1920×1080  landscape (cover)
+ *      assets/media/<slug>/<slug>-2.jpg   1080×1920  vertical
+ *      assets/media/<slug>/<slug>-3.jpg   1080×1080  square
+ *      assets/media/<slug>/<slug>-4.jpg   2400×1000  wide
+ *    Dark canvas (#1a1a1a), project title centered (#aaaaaa), "N / 4" index
+ *    below.
  *
- *   <slug>-1.jpg  1920×1080  landscape (cover)
- *   <slug>-2.jpg  1080×1920  vertical
- *   <slug>-3.jpg  1080×1080  square
- *   <slug>-4.jpg  2400×1000  wide
+ * 2. Open Graph image (referenced by site.json.ogImage):
+ *      assets/og-image.jpg                1200×630
+ *    Same visual language: "MENÉNDEZ MORRO" on top, smaller subtitle below.
  *
- * Each image is a dark canvas (#1a1a1a) with the project title centered in
- * light gray (#aaaaaa), and an "N / 4" index below the title. The script is
- * idempotent and safe to re-run when new projects are added without final
- * media.
+ * Both outputs are deterministic and idempotent — safe to re-run any time.
  *
  * Usage:
  *   npm run generate-placeholders
@@ -30,10 +30,12 @@ import sharp from 'sharp';
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const projectsPath = resolve(projectRoot, 'content/projects.json');
 const mediaRoot = resolve(projectRoot, 'assets/media');
+const ogImagePath = resolve(projectRoot, 'assets/og-image.jpg');
 
 const BG = '#1a1a1a';
 const FG = '#aaaaaa';
 const TOTAL = 4;
+const FONT_STACK = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
 const VARIANTS = [
   { index: 1, width: 1920, height: 1080 },
@@ -63,11 +65,30 @@ function buildSvg({ title, index, width, height }) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
   <style>
-    .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-weight: 500; }
-    .index { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-weight: 400; }
+    .title { font-family: ${FONT_STACK}; font-weight: 500; }
+    .index { font-family: ${FONT_STACK}; font-weight: 400; }
   </style>
   <text class="title" x="50%" y="${titleY}" fill="${FG}" font-size="${titleSize}" text-anchor="middle" dominant-baseline="middle">${safeTitle}</text>
   <text class="index" x="50%" y="${indexY}" fill="${FG}" font-size="${indexSize}" text-anchor="middle" dominant-baseline="hanging">${index} / ${TOTAL}</text>
+</svg>`;
+}
+
+function buildOgSvg({ width, height, brand, tagline }) {
+  const minSide = Math.min(width, height);
+  const brandSize = Math.round(minSide * 0.1);
+  const taglineSize = Math.round(minSide * 0.04);
+  const gap = Math.round(minSide * 0.06);
+  const brandY = Math.round(height / 2);
+  const taglineY = brandY + gap;
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  <style>
+    .brand   { font-family: ${FONT_STACK}; font-weight: 500; letter-spacing: 0.02em; }
+    .tagline { font-family: ${FONT_STACK}; font-weight: 300; }
+  </style>
+  <text class="brand"   x="50%" y="${brandY}"   fill="${FG}" font-size="${brandSize}"   text-anchor="middle" dominant-baseline="middle">${escapeXml(brand)}</text>
+  <text class="tagline" x="50%" y="${taglineY}" fill="${FG}" font-size="${taglineSize}" text-anchor="middle" dominant-baseline="hanging">${escapeXml(tagline)}</text>
 </svg>`;
 }
 
@@ -88,6 +109,24 @@ async function generateOne({ slug, title }, variant) {
     .jpeg({ quality: 75, chromaSubsampling: '4:2:0', mozjpeg: true })
     .toFile(filePath);
   return filePath;
+}
+
+async function generateOgImage() {
+  const width = 1200;
+  const height = 630;
+  const svg = Buffer.from(buildOgSvg({
+    width,
+    height,
+    brand: 'MENÉNDEZ MORRO',
+    tagline: 'Portfolio of design and photography'
+  }));
+  await sharp({
+    create: { width, height, channels: 3, background: BG }
+  })
+    .composite([{ input: svg, top: 0, left: 0 }])
+    .jpeg({ quality: 80, chromaSubsampling: '4:2:0', mozjpeg: true })
+    .toFile(ogImagePath);
+  return ogImagePath;
 }
 
 async function main() {
@@ -124,10 +163,14 @@ async function main() {
     process.stdout.write('\n');
   }
 
+  const ogFile = await generateOgImage();
+  const ogSize = statSync(ogFile).size;
+  console.log(`  og-image.jpg (1200×630, ${(ogSize / 1024).toFixed(1)} KB)`);
+
   const kb = (totalBytes / 1024).toFixed(1);
-  console.log(`generate-placeholders: wrote ${count} file(s), ${kb} KB total.`);
+  console.log(`generate-placeholders: wrote ${count} project file(s) (${kb} KB) plus og-image.jpg.`);
   if (oversized > 0) {
-    console.error(`generate-placeholders: ${oversized} file(s) exceeded the 60 KB per-file target.`);
+    console.error(`generate-placeholders: ${oversized} project file(s) exceeded the 60 KB per-file target.`);
     process.exit(1);
   }
 }
