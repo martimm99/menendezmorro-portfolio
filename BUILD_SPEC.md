@@ -1,8 +1,11 @@
 # MENÉNDEZ MORRO — Portfolio Rebuild Build Spec
 
-**Version:** 1.3 (Approved)
+**Version:** 1.4 (Approved)
 **Date:** May 31, 2026
 **Status:** Approved — build authorized
+
+**Changes from v1.3:**
+- Appendix C location fields normalized to a single city (no compound "City A — City B" values). Three projects affected: Morro (Mallorca — Berlin → Mallorca), Titles (Girona — Mallorca → Girona), Concerts (Madrid — Berlin → Madrid). The first city in each former pair is retained. Lets the Home Info row's LOCATION column shrink, with consistent column positions across projects.
 
 **Changes from v1.2:**
 - Appendix C year fields normalized to a single (latest) year. Ranges like "2025–2026" become "2026" so the Info row's middle column has a consistent width and the description column doesn't shift between projects.
@@ -403,7 +406,7 @@ For each project, fields:
 - Slug (text, auto-generated from title, editable)
 - Role (text, required)
 - Year (text, required) — a single year (e.g., "2026"). Ranges are no longer used; pick the latest year of work on the project.
-- Location (text) — supports compound values (e.g., "Madrid — Berlin")
+- Location (text) — a single city (e.g., "Madrid"). Compound "City A — City B" values are no longer used; pick the primary city of the project.
 - Type (select: design / photo)
 - Subcategory (multi-select: branding, web, titles, architecture, live — preserved for future filtering; UI not exposed in v1.2)
 - Short description (text, shown in Home Info row)
@@ -681,7 +684,7 @@ For each project, all metadata fields are listed. Long descriptions are delibera
 - **Type:** `design`
 - **Role:** Branding and Art Direction
 - **Year:** 2026
-- **Location:** Mallorca — Berlin
+- **Location:** Mallorca
 - **Short description:** Digital design studio.
 - **Links:** `[{ url: "https://www.instagram.com/uepmorro/", text: "@uepmorro" }]`
 - **Duration:** 1 month
@@ -736,7 +739,7 @@ For each project, all metadata fields are listed. Long descriptions are delibera
 - **Type:** `design`
 - **Role:** Graphic Design
 - **Year:** 2023
-- **Location:** Girona — Mallorca
+- **Location:** Girona
 - **Short description:** Titles design for audiovisual projects.
 - **Links:** `[{ url: "https://www.youtube.com/watch?v=D46HaA131vU", text: "Un altre petó" }, { url: "https://www.youtube.com/watch?v=SzteXtJIies", text: "Me Olvido" }]`
 - **Duration:** 2 weeks
@@ -760,7 +763,7 @@ For each project, all metadata fields are listed. Long descriptions are delibera
 - **Type:** `photo`
 - **Role:** Photography and Postproduction
 - **Year:** 2026
-- **Location:** Madrid — Berlin
+- **Location:** Madrid
 - **Short description:** Concert photography for artists, labels and media.
 - **Links:** `[{ url: "https://fleek.25gramos.com/live_show/live-show-w-gloosito/", text: "25Gramos" }]`
 - **Duration:** 3 days
