@@ -1,3 +1,11 @@
 # Netlify redirects
-# Phase 12 will populate 301s for the legacy hash URLs listed in BUILD_SPEC.md §4
-# (e.g. /#morro -> /morro, /#gestion_reaviva -> /gestion-reaviva, etc.).
+
+# SPA shell: any path that doesn't match an existing file falls through to
+# the home shell. main.js inspects the pathname and renders the matching
+# page (Home, Project placeholder, Contact placeholder). Phase 6 and Phase 9
+# will replace this with explicit /contact /contact.html and /* /project.html
+# rewrites once those templates exist.
+/*    /index.html   200
+
+# Phase 12 will add 301s for legacy hash URLs listed in BUILD_SPEC.md §4
+# (/#morro -> /morro, /#gestion_reaviva -> /reaviva, etc.).
