@@ -1,0 +1,18 @@
+{
+  "siteTitle": "MENÉNDEZ MORRO",
+  "siteDescription": "Menéndez Morro — Portfolio of design and photography projects by Martí Menéndez. Branding, UX/UI, web design, and architecture photography.",
+  "siteUrl": "https://menendezmorro.com",
+  "ogImage": "assets/og-image.jpg",
+  "contactEmail": "martimm99@gmail.com",
+  "contactCopy": [
+    "MENÉNDEZ MORRO™ is a creative space that gathers Design and Photography projects. Officially established in 2023, based in Mallorca, Spain, and collaborator to multiple clients across Europe.",
+    "Especially interested in music and culture projects. Focused on Graphic & Web Design and Art Direction.",
+    "Web Design & Development by Martí Menéndez."
+  ],
+  "socials": [
+    { "label": "INSTAGRAM", "url": "https://www.instagram.com/uepmorro/", "displayText": "@uepmorro" }
+  ],
+  "analytics": {
+    "googleAnalyticsId": "G-J5D6SHTPS7"
+  }
+}
