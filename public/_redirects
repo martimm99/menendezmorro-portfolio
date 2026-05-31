@@ -1,11 +1,12 @@
 # Netlify redirects
 
-# SPA shell: any path that doesn't match an existing file falls through to
-# the home shell. main.js inspects the pathname and renders the matching
-# page (Home, Project placeholder, Contact placeholder). Phase 6 and Phase 9
-# will replace this with explicit /contact /contact.html and /* /project.html
-# rewrites once those templates exist.
-/*    /index.html   200
+# Template routing. /contact still resolves to index.html until Phase 9 adds
+# the Contact template — the home shell shows a placeholder for it. Any
+# other unmatched path is treated as a project slug and serves project.html;
+# its main.js inspects the slug and either renders the project (Phase 6) or
+# silently redirects to / when the slug is unknown.
+/contact   /index.html     200
+/*         /project.html   200
 
 # Phase 12 will add 301s for legacy hash URLs listed in BUILD_SPEC.md §4
 # (/#morro -> /morro, /#gestion_reaviva -> /reaviva, etc.).

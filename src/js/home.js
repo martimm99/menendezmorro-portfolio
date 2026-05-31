@@ -182,7 +182,10 @@ function setupClickHandlers() {
 function goToCurrentProject(e) {
   e.preventDefault();
   const project = state.data.projects[state.index];
-  navigateTo(`/${project.slug}`);
+  // Cross-shell: a full reload fetches project.html from Netlify, which
+  // initializes the project page. Phase 10 will swap this for a smooth
+  // vertical-sweep transition.
+  window.location.assign(`/${project.slug}`);
 }
 
 function setupWheel() {

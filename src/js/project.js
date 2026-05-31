@@ -61,23 +61,22 @@ function updateHead(site, project) {
 }
 
 function setupNavigationStubs() {
-  // The logo and Contact link are present in the Project header even
-  // before Phase 7 wires the static elements. They should still feel
-  // like in-app navigation (no page reload).
+  // Cross-shell links use window.location.assign so Netlify serves the
+  // correct HTML template (index.html for / and /contact, project.html
+  // for /<slug>). Phase 10 will replace these full reloads with smooth
+  // vertical-sweep transitions.
   const logo = document.querySelector('[data-nav-home]');
   if (logo) {
     logo.addEventListener('click', (e) => {
       e.preventDefault();
-      window.history.pushState(null, '', '/');
-      window.dispatchEvent(new CustomEvent('route-change', { detail: { url: '/' } }));
+      window.location.assign('/');
     });
   }
   const contact = document.querySelector('[data-nav-contact]');
   if (contact) {
     contact.addEventListener('click', (e) => {
       e.preventDefault();
-      window.history.pushState(null, '', '/contact');
-      window.dispatchEvent(new CustomEvent('route-change', { detail: { url: '/contact' } }));
+      window.location.assign('/contact');
     });
   }
 }

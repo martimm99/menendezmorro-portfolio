@@ -54,10 +54,19 @@ function resolveRequestPath(urlPath) {
     return filePath;
   }
 
-  // SPA fallback: extensionless paths that don't match a file → index.html.
+  // Template fallback — mirrors public/_redirects so local preview matches
+  // Netlify production. Extensionless paths that don't map to a real file
+  // resolve to index.html for /contact (until Phase 9), or to project.html
+  // for any other slug.
   if (!extname(safe)) {
-    const fallback = join(ROOT, 'index.html');
-    if (existsSync(fallback)) return fallback;
+    if (safe === '/contact' || safe === '/contact/') {
+      const home = join(ROOT, 'index.html');
+      if (existsSync(home)) return home;
+    }
+    const project = join(ROOT, 'project.html');
+    if (existsSync(project)) return project;
+    const home = join(ROOT, 'index.html');
+    if (existsSync(home)) return home;
   }
   return null;
 }
