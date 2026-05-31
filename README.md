@@ -23,6 +23,20 @@ npm run optimize-images       # generates responsive WebP variants from assets/m
 npm run build-sitemap         # regenerates public/sitemap.xml from content/projects.json
 ```
 
+### Optimize images
+
+`npm run optimize-images` produces two WebP variants per source image
+(`<name>-mobile.webp` at max 768px wide, `<name>-desktop.webp` at max 1920px
+wide) in the same folder as the source. The mobile variant is skipped when
+the source is already ≤ 768px wide. The script is idempotent — a variant is
+regenerated only when its mtime is older than the source, so re-running after
+adding a single new image is cheap. Pass `-- --force` to regenerate every
+variant (e.g. after changing the quality setting); pass `-- --slug=<slug>` to
+restrict the run to one project folder. Every output is checked against the
+300 KB per-image budget from BUILD_SPEC.md §9; if a variant exceeds it, the
+run fails with the offending file path so the owner can re-export the source
+at smaller dimensions before publishing.
+
 ## Local preview
 
 Serve the `public/` directory with any static server, for example:
