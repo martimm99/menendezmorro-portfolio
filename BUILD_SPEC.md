@@ -1,8 +1,17 @@
 # MENÉNDEZ MORRO — Portfolio Rebuild Build Spec
 
-**Version:** 1.1 (Approved)
-**Date:** May 29, 2026
+**Version:** 1.2 (Approved)
+**Date:** May 30, 2026
 **Status:** Approved — build authorized
+
+**Changes from v1.1:**
+- New project list (8 projects, replaces 13 legacy projects) — see Appendix C.
+- `link` / `linkText` fields replaced by `links` array (multiple links per project).
+- Media items get optional `caption` field (per-image text overlay).
+- Section 5.4 (Image fullscreen) rewritten — desktop behavior now full-viewport "Home-like" with horizontal sweep, mobile behavior unchanged from v1.1.
+- Home Info row gets explicit responsive rule (single line ≥ 600px with adaptive sizing, stacks below).
+- Gallery videos: autoplay when 90% visible in viewport, no controls.
+- Phase 2 redefined: data is created from scratch (not migrated from legacy), with programmatically-generated placeholder media.
 
 This document defines what we are building and how. It is the contract between client and builder for the rebuild of `menendezmorro.com`. It will be handed to Claude Code as the implementation brief. Both parties must approve this document before any code is written.
 
@@ -61,6 +70,9 @@ These terms are used consistently in code, documentation, and conversation.
 - **Gallery section** — top portion of the page, shows project media.
 - **Description section** — below the gallery, white background, long-form text.
 
+### Captions
+Small overlay text positioned at the **bottom-left** of any image or video, in both the Gallery section and Image fullscreen. Captions are per-media-item (each image or video in `media[]` can have its own `caption` text). Captions are optional and gracefully absent when empty — no placeholder, no blank space. Primarily used by category projects (Titles, Architecture, Concerts) to label individual pieces (e.g., artist name + venue for a concert photo).
+
 ### Image fullscreen
 A modal-like state opened by clicking/tapping an image in the gallery. Shows the image at full screen with a close button (X, top-right) and supports keyboard arrow navigation between images.
 
@@ -111,18 +123,24 @@ A modal-like state opened by clicking/tapping an image in the gallery. Shows the
 - Generated automatically from project title; editable manually in the CMS.
 - Must be unique. CMS will warn on conflict.
 
-**Slug migration map** (from current site to new site):
+**Slug migration map** (legacy hash URLs → new clean URLs):
 
-| Old | New |
-|-----|-----|
-| `#morro` | `/morro` |
-| `#gestion_reaviva` | `/gestion-reaviva` |
-| `#festivalz` | `/festival-z` |
-| `#un_altre_peto` | `/un-altre-peto` |
-| `#me_olvido` | `/me-olvido` |
-| ... | ... (all underscores → hyphens) |
+Eight projects in the new portfolio. The new slugs are canonical; legacy hash URLs that map to a kept project redirect to the new slug. Legacy URLs for removed projects redirect to Home.
 
-301 redirects will be configured on Netlify so that any old `#xxx` links shared externally still work.
+| New project | New URL | Redirected from |
+|-------------|---------|-----------------|
+| Morro | `/morro` | `/#morro` |
+| Lufthansa Innovation Hub | `/lufthansa-innovation-hub` | (new project, no legacy URL) |
+| Build A Rocket | `/build-a-rocket` | (new project, no legacy URL) |
+| Gestión Reaviva | `/reaviva` | `/#gestion_reaviva` |
+| Festival Z | `/festival-z` | `/#festivalz` |
+| Titles | `/titles` | `/#me_olvido`, `/#un_altre_peto` |
+| Architecture | `/architecture` | `/#binifaldo` |
+| Concerts | `/concerts` | `/#gloosito`, `/#madison_beer`, `/#alequi`, `/#delaossa`, `/#maylaya`, `/#mda`, `/#coaatmca` |
+
+All legacy hash URLs not in the above map (e.g., `/#nicki_nicole`, removed projects) redirect to Home (`/`).
+
+301 redirects configured in `public/_redirects` (Netlify) so any shared legacy link still resolves correctly.
 
 ---
 
@@ -151,6 +169,15 @@ A modal-like state opened by clicking/tapping an image in the gallery. Shows the
 - The cover image for the currently-shown project is loaded with `fetchpriority="high"`.
 - The next and previous project covers are preloaded with `fetchpriority="low"`.
 - All other covers are lazy-loaded.
+
+**Info row responsive behavior:**
+
+The Info row at the bottom of the viewport shows three columns: LOCATION / YEAR / DESCRIPTION. Content lengths vary significantly across projects (LOCATION can be 6–17 chars, DESCRIPTION can be 22–53 chars). The row must always look tidy at every screen size.
+
+- **≥ 600px viewport width:** all three columns stay on a single line. Text size scales with available width using CSS `clamp()` (approximate ranges: label ~10–12px, value ~12–16px). Generous gaps between columns (~48px on desktop, scaling down). Minimum text size floor: **12px** for the value (to remain readable).
+- **< 600px viewport width:** the three columns stack vertically (LOCATION → YEAR → DESCRIPTION on three rows). Text returns to a comfortable readable size; the row becomes taller but remains clean.
+
+DESCRIPTION text never truncates with ellipsis — information is preserved. Long descriptions either fit (desktop) or get their own line below LOCATION + YEAR (mobile).
 
 ### 5.2 Project page
 
@@ -201,7 +228,9 @@ A modal-like state opened by clicking/tapping an image in the gallery. Shows the
 - **Scroll distance per event:** approximately 30% of the gallery's visible width, scaled to screen size. Not snap-to-image, not pixel-by-pixel. Tunable post-build.
 - **Click an image** → opens Image fullscreen.
 - **Past the last image:** continuing to scroll forward → triggers the **Snap transition** to the Description section, which lands snapped to the top of the viewport. The reverse (scroll up while at the top of the Description section) → Snap transition back to the Gallery section at the last image position.
-- **Videos in gallery:** autoplay muted, loop, no controls. Click to open in Image fullscreen (where they get controls).
+- **Videos in gallery:** play muted, loop, **no controls visible**. Each video **autoplays when at least 90% of the video is visible in the viewport** (intersection observer with `threshold: 0.9`); pauses when less than 90% is visible. Click to open in Image fullscreen (where full HTML5 controls become available).
+
+- **Captions:** each media item in the gallery (image or video) can have an optional caption. When present, the caption appears as small overlay text positioned at the **bottom-left** of the media item, white text with a subtle backdrop for legibility. When the caption is empty or absent, nothing renders (no placeholder, no blank space).
 
 **Gallery section — Mobile:**
 
@@ -238,14 +267,46 @@ A modal-like state opened by clicking/tapping an image in the gallery. Shows the
 
 ### 5.4 Image fullscreen (modal-like state)
 
-- Triggered by clicking/tapping an image in the Project page Gallery.
-- Image shown at maximum size that fits viewport while preserving aspect ratio.
-- **X button** top-right corner.
-- **Keyboard arrows** (left/right) navigate to previous/next image in the same project.
-- **Esc key** closes the fullscreen.
-- **Click outside the image** closes the fullscreen.
-- For videos: shows video with native HTML5 controls, autoplay, loop.
-- Closes back to the Gallery section at the same scroll position.
+- Triggered by clicking/tapping an image or video in the Project page Gallery.
+- On Image fullscreen, the page's static elements (Header bar logo, Get in touch, Info row, Back arrow) are **hidden** — true immersion, only the media and the close X are visible.
+
+**Desktop behavior (≥ 768px width):**
+
+- Media fills the entire viewport — edge to edge, **cover scaling** (`object-fit: cover`). Same scaling behavior as Home covers. Parts may be cropped if aspect ratios don't match; this is intentional and matches the Home experience.
+- **Horizontal sweep animation** between media items (identical to the Home Horizontal sweep). The same animation language is used.
+- **Navigation gestures (same as Home):**
+  - Mouse wheel / trackpad scroll → horizontal sweep to next/previous media item.
+  - Drag → horizontal sweep.
+  - Keyboard left/right arrows → next/previous.
+- **At ends:** loops. Forward from last image → first image. Back from first image → last image.
+- **X button**, top-right corner, to close.
+- **Esc key** also closes.
+- **Click outside the media** does NOT close (because media fills the viewport, there is no "outside").
+
+**Mobile behavior (< 768px width):**
+
+- Media is shown at the **maximum size that fits the viewport** while preserving aspect ratio (`object-fit: contain`), with minimal margins on the sides. Does NOT fill the viewport edge-to-edge — small space around the image is intentional and matches v1.1 spec behavior.
+- **Navigation gestures:**
+  - **Horizontal swipe** → previous / next media item.
+  - **Tap left or right edge** of the viewport (left third / right third) → previous / next.
+- **At ends:** loops (same as desktop — forward from last → first).
+- **X button**, top-right corner, to close.
+- **Tap outside the image** (in the margin area) also closes.
+
+**Captions in fullscreen:**
+
+- Caption appears as small overlay text in the **bottom-left** corner (same position and styling as in the Gallery section).
+- Hidden when empty.
+
+**Video behavior in fullscreen:**
+
+- Full HTML5 controls visible (play / pause / scrub / volume / fullscreen). User can interact normally with the video.
+- Autoplays on entry, but plays with sound (user has explicitly opened it).
+- Click X / Esc / tap outside (mobile only) to close.
+
+**Closing returns to Gallery section:**
+
+- The Gallery section is repositioned to the **last media item the user viewed in fullscreen** (not the one they originally clicked from). This avoids jarring jumps if the user navigated several items deep before closing.
 
 ---
 
@@ -259,22 +320,23 @@ A modal-like state opened by clicking/tapping an image in the gallery. Shows the
     {
       "id": "morro",
       "slug": "morro",
-      "title": "MORRO",
-      "role": "Branding & UX/UI Design",
-      "year": "2024",
-      "location": "Mallorca",
+      "title": "Morro",
+      "role": "Branding and Art Direction",
+      "year": "2026",
+      "location": "Mallorca — Berlin",
       "type": "design",
-      "subcategory": ["branding"],
+      "subcategory": [],
       "description": "Digital design studio.",
-      "longDescription": "Branding and UX/UI design for MORRO...\n\nThe goal was...",
-      "link": "https://morrostudio.com/",
-      "linkText": "morrostudio.com",
-      "duration": "3 months",
-      "cost": "1900€",
+      "longDescription": "Branding and art direction for Morro...\n\nThe goal was...",
+      "links": [
+        { "url": "https://www.instagram.com/uepmorro/", "text": "@uepmorro" }
+      ],
+      "duration": "1 month",
+      "cost": "Collaboration",
       "media": [
-        { "type": "image", "src": "assets/media/morro/morro_1.jpg", "alt": "MORRO cover" },
-        { "type": "image", "src": "assets/media/morro/morro_2.jpg", "alt": "MORRO image 2" },
-        { "type": "video", "src": "assets/media/morro/morro_7.mp4", "poster": "assets/media/morro/morro_7.jpg" }
+        { "type": "image", "src": "assets/media/morro/morro-1.jpg", "alt": "Morro image 1", "caption": "" },
+        { "type": "image", "src": "assets/media/morro/morro-2.jpg", "alt": "Morro image 2", "caption": "" },
+        { "type": "video", "src": "assets/media/morro/morro-3.mp4", "poster": "assets/media/morro/morro-3.jpg", "caption": "" }
       ]
     }
   ]
@@ -284,9 +346,11 @@ A modal-like state opened by clicking/tapping an image in the gallery. Shows the
 **Field notes:**
 - `id` and `slug` are usually identical. `id` is internal; `slug` appears in the URL.
 - `type`: either `"design"` or `"photo"`. Unused in UI but preserved for future filtering.
-- `subcategory`: always an array. Unused in UI but preserved for future filtering. (Current data has both string and array forms — will be normalized to array during migration.)
+- `subcategory`: always an array. Currently unused in UI; preserved for future filtering. Empty arrays are valid.
+- `links`: array of `{url, text}` objects. Can be empty (`[]`) for projects with no external links — the UI hides the LINKS section in that case. Can have multiple entries for projects with several relevant links (e.g., Titles, Concerts).
 - `media[0]` is the cover image shown on Home AND the first image of the project gallery.
-- `alt` text: required for accessibility. Auto-generated as `<Project title> image N` if not provided.
+- `media[].alt` text: required for accessibility. Auto-generated as `<Project title> image N` if not provided in CMS.
+- `media[].caption`: optional. Per-image overlay text shown at bottom-left in Gallery and Image fullscreen. Empty/absent → no overlay rendered.
 - Videos: `poster` is optional but recommended (used as fallback if video fails to load).
 
 ### 6.2 `site.json` structure (new file — site-wide settings)
@@ -335,20 +399,22 @@ For each project, fields:
 - Title (text, required)
 - Slug (text, auto-generated from title, editable)
 - Role (text, required)
-- Year (text, required)
-- Location (text)
+- Year (text, required) — supports ranges (e.g., "2023–2026")
+- Location (text) — supports compound values (e.g., "Madrid — Berlin")
 - Type (select: design / photo)
-- Subcategory (multi-select: branding, web, titles, architecture, live)
+- Subcategory (multi-select: branding, web, titles, architecture, live — preserved for future filtering; UI not exposed in v1.2)
 - Short description (text, shown in Home Info row)
 - Long description (markdown, shown on Project page)
-- External link (URL)
-- Link display text (text)
+- **Links** (list, drag-to-reorder, can be empty):
+  - URL (URL, required if entry present)
+  - Display text (text, required if entry present)
 - Duration (text)
 - Cost (text)
 - **Media** (list, drag-to-reorder):
   - Type (select: image / video)
   - File (image or video upload)
   - Alt text (text, for accessibility)
+  - Caption (text, optional) — shown as overlay at bottom-left in Gallery and fullscreen
   - Poster (image upload, videos only)
 
 **Drag-to-reorder** works at two levels: project order on Home, and media order within a project's gallery.
@@ -600,3 +666,116 @@ Things deliberately deferred to build time, with reasonable defaults noted:
 - Plausible or other privacy-friendly analytics replacement.
 - Filtering UI re-introduction.
 - Image optimization automation via GitHub Actions.
+
+## Appendix C: Initial project list (v1.2)
+
+Eight projects, in Home display order (first to last as the user scrolls forward).
+
+For each project, all metadata fields are listed. Long descriptions are deliberately omitted in this spec — they will be authored directly via the Decap CMS once the site is live. Media files are placeholder (programmatically generated in Phase 2) until owner provides finals via CMS.
+
+### 1. Morro
+- **Slug:** `morro`
+- **Type:** `design`
+- **Role:** Branding and Art Direction
+- **Year:** 2026
+- **Location:** Mallorca — Berlin
+- **Short description:** Digital design studio.
+- **Links:** `[{ url: "https://www.instagram.com/uepmorro/", text: "@uepmorro" }]`
+- **Duration:** 1 month
+- **Cost:** Collaboration
+
+### 2. Lufthansa Innovation Hub
+- **Slug:** `lufthansa-innovation-hub`
+- **Type:** `design`
+- **Role:** Graphic Design & Motion Graphics
+- **Year:** 2025–2026
+- **Location:** Berlin
+- **Short description:** Digital solutions for the next in travel and mobility.
+- **Links:** `[{ url: "https://lh-innovationhub.de/en/", text: "Website" }]`
+- **Duration:** 9 months
+- **Cost:** Employee
+
+### 3. Build A Rocket
+- **Slug:** `build-a-rocket`
+- **Type:** `design`
+- **Role:** Web Design
+- **Year:** 2026
+- **Location:** Berlin
+- **Short description:** Full-service gaming agency.
+- **Links:** `[{ url: "https://buildarocket.com/en", text: "Website" }]`
+- **Duration:** 3.5 months
+- **Cost:** 4.000€
+
+### 4. Gestión Reaviva
+- **Slug:** `reaviva`
+- **Type:** `design`
+- **Role:** Branding and Web Design & Development
+- **Year:** 2025
+- **Location:** Mallorca
+- **Short description:** Technical services for construction projects.
+- **Links:** `[{ url: "https://www.gestionreaviva.com/", text: "Website" }]`
+- **Duration:** 3 months
+- **Cost:** 4.000€
+
+### 5. Festival Z
+- **Slug:** `festival-z`
+- **Type:** `design`
+- **Role:** Creative Direction
+- **Year:** 2021–2026
+- **Location:** Girona
+- **Short description:** Performing arts festival.
+- **Links:** `[{ url: "https://www.festivalz.org/en/", text: "Website" }]`
+- **Duration:** 5 months
+- **Cost:** 4.500€
+
+### 6. Titles
+- **Slug:** `titles`
+- **Type:** `design`
+- **Role:** Graphic Design
+- **Year:** 2023
+- **Location:** Girona — Mallorca
+- **Short description:** Titles design for audiovisual projects.
+- **Links:** `[{ url: "https://www.youtube.com/watch?v=D46HaA131vU", text: "Un altre petó" }, { url: "https://www.youtube.com/watch?v=SzteXtJIies", text: "Me Olvido" }]`
+- **Duration:** 2 weeks
+- **Cost:** Collaboration
+- **Notes:** Category project — per-media captions expected (e.g., title sequence names).
+
+### 7. Architecture
+- **Slug:** `architecture`
+- **Type:** `photo`
+- **Role:** Photography and Postproduction
+- **Year:** 2024–2026
+- **Location:** Mallorca
+- **Short description:** Photography service for real estate agencies.
+- **Links:** `[]` (none)
+- **Duration:** 2–5 days
+- **Cost:** 250–800€
+- **Notes:** Category project — per-media captions expected (e.g., property names, locations).
+
+### 8. Concerts
+- **Slug:** `concerts`
+- **Type:** `photo`
+- **Role:** Photography and Postproduction
+- **Year:** 2023–2026
+- **Location:** Madrid — Berlin
+- **Short description:** Concert photography for artists, labels and media.
+- **Links:** `[{ url: "https://fleek.25gramos.com/live_show/live-show-w-gloosito/", text: "25Gramos" }]`
+- **Duration:** 3 days
+- **Cost:** 250–800€
+- **Notes:** Category project — per-media captions expected (e.g., artist + venue + year).
+
+## Appendix D: Phase 2 placeholder media strategy
+
+During Phase 2, programmatically-generated placeholder images are created in `assets/media/<slug>/` for each project to allow Phases 5–10 to render visually meaningful results.
+
+**Generation rules:**
+- Use `sharp` (already a dev dependency) to compose images.
+- Per project, generate 4 placeholders with varied aspect ratios:
+  - `<slug>-1.jpg` — 1920×1080 landscape (cover)
+  - `<slug>-2.jpg` — 1080×1920 vertical
+  - `<slug>-3.jpg` — 1080×1080 square
+  - `<slug>-4.jpg` — 2400×1000 wide
+- Each placeholder: solid dark background (#1a1a1a), the project title centered in light gray text (#aaaaaa), with the image index (e.g., "1 / 4") below in smaller text.
+- File size target: under 60 KB per placeholder.
+
+**Lifecycle:** placeholders are committed to git so the site is testable end-to-end immediately. They will be progressively replaced by real media via the Decap CMS once final images and videos are ready. The owner does not need to provide placeholder images at any point.
