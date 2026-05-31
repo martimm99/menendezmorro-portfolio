@@ -16,10 +16,11 @@ Vanilla HTML, CSS, and native ES modules. No framework, no bundler, no npm runti
 ## Scripts
 
 ```sh
-npm install              # installs dev tooling (sharp, ajv)
-npm run validate         # validates content/projects.json against the schema
-npm run optimize-images  # generates responsive WebP variants from assets/media/
-npm run build-sitemap    # regenerates public/sitemap.xml from content/projects.json
+npm install                   # installs dev tooling (sharp, ajv)
+npm run validate              # validates content/projects.json against the schema
+npm run generate-placeholders # writes placeholder JPEGs to assets/media/<slug>/ for any project lacking final media (see BUILD_SPEC.md Appendix D)
+npm run optimize-images       # generates responsive WebP variants from assets/media/
+npm run build-sitemap         # regenerates public/sitemap.xml from content/projects.json
 ```
 
 ## Local preview
