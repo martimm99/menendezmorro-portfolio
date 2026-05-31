@@ -162,8 +162,8 @@
  * always start at the same X position regardless of which project is
  * showing. Column widths scale with viewport via clamp() but are
  * constant per viewport, so the columns never shift between projects.
- * LOCATION column min/max chosen to fit the longest current location
- * ("Mallorca — Berlin", "Girona — Mallorca") at the max font size. */
+ * LOCATION is now single-city only (BUILD_SPEC.md v1.4 §6.1 Appendix C),
+ * so the column can be much narrower than the v1.3 sizing. */
 .info-row {
   position: fixed;
   left: var(--page-pad-x);
@@ -172,10 +172,10 @@
   margin: 0;
   display: grid;
   grid-template-columns:
-    clamp(110px, 13vw, 180px)
+    clamp(80px, 8vw, 110px)
     clamp(50px, 5vw, 70px)
     1fr;
-  column-gap: clamp(16px, 3vw, 48px);
+  column-gap: clamp(12px, 2vw, 32px);
   align-items: end;
   color: var(--color-fg-dark);
 }
