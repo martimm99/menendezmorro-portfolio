@@ -217,23 +217,26 @@ function setupSnapTransition() {
   // gallery. We tell gestures apart by the timestamp gap between
   // consecutive wheel events (same idea as the Home wheel burst detection).
   //
-  // The listener is on window, not on the section, for two reasons:
-  //   1. Static elements (header logo, Get in touch, info row, back arrow)
-  //      are siblings of .project-shell — not descendants of
-  //      .section-description — so wheel events fired with the cursor
-  //      over them bubble straight to body and never pass through the
-  //      section. A section-scoped listener missed them, which is why
-  //      "moving the cursor" used to be a precondition for the snap-back.
-  //   2. Touchpad swipes don't move the cursor, so the bug above was a
-  //      hard floor: a touchpad user couldn't snap back without first
-  //      moving the mouse to a spot over the description text.
+  // The listener is on window, not on the section, so wheel events still
+  // arrive when the cursor sits over a static element (header logo, Get
+  // in touch, info row, back arrow) — those are siblings of
+  // .project-shell and a section-scoped listener wouldn't see them.
   //
-  // GESTURE_GAP_MS is generous (350ms) because touchpad inertia events
-  // continue firing for ~300ms after the user lifts, which would
-  // otherwise be misread as a continuation of the original gesture and
-  // keep the burst alive past the user's second swipe. Mouse-click pauses
-  // are naturally longer than 350ms so this doesn't slow them down.
-  const GESTURE_GAP_MS = 350;
+  // The wheel-routing piece is handled by pointer-events: none on
+  // .section-gallery while .show-description is active (see project.css):
+  // without it, Chrome's hover-state cache lingers on the gallery when
+  // the description slides over a stationary cursor, which causes the
+  // cursor to stay as zoom-in *and* lets wheel events keep targeting
+  // gallery items even though they're visually under the description.
+  //
+  // GESTURE_GAP_MS is 150ms — tight enough that a normal touchpad pause
+  // between two distinct swipes (typically >150ms after inertia tails
+  // off) is recognised as a new gesture, but still well above the
+  // ~16ms gap between events inside a single touchpad gesture.
+  // AT_TOP_THRESHOLD tolerates the sub-pixel scrollTop values macOS
+  // browsers sometimes leave after smooth scrolls.
+  const GESTURE_GAP_MS = 150;
+  const AT_TOP_THRESHOLD = 1;
   let lastWheelAt = 0;
 
   window.addEventListener('wheel', (e) => {
@@ -246,7 +249,7 @@ function setupSnapTransition() {
     // Not at the top — native scroll handles the wheel when the cursor is
     // over the description; we just track the burst so the next gesture's
     // first event isn't mistaken for a continuation of this one.
-    if (descriptionSection.scrollTop > 0) {
+    if (descriptionSection.scrollTop >= AT_TOP_THRESHOLD) {
       armedForSnapBack = false;
       lastWheelAt = e.timeStamp;
       return;
@@ -300,7 +303,7 @@ function setupSnapTransition() {
     if (Math.abs(dy) < 50) return;
     if (dy < 0 && !snapState.showDescription) {
       snapToDescription();
-    } else if (dy > 0 && snapState.showDescription && descriptionSection.scrollTop <= 0) {
+    } else if (dy > 0 && snapState.showDescription && descriptionSection.scrollTop < 1) {
       snapToGallery();
     }
   }, { passive: true });

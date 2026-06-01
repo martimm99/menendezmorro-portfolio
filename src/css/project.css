@@ -75,6 +75,19 @@
   transform: translateY(0);
 }
 
+/* When the description is showing, take the gallery out of the pointer-
+ * event hit-test. Chrome (and Safari in some versions) doesn't refresh
+ * its hover-state cache when an element slides under a stationary cursor
+ * via CSS transform — the cursor visibly stays as the gallery's zoom-in,
+ * and wheel events can keep routing to .gallery-item in spite of the
+ * description sitting visually on top. pointer-events: none forces the
+ * hit-test to skip the gallery entirely, so the description (and the
+ * window-level wheel listener that drives the snap-back) receive events
+ * the way they should from the moment the snap begins. */
+.project-shell.show-description .section-gallery {
+  pointer-events: none;
+}
+
 /* ---------- Site header (project: logo only, no Contact link) ---------- */
 
 .site-header {
