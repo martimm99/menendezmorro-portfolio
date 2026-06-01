@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" style="background-color: #000">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -22,6 +22,15 @@
 
     <link rel="icon" href="/assets/favicon.png" sizes="256x256">
     <link rel="preload" href="/assets/fonts/Geist-Regular.woff2" as="font" type="font/woff2" crossorigin>
+
+    <!-- Warm the destination CSS cache so the first cross-document
+         view-transition into a sub-page doesn't briefly show the
+         destination's body bg before the snapshot pseudos are ready
+         (BUILD_SPEC §2 sweep should look as smooth on first nav as
+         it does on subsequent navs). -->
+    <link rel="prefetch" href="/css/project.css">
+    <link rel="prefetch" href="/css/fullscreen.css">
+    <link rel="prefetch" href="/css/contact.css">
 
     <link rel="stylesheet" href="/css/tokens.css">
     <link rel="stylesheet" href="/css/reset.css">
