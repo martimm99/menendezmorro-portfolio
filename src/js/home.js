@@ -13,7 +13,7 @@
 
 import { horizontalSweep, slideTextSlots } from './transitions.js';
 import { navigateTo } from './router.js';
-import { debounce, prefersReducedMotion } from './utils.js';
+import { prefersReducedMotion } from './utils.js';
 
 let state = {
   data: null,
@@ -189,17 +189,17 @@ function goToCurrentProject(e) {
 }
 
 function setupWheel() {
-  // Both vertical and horizontal wheel events map to horizontal nav.
-  const handler = debounce((delta) => {
-    if (state.isAnimating) return;
-    navigate(delta > 0 ? 'next' : 'prev');
-  }, 50);
-
+  // Spec §5.1: wheel/trackpad scroll maps to horizontal navigation. One
+  // wheel event should produce one navigation. The state.isAnimating gate
+  // (and the ~1s sweep that sets it) prevents subsequent events during
+  // the animation from stacking — a long trackpad gesture advances one
+  // project per sweep, but a single mouse-wheel click navigates right
+  // away instead of waiting on a debounce timer.
   window.addEventListener('wheel', (e) => {
     if (state.isAnimating) return;
     const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
     if (Math.abs(delta) < 5) return;
-    handler(delta);
+    navigate(delta > 0 ? 'next' : 'prev');
   }, { passive: true });
 }
 
