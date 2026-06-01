@@ -216,15 +216,36 @@ function setupSnapTransition() {
   // there; only a *separate* scroll-up gesture after that snaps back to
   // gallery. We tell gestures apart by the timestamp gap between
   // consecutive wheel events (same idea as the Home wheel burst detection).
-  const GESTURE_GAP_MS = 200;
+  //
+  // The listener is on window, not on the section, for two reasons:
+  //   1. Static elements (header logo, Get in touch, info row, back arrow)
+  //      are siblings of .project-shell — not descendants of
+  //      .section-description — so wheel events fired with the cursor
+  //      over them bubble straight to body and never pass through the
+  //      section. A section-scoped listener missed them, which is why
+  //      "moving the cursor" used to be a precondition for the snap-back.
+  //   2. Touchpad swipes don't move the cursor, so the bug above was a
+  //      hard floor: a touchpad user couldn't snap back without first
+  //      moving the mouse to a spot over the description text.
+  //
+  // GESTURE_GAP_MS is generous (350ms) because touchpad inertia events
+  // continue firing for ~300ms after the user lifts, which would
+  // otherwise be misread as a continuation of the original gesture and
+  // keep the burst alive past the user's second swipe. Mouse-click pauses
+  // are naturally longer than 350ms so this doesn't slow them down.
+  const GESTURE_GAP_MS = 350;
   let lastWheelAt = 0;
 
-  descriptionSection.addEventListener('wheel', (e) => {
-    if (!snapState.showDescription || snapState.isAnimating) return;
+  window.addEventListener('wheel', (e) => {
+    if (!snapState.showDescription) return;
+    if (snapState.isAnimating) {
+      e.preventDefault();
+      return;
+    }
 
-    // Not at the top — native scroll handles everything; just track the
-    // burst so we don't mistake the first event of the next gesture for a
-    // continuation of this one.
+    // Not at the top — native scroll handles the wheel when the cursor is
+    // over the description; we just track the burst so the next gesture's
+    // first event isn't mistaken for a continuation of this one.
     if (descriptionSection.scrollTop > 0) {
       armedForSnapBack = false;
       lastWheelAt = e.timeStamp;
