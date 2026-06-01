@@ -275,11 +275,25 @@
   width: auto;
   margin: 0;
   cursor: zoom-in;
+  display: flex;
+  flex-direction: column;
+  /* the picture / video occupies the remaining vertical space; the
+   * caption sits below at its natural height. */
+}
+
+.gallery-item picture {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: block;
+}
+
+.gallery-item video {
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .gallery-item img,
-.gallery-item video,
-.gallery-item picture {
+.gallery-item video {
   display: block;
   height: 100%;
   width: auto;
@@ -288,23 +302,19 @@
   user-select: none;
 }
 
-/* ---------- Caption overlay ---------- */
+/* ---------- Caption ---------- */
 
 .gallery-caption {
-  position: absolute;
-  bottom: var(--space-3);
-  left: var(--space-3);
-  max-width: calc(100% - var(--space-5));
-  padding: var(--space-2) var(--space-3);
-  background-color: rgba(0, 0, 0, 0.45);
-  color: var(--color-fg-dark);
+  flex: 0 0 auto;
+  margin-top: var(--space-2);
   font-size: var(--fs-label);
   font-weight: var(--fw-light);
   letter-spacing: var(--ls-label);
   line-height: var(--lh-snug);
+  text-align: left;
+  opacity: 0.6;
+  color: var(--color-fg-light);
   pointer-events: none;
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
 }
 
 .gallery-caption:empty { display: none; }
@@ -439,7 +449,8 @@
     max-height: 70vh;
     scroll-snap-align: center;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
     justify-content: center;
   }
 
@@ -451,6 +462,13 @@
     max-height: 70vh;
     object-fit: contain;
     object-position: center;
+  }
+
+  /* Mobile caption mirrors desktop styling — flex 0 below the media,
+   * left-aligned, lower opacity. */
+  .gallery-caption {
+    margin-top: var(--space-2);
+    width: 100%;
   }
 }
 
