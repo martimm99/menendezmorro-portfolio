@@ -153,45 +153,92 @@ function buildVideo(media, projectTitle, index) {
 /* ---------- Wheel (desktop) ---------- */
 
 function setupWheel({ gallery, track, mqlMobile, onForwardAtEnd }) {
+  // One wheel gesture → exactly one image step, regardless of gesture
+  // length. A touchpad swipe sends ~16ms-spaced wheel events for as long
+  // as the fingers move plus a ~300ms inertia tail; only the first event
+  // of that burst should advance the gallery, and the rest are absorbed
+  // here. A mouse wheel click is a single event with a long gap before
+  // the next, so it also reads as "one gesture → one step." Drag is
+  // intentionally NOT routed through this — it stays as the free-scroll
+  // pointer handler so a power user can still pull the track by hand.
   let isAnimating = false;
   let animationTimer = null;
+  let lastWheelAt = 0;
 
   const handler = (e) => {
-    if (mqlMobile.matches) return; // mobile uses native scroll
-    if (isAnimating) {
-      e.preventDefault();
-      return;
-    }
+    if (mqlMobile.matches) return; // mobile uses native scroll-snap
 
     const delta = pickAxis(e.deltaX, e.deltaY);
     if (delta === 0) return;
 
-    const max = trackMaxScroll(track, gallery);
-    const current = currentScroll(track);
-    const step = gallery.clientWidth * SCROLL_FRACTION * Math.sign(delta);
-    const next = clamp(current + step, 0, max);
+    // Take control of the wheel — we don't want native scroll fighting
+    // the JS-driven snap, and the page itself doesn't scroll anyway.
+    e.preventDefault();
 
-    if (next !== current) {
-      e.preventDefault();
-      isAnimating = true;
-      applyScroll(track, next);
-      clearTimeout(animationTimer);
-      animationTimer = setTimeout(() => { isAnimating = false; }, SCROLL_TRANSITION_MS + 20);
-      return;
-    }
+    const isNewGesture = (e.timeStamp - lastWheelAt) > GESTURE_GAP_MS;
+    lastWheelAt = e.timeStamp;
+    if (!isNewGesture) return;
+    if (isAnimating) return;
 
-    // Already at an edge. Forward-at-end triggers the snap to Description.
-    if (delta > 0 && current >= max && onForwardAtEnd) {
-      e.preventDefault();
-      onForwardAtEnd();
+    const items = track.querySelectorAll('.gallery-item');
+    if (items.length === 0) return;
+
+    // Resolve "current image" from the actual scroll position so a
+    // drag-induced offset doesn't desync the snap target.
+    const index = getCurrentIndex(track, items);
+
+    if (delta > 0) {
+      if (index < items.length - 1) {
+        snapToIndex(track, items, index + 1);
+        startAnimationLock();
+      } else if (onForwardAtEnd) {
+        // At the last image and still swiping forward → hand off to the
+        // snap-to-Description transition managed by project.js.
+        onForwardAtEnd();
+      }
+    } else {
+      if (index > 0) {
+        snapToIndex(track, items, index - 1);
+        startAnimationLock();
+      }
     }
   };
+
+  function startAnimationLock() {
+    isAnimating = true;
+    clearTimeout(animationTimer);
+    animationTimer = setTimeout(() => { isAnimating = false; }, SCROLL_TRANSITION_MS + 20);
+  }
 
   gallery.addEventListener('wheel', handler, { passive: false });
   return () => {
     clearTimeout(animationTimer);
     gallery.removeEventListener('wheel', handler);
   };
+}
+
+function snapToIndex(track, items, index) {
+  // items[0].offsetLeft accounts for the track's left padding; subtracting
+  // it makes the target a pure scroll-distance value (image 0 → 0).
+  const target = items[index].offsetLeft - items[0].offsetLeft;
+  applyScroll(track, target);
+}
+
+function getCurrentIndex(track, items) {
+  if (items.length === 0) return 0;
+  const current = currentScroll(track);
+  const baseOffset = items[0].offsetLeft;
+  let closest = 0;
+  let closestDist = Infinity;
+  for (let i = 0; i < items.length; i++) {
+    const itemPos = items[i].offsetLeft - baseOffset;
+    const dist = Math.abs(itemPos - current);
+    if (dist < closestDist) {
+      closestDist = dist;
+      closest = i;
+    }
+  }
+  return closest;
 }
 
 function pickAxis(dx, dy) {
