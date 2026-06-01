@@ -1,8 +1,11 @@
 # MENÉNDEZ MORRO — Portfolio Rebuild Build Spec
 
-**Version:** 1.5 (Approved)
+**Version:** 1.6 (Approved)
 **Date:** June 1, 2026
 **Status:** Approved — build authorized
+
+**Changes from v1.5:**
+- Back button visual changed from an arrow to an **X icon** on both the Project page and the Contact page. Position (bottom-right) and behavior (vertical sweep back to Home) unchanged. References updated in §2 and §5.2/§5.3.
 
 **Changes from v1.4:**
 - Captions in §2 redefined: shown below each gallery image (and below the expanded image in fullscreen), left-aligned with lower opacity. No more overlay-on-image with backdrop.
@@ -74,7 +77,7 @@ These terms are used consistently in code, documentation, and conversation.
 **Static elements** — always visible, fixed position, do NOT move when scrolling:
 - **Get in touch** link (top-right corner) — opens email client.
 - **Info row** — bottom-left, showing LINKS / DURATION / COST for the current project.
-- **Back arrow** (bottom-right corner) — returns to Home via vertical sweep animation.
+- **Back button** (bottom-right corner, X icon) — returns to Home via vertical sweep animation.
 
 **Scrolling content** — changes as user scrolls vertically:
 - **Gallery section** — top portion of the page, shows project media.
@@ -199,7 +202,7 @@ DESCRIPTION text never truncates with ellipsis — information is preserved. Lon
 │            GALLERY SECTION                   │
 │         (horizontal filmstrip)               │
 │                                              │
-│ [LINKS  DURATION  COST]      [← back arrow] │  ← static, always visible
+│ [LINKS  DURATION  COST]      [× back button] │  ← static, always visible
 └─────────────────────────────────────────────┘
          ↓ scroll past last gallery image
 ┌─────────────────────────────────────────────┐
@@ -208,7 +211,7 @@ DESCRIPTION text never truncates with ellipsis — information is preserved. Lon
 │           DESCRIPTION SECTION                │
 │         (white background, text)             │
 │                                              │
-│ [LINKS  DURATION  COST]      [← back arrow] │  ← static, always visible
+│ [LINKS  DURATION  COST]      [× back button] │  ← static, always visible
 └─────────────────────────────────────────────┘
 ```
 
@@ -220,7 +223,7 @@ DESCRIPTION text never truncates with ellipsis — information is preserved. Lon
 **Static elements (do NOT move when scrolling):**
 - Get in touch link — top-right.
 - Info row (LINKS / DURATION / COST) — bottom-left.
-- Back arrow — bottom-right.
+- Back button (X icon) — bottom-right.
 - These are visible throughout both Gallery and Description sections.
 - Visual design and placement match the current live site exactly.
 
@@ -256,13 +259,13 @@ DESCRIPTION text never truncates with ellipsis — information is preserved. Lon
 
 - Identical look, feel, and behavior to the current live site's project page description.
 - Layout: long-form `longDescription` text on the upper portion.
-- Static elements (Get in touch, Info row, Back arrow) remain visible.
+- Static elements (Get in touch, Info row, Back button) remain visible.
 - Vertical scroll reveals more text as currently (Line reveal animation applies as text comes into view, identical to current site).
 - Scrolling back up at the top → **Snap transition** back to the Gallery section, landing at the position of the last image.
 
 **Exit:**
-- Click back arrow → vertical sweep back to Home (Project slides **up**, off the top — reverse of entry).
-- Click MENÉNDEZ MORRO logo → same as back arrow: vertical sweep back to Home (Project slides up).
+- Click back button → vertical sweep back to Home (Project slides **up**, off the top — reverse of entry).
+- Click MENÉNDEZ MORRO logo → same as back button: vertical sweep back to Home (Project slides up).
 - Click Get in touch → copies the email address to clipboard and shows the "Email copied" toast (no navigation).
 - Browser back button → returns to the previous page in history (Home, in normal flow).
 
@@ -283,7 +286,7 @@ Triggered by clicking/tapping an image or video in the Project page Gallery. Beh
 
 - The clicked media animates from its current gallery position to a centered "expanded" position in the viewport.
 - Expanded size: **~90vw wide** (with ~5vw side margins) when the aspect ratio allows; capped in height to leave room for the X close button (top-right) and the caption (below the image). Aspect ratio is preserved (`object-fit: contain`).
-- While fullscreen is open, **all other project page elements are hidden** — header logo, Get in touch link, info row, back arrow, chrome masks, and the gallery itself. Only the expanded media, its caption (if any), and the X button are visible.
+- While fullscreen is open, **all other project page elements are hidden** — header logo, Get in touch link, info row, back button, chrome masks, and the gallery itself. Only the expanded media, its caption (if any), and the fullscreen X button are visible.
 - Closing reverses the animation: the media shrinks back to its original gallery position and the project page elements reappear.
 
 **No in-fullscreen navigation:** to view another image the user closes the current fullscreen and clicks a different gallery item. There is no arrow / swipe / wheel navigation between media items while fullscreen is open.
@@ -618,7 +621,7 @@ Each phase is a discrete chunk of work executed in Claude Code. After each phase
 | 4 | Base CSS + tokens | `tokens.css`, `reset.css`, `base.css`, typography, color system | Small |
 | 5 | Home page | Full Home implementation: covers, header, project title, role, info row, horizontal sweep, keyboard nav, all responsive | Large |
 | 6 | Project page — Gallery section | Gallery filmstrip, scroll/drag/arrow navigation, hover-based scroll switching, responsive desktop + mobile | Large |
-| 7 | Project page — Description section + static elements | Description, Get in touch link, info row, back arrow, transition between gallery and description | Medium |
+| 7 | Project page — Description section + static elements | Description, Get in touch link, info row, back button, transition between gallery and description | Medium |
 | 8 | Image fullscreen modal | Click-to-open, keyboard navigation, video handling | Medium |
 | 9 | Contact page | Faithful reimplementation with new code | Small |
 | 10 | Transitions | Vertical sweep (Home ↔ Project, Home ↔ Contact), polish horizontal sweep | Medium |
