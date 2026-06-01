@@ -123,6 +123,65 @@ p {
   transition-delay: var(--reveal-delay, 0ms);
 }
 
+/* ---------- Whole-element reveal animation ----------
+ * For elements that should clip-and-slide as a single block on
+ * arrival (Get in touch CTA, the static info row, X back button,
+ * site logo, gallery items) — distinct from the per-word .reveal-
+ * line above. The clipping element gets .reveal-clip; its
+ * content is wrapped in either .reveal-up (slides up from below
+ * the clip, used for everything except gallery images) or
+ * .reveal-down (slides down from above the clip, used for gallery
+ * images per BUILD_SPEC §5.2's "sweep down" image entrance).
+ *
+ * Trigger is .reveal-landing-in on body — intentionally distinct
+ * from .reveal-in so the Project page's description text (which
+ * also uses .reveal-line but is triggered separately by the snap
+ * transition) doesn't get pulled in by the landing reveal.
+ *
+ * Per-element display overrides below preserve each host's
+ * original layout (flex CTA, flex SVG, block dt+dd, block figure).
+ */
+.reveal-clip {
+  clip-path: inset(0);
+  -webkit-clip-path: inset(0);
+}
+
+.reveal-up,
+.reveal-down {
+  display: inline-block;
+  transition: transform var(--dur-line-reveal) var(--ease-line-reveal);
+  will-change: transform;
+}
+
+.reveal-up   { transform: translateY(100%); }
+.reveal-down { transform: translateY(-100%); }
+
+.reveal-landing-in .reveal-up,
+.reveal-landing-in .reveal-down {
+  transform: none;
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.static-get-in-touch > .reveal-up {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.info-cell > .reveal-up {
+  display: block;
+}
+
+.static-back-arrow > .reveal-up {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gallery-item > .reveal-down {
+  display: block;
+}
+
 /* ===========================================================
  * Cross-document view transitions (BUILD_SPEC §2, Phase 10)
  * ===========================================================

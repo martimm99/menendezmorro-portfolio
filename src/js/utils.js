@@ -96,7 +96,7 @@ export function wrapTextInRevealLines(text) {
  */
 export function assignRevealLineDelays(container, delayMs = 80) {
   const lines = container.querySelectorAll('.reveal-line');
-  if (lines.length === 0) return;
+  if (lines.length === 0) return 0;
   const groups = new Map();
   for (const line of lines) {
     const top = Math.round(line.getBoundingClientRect().top);
@@ -110,4 +110,30 @@ export function assignRevealLineDelays(container, delayMs = 80) {
       line.style.setProperty('--reveal-delay', `${delay}ms`);
     }
   });
+  return (orderedTops.length - 1) * delayMs;
+}
+
+/**
+ * Best-effort signal that this page load came from a cross-document
+ * view transition (BUILD_SPEC §2 vertical sweep) rather than a direct
+ * URL hit / reload / history navigation. When true, callers should
+ * delay arrival reveal animations so they start ~when the sweep ends;
+ * when false (direct visit), reveal can fire as soon as it would have
+ * without any sweep in the picture.
+ *
+ * Heuristic: navigation type === 'navigate' AND same-origin referrer.
+ * Reloads and back/forward hits don't trigger the @view-transition
+ * rule, so they correctly fall to false; a direct URL hit (no
+ * referrer) also falls to false.
+ */
+export function arrivedViaViewTransition() {
+  if (typeof document.startViewTransition !== 'function') return false;
+  const nav = performance.getEntriesByType('navigation')[0];
+  if (!nav || nav.type !== 'navigate') return false;
+  if (!document.referrer) return false;
+  try {
+    return new URL(document.referrer).origin === window.location.origin;
+  } catch {
+    return false;
+  }
 }

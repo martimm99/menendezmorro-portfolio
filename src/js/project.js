@@ -32,11 +32,19 @@ import {
   escapeHtml,
   prefersReducedMotion,
   wrapTextInRevealLines,
-  assignRevealLineDelays
+  assignRevealLineDelays,
+  arrivedViaViewTransition
 } from './utils.js';
 
 const SNAP_DURATION_MS = 1000;
 const LINE_REVEAL_DELAY_PER_LINE_MS = 80;
+const LANDING_REVEAL_DELAY_DIRECT_MS = 60;
+const LANDING_REVEAL_DELAY_AFTER_SWEEP_MS = 900;
+const GALLERY_STAGGER_MS = 100;
+const GALLERY_STAGGER_CAP_INDEX = 3;       // images past this share the cap's delay
+const TOP_STAGGER_MS = 0;
+const BOTTOM_STAGGER_BASE_MS = 500;
+const BOTTOM_STAGGER_STEP_MS = 60;
 
 let teardown = null;
 let snapState = { showDescription: false, isAnimating: false };
@@ -88,6 +96,51 @@ export function initProject(data, slug) {
   });
 
   teardown = galleryAPI;
+
+  triggerLandingReveal();
+}
+
+/* ---------- Landing reveal (BUILD_SPEC §2 sweep-then-content) ----------
+ * After the cross-document VT sweep finishes, the page reveals its
+ * static chrome and gallery items in a top-to-bottom stagger.
+ * Description text is intentionally NOT triggered here — it has its
+ * own .reveal-in trigger fired by the snap transition.
+ */
+function triggerLandingReveal() {
+  // Top static elements arrive first, together.
+  setRevealDelay('.site-logo > .reveal-up', TOP_STAGGER_MS);
+  setRevealDelay('.static-get-in-touch > .reveal-up', TOP_STAGGER_MS);
+
+  // Gallery items sweep DOWN from above their clip, staggered left-to-
+  // right. Items past the cap share the cap's delay so a long film-
+  // strip doesn't stretch the stagger window forever (extra items
+  // would be offscreen at landing anyway).
+  document.querySelectorAll('.gallery-item > .reveal-down').forEach((el, index) => {
+    const cappedIndex = Math.min(index, GALLERY_STAGGER_CAP_INDEX);
+    el.style.setProperty('--reveal-delay', `${(cappedIndex + 1) * GALLERY_STAGGER_MS}ms`);
+  });
+
+  // Bottom static elements come up last. Info cells stagger across so
+  // LINKS / DURATION / COST arrive in sequence rather than as a block.
+  document.querySelectorAll('.static-info-row .info-cell > .reveal-up').forEach((el, i) => {
+    el.style.setProperty('--reveal-delay', `${BOTTOM_STAGGER_BASE_MS + i * BOTTOM_STAGGER_STEP_MS}ms`);
+  });
+  setRevealDelay('.static-back-arrow > .reveal-up', BOTTOM_STAGGER_BASE_MS);
+
+  const startDelay = prefersReducedMotion()
+    ? 0
+    : (arrivedViaViewTransition()
+        ? LANDING_REVEAL_DELAY_AFTER_SWEEP_MS
+        : LANDING_REVEAL_DELAY_DIRECT_MS);
+  setTimeout(() => {
+    document.body.classList.add('reveal-landing-in');
+  }, startDelay);
+}
+
+function setRevealDelay(selector, delayMs) {
+  document.querySelectorAll(selector).forEach((el) => {
+    el.style.setProperty('--reveal-delay', `${delayMs}ms`);
+  });
 }
 
 /* ---------- Head metadata ---------- */
