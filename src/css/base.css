@@ -122,3 +122,69 @@ p {
   transform: none;
   transition-delay: var(--reveal-delay, 0ms);
 }
+
+/* ===========================================================
+ * Cross-document view transitions (BUILD_SPEC §2, Phase 10)
+ * ===========================================================
+ * Vertical sweep between Home and a sub-page:
+ *   Home -> Project / Contact:  sub-page slides DOWN over Home.
+ *   Project / Contact -> Home:  sub-page slides UP off the top.
+ *
+ * main.js tags the transition with a destination type
+ * ('to-home' / 'to-project' / 'to-contact') on the pageswap event,
+ * and the rules below pick the right keyframes for that direction.
+ *
+ * Project <-> Contact navigation doesn't exist in the UI, so we
+ * only need three cases. Anything else (e.g. a typed URL, a
+ * reload, or a cross-origin link) falls through to the browser
+ * default (instant), which matches "no animation".
+ *
+ * Browsers without cross-document view-transition support
+ * (Firefox, older WebKit) ignore @view-transition entirely;
+ * navigation is then an ordinary instant page load.
+ */
+@view-transition {
+  navigation: auto;
+}
+
+/* Home -> sub-page: Home (old) stays, sub-page (new) slides down. */
+:root:active-view-transition-type(to-project)::view-transition-old(root),
+:root:active-view-transition-type(to-contact)::view-transition-old(root) {
+  animation: none;
+}
+:root:active-view-transition-type(to-project)::view-transition-new(root),
+:root:active-view-transition-type(to-contact)::view-transition-new(root) {
+  animation: vt-sweep-down var(--dur-sweep) var(--ease-sweep) both;
+}
+
+/* Sub-page -> Home: sub-page (old) slides up off top, Home (new)
+ * stays revealed underneath. Old must paint above new for the
+ * "slides up off" feel to work. */
+:root:active-view-transition-type(to-home)::view-transition-old(root) {
+  animation: vt-sweep-up var(--dur-sweep) var(--ease-sweep) both;
+  z-index: 2;
+}
+:root:active-view-transition-type(to-home)::view-transition-new(root) {
+  animation: none;
+  z-index: 1;
+}
+
+@keyframes vt-sweep-down {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(0); }
+}
+@keyframes vt-sweep-up {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root:active-view-transition-type(to-home)::view-transition-old(root),
+  :root:active-view-transition-type(to-home)::view-transition-new(root),
+  :root:active-view-transition-type(to-project)::view-transition-old(root),
+  :root:active-view-transition-type(to-project)::view-transition-new(root),
+  :root:active-view-transition-type(to-contact)::view-transition-old(root),
+  :root:active-view-transition-type(to-contact)::view-transition-new(root) {
+    animation: none !important;
+  }
+}
