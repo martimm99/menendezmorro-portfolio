@@ -148,32 +148,28 @@ p {
 }
 
 /* Home -> sub-page: Home (old) stays in place, sub-page (new) slides
- * down over it. Selector form matches the Chrome cross-document VT
- * docs verbatim — html:active-view-transition-type(...) with nested
- * &::view-transition-* — which the engine matches more reliably than
- * a :root-prefixed flat chain. */
-html:active-view-transition-type(to-project),
-html:active-view-transition-type(to-contact) {
-  &::view-transition-old(root) {
-    animation: vt-stay var(--dur-sweep) linear both;
-  }
-  &::view-transition-new(root) {
-    animation: vt-sweep-down var(--dur-sweep) var(--ease-sweep) both;
-  }
+ * down over it. Selectors are written flat (no CSS nesting) so the
+ * pseudo-class:pseudo-element chain is explicit and not synthesized
+ * via :is() from a nested rule. */
+html:active-view-transition-type(to-project)::view-transition-old(root),
+html:active-view-transition-type(to-contact)::view-transition-old(root) {
+  animation: vt-stay var(--dur-sweep) linear both;
+}
+html:active-view-transition-type(to-project)::view-transition-new(root),
+html:active-view-transition-type(to-contact)::view-transition-new(root) {
+  animation: vt-sweep-down var(--dur-sweep) var(--ease-sweep) both;
 }
 
 /* Sub-page -> Home: sub-page (old) slides up off the top, Home (new)
  * stays revealed underneath. Old must paint above new for the "slides
  * up off" feel to read correctly. */
-html:active-view-transition-type(to-home) {
-  &::view-transition-old(root) {
-    animation: vt-sweep-up var(--dur-sweep) var(--ease-sweep) both;
-    z-index: 2;
-  }
-  &::view-transition-new(root) {
-    animation: vt-stay var(--dur-sweep) linear both;
-    z-index: 1;
-  }
+html:active-view-transition-type(to-home)::view-transition-old(root) {
+  animation: vt-sweep-up var(--dur-sweep) var(--ease-sweep) both;
+  z-index: 2;
+}
+html:active-view-transition-type(to-home)::view-transition-new(root) {
+  animation: vt-stay var(--dur-sweep) linear both;
+  z-index: 1;
 }
 
 /* Holds a pseudo at opacity 1 / no transform for the whole transition
@@ -195,12 +191,12 @@ html:active-view-transition-type(to-home) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html:active-view-transition-type(to-home),
-  html:active-view-transition-type(to-project),
-  html:active-view-transition-type(to-contact) {
-    &::view-transition-old(root),
-    &::view-transition-new(root) {
-      animation: none !important;
-    }
+  html:active-view-transition-type(to-home)::view-transition-old(root),
+  html:active-view-transition-type(to-home)::view-transition-new(root),
+  html:active-view-transition-type(to-project)::view-transition-old(root),
+  html:active-view-transition-type(to-project)::view-transition-new(root),
+  html:active-view-transition-type(to-contact)::view-transition-old(root),
+  html:active-view-transition-type(to-contact)::view-transition-new(root) {
+    animation: none !important;
   }
 }
