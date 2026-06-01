@@ -171,30 +171,33 @@ function setupSnapTransition() {
     }
   }, { passive: false });
 
-  // Mobile vertical swipe on the project shell.
-  const shell = document.querySelector('[data-project-shell]');
-  if (shell) {
-    shell.addEventListener('touchstart', (e) => {
-      if (e.touches.length !== 1) return;
-      touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    }, { passive: true });
+  // Mobile vertical swipe — listen on document so a swipe that starts
+  // over a static element (info row, back arrow, header logo) still
+  // triggers the snap. Those static elements are siblings of .project-
+  // shell in the DOM, so a shell-scoped listener would miss them.
+  document.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, { passive: true });
 
-    shell.addEventListener('touchend', (e) => {
-      if (!touchStart || snapState.isAnimating) { touchStart = null; return; }
-      const end = e.changedTouches[0];
-      const dx = end.clientX - touchStart.x;
-      const dy = end.clientY - touchStart.y;
-      touchStart = null;
-      // Vertical swipe must dominate
-      if (Math.abs(dy) < Math.abs(dx) * 1.2) return;
-      if (Math.abs(dy) < 50) return;
-      if (dy < 0 && !snapState.showDescription) {
-        snapToDescription();
-      } else if (dy > 0 && snapState.showDescription && descriptionSection.scrollTop <= 0) {
-        snapToGallery();
-      }
-    }, { passive: true });
-  }
+  document.addEventListener('touchend', (e) => {
+    if (!touchStart || snapState.isAnimating) { touchStart = null; return; }
+    const end = e.changedTouches[0];
+    if (!end) { touchStart = null; return; }
+    const dx = end.clientX - touchStart.x;
+    const dy = end.clientY - touchStart.y;
+    touchStart = null;
+    // Vertical swipe must dominate, and clear the small-gesture floor.
+    if (Math.abs(dy) < Math.abs(dx) * 1.2) return;
+    if (Math.abs(dy) < 50) return;
+    if (dy < 0 && !snapState.showDescription) {
+      snapToDescription();
+    } else if (dy > 0 && snapState.showDescription && descriptionSection.scrollTop <= 0) {
+      snapToGallery();
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchcancel', () => { touchStart = null; }, { passive: true });
 }
 
 function snapToDescription() {
