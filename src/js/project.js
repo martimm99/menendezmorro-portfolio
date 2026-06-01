@@ -33,17 +33,11 @@ import {
   prefersReducedMotion,
   wrapTextInRevealLines,
   assignRevealLineDelays,
-  arrivedViaViewTransition,
   forceRevealAndNavigate
 } from './utils.js';
 
 const SNAP_DURATION_MS = 1000;
 const LINE_REVEAL_DELAY_PER_LINE_MS = 80;
-const LANDING_REVEAL_DELAY_DIRECT_MS = 60;
-const LANDING_REVEAL_DELAY_AFTER_SWEEP_MS = 900;
-const TOP_STAGGER_MS = 0;
-const BOTTOM_STAGGER_BASE_MS = 400;
-const BOTTOM_STAGGER_STEP_MS = 60;
 
 let teardown = null;
 let snapState = { showDescription: false, isAnimating: false };
@@ -95,43 +89,6 @@ export function initProject(data, slug) {
   });
 
   teardown = galleryAPI;
-
-  triggerLandingReveal();
-}
-
-/* ---------- Landing reveal (BUILD_SPEC §2 sweep-then-content) ----------
- * After the cross-document VT sweep finishes, the page reveals its
- * static chrome in a top-to-bottom stagger. Gallery items are NOT
- * part of this — they're visible from the moment of the snapshot so
- * the sweep itself has something to carry into view. Description
- * text isn't triggered here either; it has its own .reveal-in
- * trigger fired by the snap transition.
- */
-function triggerLandingReveal() {
-  setRevealDelay('.site-logo > .reveal-up', TOP_STAGGER_MS);
-  setRevealDelay('.static-get-in-touch > .reveal-up', TOP_STAGGER_MS);
-
-  // Info cells stagger across so LINKS / DURATION / COST arrive in
-  // sequence rather than all at once.
-  document.querySelectorAll('.static-info-row .info-cell > .reveal-up').forEach((el, i) => {
-    el.style.setProperty('--reveal-delay', `${BOTTOM_STAGGER_BASE_MS + i * BOTTOM_STAGGER_STEP_MS}ms`);
-  });
-  setRevealDelay('.static-back-arrow > .reveal-up', BOTTOM_STAGGER_BASE_MS);
-
-  const startDelay = prefersReducedMotion()
-    ? 0
-    : (arrivedViaViewTransition()
-        ? LANDING_REVEAL_DELAY_AFTER_SWEEP_MS
-        : LANDING_REVEAL_DELAY_DIRECT_MS);
-  setTimeout(() => {
-    document.body.classList.add('reveal-landing-in');
-  }, startDelay);
-}
-
-function setRevealDelay(selector, delayMs) {
-  document.querySelectorAll(selector).forEach((el) => {
-    el.style.setProperty('--reveal-delay', `${delayMs}ms`);
-  });
 }
 
 /* ---------- Head metadata ---------- */

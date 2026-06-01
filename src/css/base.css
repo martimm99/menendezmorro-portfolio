@@ -122,92 +122,14 @@ p {
   transition-delay: var(--reveal-delay, 0ms);
 }
 
-/* ---------- Whole-element reveal animation ----------
- * For elements that should clip-and-slide as a single block on
- * arrival (Get in touch CTA, the static info row, X back button,
- * site logo) — distinct from the per-word .reveal-line above.
- * The clipping element gets .reveal-clip; its content is wrapped
- * in a .reveal-up child (.reveal-down exists for completeness but
- * is currently unused).
- *
- * Trigger is .reveal-landing-in on body — intentionally distinct
- * from .reveal-in so the Project page's description text (which
- * also uses .reveal-line but is triggered separately by the snap
- * transition) doesn't get pulled in by the landing reveal.
- *
- * Per-host display overrides make the .reveal-up child fill its
- * host (flex: 1 + align-self: stretch) so translateY(100%) shifts
- * by the host's full dimension, not the child's intrinsic size —
- * without that, a small icon centered in a larger host leaks
- * pixels past the clip when translated.
- *
- * No will-change here: modern browsers auto-promote transforms
- * during a transition, and explicit will-change on every reveal
- * target forces compositor layers we don't need.
- */
-.reveal-clip {
-  clip-path: inset(0);
-  -webkit-clip-path: inset(0);
-}
-
-.reveal-up,
-.reveal-down {
-  display: inline-block;
-  transition: transform var(--dur-line-reveal) var(--ease-line-reveal);
-}
-
-.reveal-up   { transform: translateY(100%); }
-.reveal-down { transform: translateY(-100%); }
-
-.reveal-landing-in .reveal-up,
-.reveal-landing-in .reveal-down {
-  transform: none;
-  transition-delay: var(--reveal-delay, 0ms);
-}
-
-.static-get-in-touch > .reveal-up {
-  display: flex;
-  flex: 1;
-  align-self: stretch;
-  align-items: center;
-  gap: var(--space-2);
-  /* .static-get-in-touch has padding-block: var(--space-2). flex
-   * stretch only fills the parent's CONTENT box, so a plain
-   * translateY(100%) leaves the padding-bottom area visible above
-   * the clip. Shifting an extra padding-bottom worth clears the
-   * full padding box. The corresponding active-state rule below
-   * has to repeat the selector at matching specificity because
-   * .reveal-landing-in .reveal-up (0,2,0) tied with this selector
-   * (0,2,0) lets later rules win — so we make it explicit. */
-  transform: translateY(calc(100% + var(--space-2)));
-}
-.reveal-landing-in .static-get-in-touch > .reveal-up {
-  transform: none;
-}
-
-.info-cell > .reveal-up {
-  display: block;
-  flex: 1;
-  align-self: stretch;
-}
-
-.static-back-arrow > .reveal-up {
-  display: inline-flex;
-  flex: 1;
-  align-self: stretch;
-  align-items: center;
-  justify-content: center;
-}
-
 /* Snap-to-visible: applied to <body> at click-time just before
  * window.location.assign so the OLD snapshot the cross-document
- * VT captures shows the page fully revealed. Without this, a
- * click that lands while the reveal animation is still running
- * (or before it starts on direct nav) would capture a clipped
- * snapshot and the close sweep would show empty space. */
-.reveal-snap .reveal-line,
-.reveal-snap .reveal-up,
-.reveal-snap .reveal-down {
+ * VT captures shows the page with text fully revealed. Without
+ * this, a click that lands before the line reveal completes would
+ * capture a snapshot with the text still translated below its
+ * clip — and the closing sweep would show a sub-page with no
+ * visible text. */
+.reveal-snap .reveal-line {
   transition: none !important;
   transform: none !important;
 }
@@ -246,22 +168,32 @@ p {
   navigation: auto;
 }
 
-/* Arriving at a sub-page: Home (old) stays in place, sub-page (new)
- * slides down over it. */
+/* The sweep is bg-only: both pseudos stay at the viewport position
+ * the snapshot was taken at, and a clip-path animation reveals or
+ * hides one of them. Content within the snapshot doesn't move —
+ * it's just exposed or covered as the clip edge passes over it.
+ *
+ * Opening (Home -> sub-page): NEW (sub-page) clips from "hidden"
+ * to "fully visible," edge sweeping top -> down. OLD (Home) stays
+ * put, visible beneath NEW where NEW is still clipped.
+ *
+ * Closing (sub-page -> Home): OLD (sub-page) clips from "fully
+ * visible" to "hidden," edge sweeping bottom -> up — top elements
+ * (logo, Get in touch) stay visible until the end. NEW (Home) is
+ * revealed from the bottom as OLD shrinks. OLD must paint above
+ * NEW for the reveal direction to read correctly. */
+
 html:has(body.project-page)::view-transition-old(root),
 html:has(body.contact-page)::view-transition-old(root) {
   animation: vt-stay var(--dur-sweep) linear both;
 }
 html:has(body.project-page)::view-transition-new(root),
 html:has(body.contact-page)::view-transition-new(root) {
-  animation: vt-sweep-down var(--dur-sweep) var(--ease-sweep) both;
+  animation: vt-clip-reveal var(--dur-sweep) var(--ease-sweep) both;
 }
 
-/* Arriving at Home: sub-page (old) slides up off the top, Home (new)
- * stays revealed underneath. Old must paint above new for the "slides
- * up off" feel to read correctly. */
 html:has(body.home-page)::view-transition-old(root) {
-  animation: vt-sweep-up var(--dur-sweep) var(--ease-sweep) both;
+  animation: vt-clip-hide var(--dur-sweep) var(--ease-sweep) both;
   z-index: 2;
 }
 html:has(body.home-page)::view-transition-new(root) {
@@ -269,22 +201,22 @@ html:has(body.home-page)::view-transition-new(root) {
   z-index: 1;
 }
 
-/* Holds a pseudo at opacity 1 / no transform for the whole transition
+/* Holds a pseudo at opacity 1 / no clip for the whole transition
  * duration. Used instead of `animation: none`, which only blanks
  * animation-name and still lets the UA's default fade-out / fade-in
- * keyframes apply via the inherited animation properties on the
- * ::view-transition-image-pair container. */
+ * keyframes apply via the inherited animation properties on
+ * ::view-transition-image-pair. */
 @keyframes vt-stay {
-  from, to { opacity: 1; transform: none; }
+  from, to { opacity: 1; clip-path: inset(0); }
 }
 
-@keyframes vt-sweep-down {
-  from { transform: translateY(-100%); }
-  to   { transform: translateY(0); }
+@keyframes vt-clip-reveal {
+  from { clip-path: inset(0 0 100% 0); }
+  to   { clip-path: inset(0); }
 }
-@keyframes vt-sweep-up {
-  from { transform: translateY(0); }
-  to   { transform: translateY(-100%); }
+@keyframes vt-clip-hide {
+  from { clip-path: inset(0); }
+  to   { clip-path: inset(0 0 100% 0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
