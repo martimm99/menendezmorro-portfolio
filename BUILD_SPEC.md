@@ -1,8 +1,12 @@
 # MENÉNDEZ MORRO — Portfolio Rebuild Build Spec
 
-**Version:** 1.4 (Approved)
-**Date:** May 31, 2026
+**Version:** 1.5 (Approved)
+**Date:** June 1, 2026
 **Status:** Approved — build authorized
+
+**Changes from v1.4:**
+- Captions in §2 redefined: shown below each gallery image (and below the expanded image in fullscreen), left-aligned with lower opacity. No more overlay-on-image with backdrop.
+- §5.4 Image fullscreen redefined: a single shared expand/collapse animation that grows the clicked media from its gallery position to a centered ~90vw position with side margins, then shrinks it back on close. No image-to-image navigation while open; no separate desktop/mobile cover-vs-contain behavior. Only the X button (top-right) and Esc close.
 
 **Changes from v1.3:**
 - Appendix C location fields normalized to a single city (no compound "City A — City B" values). Three projects affected: Morro (Mallorca — Berlin → Mallorca), Titles (Girona — Mallorca → Girona), Concerts (Madrid — Berlin → Madrid). The first city in each former pair is retained. Lets the Home Info row's LOCATION column shrink, with consistent column positions across projects.
@@ -77,10 +81,10 @@ These terms are used consistently in code, documentation, and conversation.
 - **Description section** — below the gallery, white background, long-form text.
 
 ### Captions
-Small overlay text positioned at the **bottom-left** of any image or video, in both the Gallery section and Image fullscreen. Captions are per-media-item (each image or video in `media[]` can have its own `caption` text). Captions are optional and gracefully absent when empty — no placeholder, no blank space. Primarily used by category projects (Titles, Architecture, Concerts) to label individual pieces (e.g., artist name + venue for a concert photo).
+Small text shown directly below each image or video, **left-aligned** with **lower opacity** (~0.6) so it reads as a secondary label rather than a heading. Visible in both the Gallery section and the Image fullscreen state (where the caption sits below the centered, expanded media). Captions are per-media-item (each entry in `media[]` can have its own `caption` text). Optional and gracefully absent when empty — no placeholder, no blank space. Primarily used by category projects (Titles, Architecture, Concerts) to label individual pieces (e.g., artist name + venue for a concert photo).
 
 ### Image fullscreen
-A modal-like state opened by clicking/tapping an image in the gallery. Shows the image at full screen with a close button (X, top-right) and supports keyboard arrow navigation between images.
+A state opened by clicking/tapping an image or video in the gallery. The clicked media animates from its gallery position to a centered, ~90vw expanded position; closing reverses the animation back to the gallery item.
 
 ### Animations
 - **Horizontal sweep** — left/right wipe transition. Used between Home covers.
@@ -271,48 +275,34 @@ DESCRIPTION text never truncates with ellipsis — information is preserved. Lon
 **Entry from Home:** vertical sweep, Contact slides **down from the top**.
 **Exit to Home:** reverse — Contact slides **up**, off the top.
 
-### 5.4 Image fullscreen (modal-like state)
+### 5.4 Image fullscreen
 
-- Triggered by clicking/tapping an image or video in the Project page Gallery.
-- On Image fullscreen, the page's static elements (Header bar logo, Get in touch, Info row, Back arrow) are **hidden** — true immersion, only the media and the close X are visible.
+Triggered by clicking/tapping an image or video in the Project page Gallery. Behavior is identical on desktop and mobile.
 
-**Desktop behavior (≥ 768px width):**
+**The expand animation:**
 
-- Media fills the entire viewport — edge to edge, **cover scaling** (`object-fit: cover`). Same scaling behavior as Home covers. Parts may be cropped if aspect ratios don't match; this is intentional and matches the Home experience.
-- **Horizontal sweep animation** between media items (identical to the Home Horizontal sweep). The same animation language is used.
-- **Navigation gestures (same as Home):**
-  - Mouse wheel / trackpad scroll → horizontal sweep to next/previous media item.
-  - Drag → horizontal sweep.
-  - Keyboard left/right arrows → next/previous.
-- **At ends:** loops. Forward from last image → first image. Back from first image → last image.
-- **X button**, top-right corner, to close.
-- **Esc key** also closes.
-- **Click outside the media** does NOT close (because media fills the viewport, there is no "outside").
+- The clicked media animates from its current gallery position to a centered "expanded" position in the viewport.
+- Expanded size: **~90vw wide** (with ~5vw side margins) when the aspect ratio allows; capped in height to leave room for the X close button (top-right) and the caption (below the image). Aspect ratio is preserved (`object-fit: contain`).
+- While fullscreen is open, **all other project page elements are hidden** — header logo, Get in touch link, info row, back arrow, chrome masks, and the gallery itself. Only the expanded media, its caption (if any), and the X button are visible.
+- Closing reverses the animation: the media shrinks back to its original gallery position and the project page elements reappear.
 
-**Mobile behavior (< 768px width):**
+**No in-fullscreen navigation:** to view another image the user closes the current fullscreen and clicks a different gallery item. There is no arrow / swipe / wheel navigation between media items while fullscreen is open.
 
-- Media is shown at the **maximum size that fits the viewport** while preserving aspect ratio (`object-fit: contain`), with minimal margins on the sides. Does NOT fill the viewport edge-to-edge — small space around the image is intentional and matches v1.1 spec behavior.
-- **Navigation gestures:**
-  - **Horizontal swipe** → previous / next media item.
-  - **Tap left or right edge** of the viewport (left third / right third) → previous / next.
-- **At ends:** loops (same as desktop — forward from last → first).
-- **X button**, top-right corner, to close.
-- **Tap outside the image** (in the margin area) also closes.
+**Triggers to close:**
 
-**Captions in fullscreen:**
+- Click the X button (top-right corner).
+- Press Esc.
 
-- Caption appears as small overlay text in the **bottom-left** corner (same position and styling as in the Gallery section).
+**Caption in fullscreen:**
+
+- Caption appears below the expanded image, left-aligned, low opacity — same styling as in the Gallery section.
 - Hidden when empty.
 
 **Video behavior in fullscreen:**
 
 - Full HTML5 controls visible (play / pause / scrub / volume / fullscreen). User can interact normally with the video.
-- Autoplays on entry, but plays with sound (user has explicitly opened it).
-- Click X / Esc / tap outside (mobile only) to close.
-
-**Closing returns to Gallery section:**
-
-- The Gallery section is repositioned to the **last media item the user viewed in fullscreen** (not the one they originally clicked from). This avoids jarring jumps if the user navigated several items deep before closing.
+- Autoplays on entry, with sound when the browser allows it. If the browser blocks sound-on-autoplay, the video starts muted and the user can unmute with the visible controls.
+- Click X / Esc to close.
 
 ---
 
