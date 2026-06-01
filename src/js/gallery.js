@@ -72,29 +72,19 @@ function renderItems({ items, projectTitle, track, onItemActivate }) {
   const frag = document.createDocumentFragment();
   items.forEach((media, index) => {
     const fig = document.createElement('figure');
-    // .reveal-clip + the inner .reveal-down wrapper make each item
-    // animate as "slide-down from above its clip" when project.js
-    // adds .reveal-landing-in to <body> after the sweep finishes.
-    // Per-item --reveal-delay is assigned there (not here) so the
-    // stagger lines up with the static-element stagger.
-    fig.className = 'gallery-item reveal-clip';
+    fig.className = 'gallery-item';
     fig.dataset.index = String(index);
 
-    const inner = document.createElement('div');
-    inner.className = 'reveal-down';
-
     if (media.type === 'video') {
-      inner.appendChild(buildVideo(media, projectTitle, index));
+      fig.appendChild(buildVideo(media, projectTitle, index));
     } else {
-      inner.appendChild(buildPicture(media, projectTitle, index));
+      fig.appendChild(buildPicture(media, projectTitle, index));
     }
 
     const caption = document.createElement('figcaption');
     caption.className = 'gallery-caption';
     if (media.caption) caption.textContent = media.caption;
-    inner.appendChild(caption);
-
-    fig.appendChild(inner);
+    fig.appendChild(caption);
 
     if (onItemActivate) {
       fig.addEventListener('click', (e) => {

@@ -26,6 +26,7 @@ import {
   wrapTextInRevealLines,
   assignRevealLineDelays,
   arrivedViaViewTransition,
+  forceRevealAndNavigate,
   prefersReducedMotion
 } from './utils.js';
 
@@ -82,10 +83,16 @@ function renderSocials(socials) {
 }
 
 function setupNavigation(site) {
+  // Logo and back arrow both return to Home via cross-document VT.
+  // Force every reveal target into its visible state before the
+  // navigation so the OLD snapshot captures the page fully revealed
+  // (otherwise a close-click that lands before the 900ms reveal
+  // delay would yield an empty contact snapshot — the bug we hit
+  // for first-arrival fast clicks).
   document.querySelectorAll('[data-nav-home]').forEach((el) => {
     el.addEventListener('click', (e) => {
       e.preventDefault();
-      window.location.assign('/');
+      forceRevealAndNavigate('/');
     });
   });
 

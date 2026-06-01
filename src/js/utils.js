@@ -137,3 +137,19 @@ export function arrivedViaViewTransition() {
     return false;
   }
 }
+
+/**
+ * Snap every reveal target on the page into its fully-visible state
+ * (.reveal-snap) and then navigate to `url`. This guarantees the OLD
+ * snapshot captured by the cross-document view transition shows the
+ * page fully revealed, even if the user clicked away before the
+ * natural reveal animation had a chance to finish. The forced layout
+ * read between the class add and the navigation makes sure the snap
+ * is committed before the snapshot fires.
+ */
+export function forceRevealAndNavigate(url) {
+  document.body.classList.add('reveal-snap');
+  // Force style recalc so the snap is reflected in the next snapshot.
+  void document.body.offsetHeight;
+  window.location.assign(url);
+}

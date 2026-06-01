@@ -115,7 +115,6 @@ p {
   transform: translateY(100%);
   transition: transform var(--dur-line-reveal) var(--ease-line-reveal);
   line-height: inherit;
-  will-change: transform;
 }
 
 .reveal-in .reveal-line {
@@ -126,20 +125,25 @@ p {
 /* ---------- Whole-element reveal animation ----------
  * For elements that should clip-and-slide as a single block on
  * arrival (Get in touch CTA, the static info row, X back button,
- * site logo, gallery items) — distinct from the per-word .reveal-
- * line above. The clipping element gets .reveal-clip; its
- * content is wrapped in either .reveal-up (slides up from below
- * the clip, used for everything except gallery images) or
- * .reveal-down (slides down from above the clip, used for gallery
- * images per BUILD_SPEC §5.2's "sweep down" image entrance).
+ * site logo) — distinct from the per-word .reveal-line above.
+ * The clipping element gets .reveal-clip; its content is wrapped
+ * in a .reveal-up child (.reveal-down exists for completeness but
+ * is currently unused).
  *
  * Trigger is .reveal-landing-in on body — intentionally distinct
  * from .reveal-in so the Project page's description text (which
  * also uses .reveal-line but is triggered separately by the snap
  * transition) doesn't get pulled in by the landing reveal.
  *
- * Per-element display overrides below preserve each host's
- * original layout (flex CTA, flex SVG, block dt+dd, block figure).
+ * Per-host display overrides make the .reveal-up child fill its
+ * host (flex: 1 + align-self: stretch) so translateY(100%) shifts
+ * by the host's full dimension, not the child's intrinsic size —
+ * without that, a small icon centered in a larger host leaks
+ * pixels past the clip when translated.
+ *
+ * No will-change here: modern browsers auto-promote transforms
+ * during a transition, and explicit will-change on every reveal
+ * target forces compositor layers we don't need.
  */
 .reveal-clip {
   clip-path: inset(0);
@@ -150,7 +154,6 @@ p {
 .reveal-down {
   display: inline-block;
   transition: transform var(--dur-line-reveal) var(--ease-line-reveal);
-  will-change: transform;
 }
 
 .reveal-up   { transform: translateY(100%); }
@@ -164,22 +167,37 @@ p {
 
 .static-get-in-touch > .reveal-up {
   display: flex;
+  flex: 1;
+  align-self: stretch;
   align-items: center;
   gap: var(--space-2);
 }
 
 .info-cell > .reveal-up {
   display: block;
+  flex: 1;
+  align-self: stretch;
 }
 
 .static-back-arrow > .reveal-up {
   display: inline-flex;
+  flex: 1;
+  align-self: stretch;
   align-items: center;
   justify-content: center;
 }
 
-.gallery-item > .reveal-down {
-  display: block;
+/* Snap-to-visible: applied to <body> at click-time just before
+ * window.location.assign so the OLD snapshot the cross-document
+ * VT captures shows the page fully revealed. Without this, a
+ * click that lands while the reveal animation is still running
+ * (or before it starts on direct nav) would capture a clipped
+ * snapshot and the close sweep would show empty space. */
+.reveal-snap .reveal-line,
+.reveal-snap .reveal-up,
+.reveal-snap .reveal-down {
+  transition: none !important;
+  transform: none !important;
 }
 
 /* ===========================================================
