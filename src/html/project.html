@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#ffffff">
 
     <title>{{siteTitle}}</title>
     <meta name="description" content="{{siteDescription}}">
@@ -31,29 +31,62 @@
 
     <script type="module" src="/js/main.js"></script>
   </head>
-  <body class="project-page">
+  <body class="project-page surface-description">
+    <div class="project-shell" data-project-shell>
+      <section class="section-gallery" data-section-gallery>
+        <div class="gallery" data-gallery aria-label="Project gallery">
+          <div class="gallery-track" data-gallery-track></div>
+          <button class="gallery-arrow gallery-arrow-prev" data-gallery-prev type="button" aria-label="Previous image" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <button class="gallery-arrow gallery-arrow-next" data-gallery-next type="button" aria-label="Next image" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <section class="section-description" data-section-description aria-hidden="true">
+        <div class="description-content" data-description-content></div>
+      </section>
+    </div>
+
     <header class="site-header">
-      <a class="site-logo" href="/" data-nav-home aria-label="Home — MENÉNDEZ MORRO">MENÉNDEZ MORRO</a>
-      <nav class="site-nav" aria-label="Primary">
-        <a href="/contact" data-nav-contact>Contact</a>
-      </nav>
+      <a class="site-logo" href="/" data-nav-home aria-label="Back to home — MENÉNDEZ MORRO">MENÉNDEZ MORRO</a>
     </header>
 
-    <section class="gallery" data-gallery aria-label="Project gallery">
-      <div class="gallery-track" data-gallery-track></div>
-      <button class="gallery-arrow gallery-arrow-prev" data-gallery-prev type="button" aria-label="Previous image" hidden>
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-      <button class="gallery-arrow gallery-arrow-next" data-gallery-next type="button" aria-label="Next image" hidden>
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-    </section>
+    <a class="static-get-in-touch" href="#" data-action-copy-email aria-label="Copy email address to clipboard">
+      <span class="dot" aria-hidden="true"></span>
+      <span class="label">Get in touch</span>
+    </a>
 
-    <!-- Phase 7 will add: .description section, .static-info-row, .static-back-arrow, .static-get-in-touch -->
+    <dl class="static-info-row" aria-label="Project info">
+      <div class="info-cell" data-info-cell="links">
+        <dt>LINKS</dt>
+        <dd data-info-links></dd>
+      </div>
+      <div class="info-cell" data-info-cell="duration">
+        <dt>DURATION</dt>
+        <dd data-info-duration></dd>
+      </div>
+      <div class="info-cell" data-info-cell="cost">
+        <dt>COST</dt>
+        <dd data-info-cost></dd>
+      </div>
+    </dl>
+
+    <a class="static-back-arrow" href="/" data-nav-home aria-label="Back to home">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M5 14l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+
+    <div class="toast" data-toast hidden role="status" aria-live="polite">
+      <span data-toast-message></span>
+    </div>
 
     <noscript>
       <div class="noscript-notice">

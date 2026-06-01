@@ -1,24 +1,51 @@
 /*
  * project.css — Project page layout.
  *
- * Phase 6 covers the Gallery section. Phase 7 will add the Description
- * section, static info row, static back arrow, and static Get in touch
- * link below.
+ * Two stacked sections inside .project-shell (gallery on top, description
+ * below, both position: fixed). The description slides up over the gallery
+ * via a snap transition. Static elements (header logo, Get in touch link,
+ * info row, back arrow, toast) sit above both sections and remain visible
+ * across the snap.
  *
- * Scoped to body.project-page. Tokens come from tokens.css; page padding
- * is the same 40px / 20px convention shared with Home.
- *
- * BUILD_SPEC.md §5.2 (Project page), §2 (Captions, animations).
+ * BUILD_SPEC.md §5.2 (Project page), §2 (Captions, Snap transition,
+ * Line reveal, Get in touch behavior).
  */
 
 .project-page {
   --page-pad-x: 40px;
   --page-pad-y: 20px;
-  background-color: var(--color-bg-dark);
-  color: var(--color-fg-dark);
+  background-color: var(--color-bg-light);
+  color: var(--color-fg-light);
+  overflow: hidden; /* sections are fixed; we manage scroll ourselves */
 }
 
-/* ---------- Site header (same shape as Home) ---------- */
+/* ---------- Project shell + section layering ---------- */
+
+.project-shell {
+  position: fixed;
+  inset: 0;
+}
+
+.section-gallery,
+.section-description {
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-bg-light);
+  color: var(--color-fg-light);
+}
+
+.section-gallery   { z-index: var(--z-content); }
+.section-description {
+  z-index: 2;
+  transform: translateY(100%);
+  transition: transform var(--dur-sweep) var(--ease-sweep);
+}
+
+.project-shell.show-description .section-description {
+  transform: translateY(0);
+}
+
+/* ---------- Site header (project: logo only, no Contact link) ---------- */
 
 .site-header {
   position: fixed;
@@ -30,56 +57,169 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--page-pad-y) var(--page-pad-x);
-  color: var(--color-fg-dark);
+  color: var(--color-fg-light);
   pointer-events: none;
 }
 
-.site-logo,
-.site-nav a {
-  pointer-events: auto;
-}
-
 .site-logo {
+  pointer-events: auto;
   font-size: var(--fs-logo);
   font-weight: var(--fw-regular);
   letter-spacing: 0.02em;
   color: inherit;
   text-decoration: none;
+  cursor: pointer;
 }
 
-.site-nav a {
-  font-size: var(--fs-logo);
+/* ---------- Get in touch (top-right) ---------- */
+
+.static-get-in-touch {
+  position: fixed;
+  top: var(--page-pad-y);
+  right: var(--page-pad-x);
+  z-index: var(--z-info);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-fg-light);
+  font-size: clamp(18px, 1.4vw, 22px);
   font-weight: var(--fw-regular);
-  color: inherit;
   text-decoration: none;
-  transition: opacity var(--dur-ui) var(--ease-ui);
+  cursor: pointer;
+  white-space: nowrap;
+  /* Reserve a fixed line-height to keep the dot vertically centered with
+   * the label across font scaling. */
+  line-height: 1;
+  padding: var(--space-2) 0;
 }
 
-.site-nav a:hover,
-.site-nav a:focus-visible {
+.static-get-in-touch .dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--color-accent);
+  flex: 0 0 auto;
+}
+
+.static-get-in-touch .label {
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+  text-decoration-thickness: 1px;
+}
+
+/* ---------- Info row (bottom-left) ---------- */
+
+.static-info-row {
+  position: fixed;
+  left: var(--page-pad-x);
+  bottom: var(--page-pad-y);
+  z-index: var(--z-info);
+  margin: 0;
+  display: flex;
+  gap: clamp(20px, 3vw, 48px);
+  color: var(--color-fg-light);
+}
+
+.static-info-row .info-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.static-info-row .info-cell[hidden] { display: none; }
+
+.static-info-row dt {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-light);
+  letter-spacing: var(--ls-label);
   opacity: 0.7;
 }
 
-/* ---------- Gallery section ---------- */
+.static-info-row dd {
+  margin: var(--space-1) 0 0;
+  font-size: var(--fs-project-info-value);
+  font-weight: var(--fw-light);
+  line-height: var(--lh-snug);
+}
+
+.static-info-row dd a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 1px;
+}
+
+.static-info-row dd a + a {
+  margin-left: var(--space-2);
+}
+
+/* ---------- Back arrow (bottom-right) ---------- */
+
+.static-back-arrow {
+  position: fixed;
+  right: var(--page-pad-x);
+  bottom: var(--page-pad-y);
+  z-index: var(--z-info);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  color: var(--color-fg-light);
+  text-decoration: none;
+}
+
+.static-back-arrow svg {
+  width: 28px;
+  height: 28px;
+}
+
+/* ---------- Toast ("Email copied") ---------- */
+
+.toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: var(--z-toast);
+  transform: translate(-50%, -50%);
+  padding: var(--space-3) var(--space-5);
+  background-color: var(--color-toast-bg);
+  color: var(--color-toast-fg);
+  font-size: var(--fs-cta);
+  font-weight: var(--fw-light);
+  letter-spacing: var(--ls-display);
+  border-radius: 6px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
+}
+
+.toast.is-visible { opacity: 1; }
+.toast[hidden]    { display: none; }
+
+/* ---------- Gallery section ----------
+ * The gallery container fills its section. The track is the JS-driven
+ * (desktop) or natively-scrolling (mobile) horizontal row inside it.
+ */
 
 .gallery {
-  position: fixed;
+  position: absolute;
   inset: 0;
-  z-index: var(--z-content);
   display: flex;
   align-items: center;
   justify-content: flex-start;
   overflow: hidden;
-  touch-action: pan-y;            /* allow vertical browser gestures; horizontal handled in JS */
-  background-color: var(--color-bg-dark);
 }
 
 .gallery-track {
   display: flex;
   align-items: center;
-  gap: 20px;                       /* spec §5.2 — "small consistent gap ~20px" */
-  height: 70vh;                    /* fixed-height row with breathing room */
-  padding-left: var(--page-pad-x); /* row starts at left page padding */
+  gap: 20px;
+  height: 70vh;
+  padding-left: var(--page-pad-x);
   padding-right: var(--page-pad-x);
   flex: 0 0 auto;
   will-change: transform;
@@ -91,8 +231,7 @@
   height: 100%;
   width: auto;
   margin: 0;
-  cursor: zoom-in;                 /* Phase 8 wires this to fullscreen */
-  background-color: var(--color-bg-dark);
+  cursor: zoom-in;
 }
 
 .gallery-item img,
@@ -106,10 +245,8 @@
   user-select: none;
 }
 
-/* ---------- Caption overlay ----------
- * Per spec §2: bottom-left, white text, subtle backdrop, gracefully absent
- * when empty (no placeholder, no blank space).
- */
+/* ---------- Caption overlay ---------- */
+
 .gallery-caption {
   position: absolute;
   bottom: var(--space-3);
@@ -127,15 +264,10 @@
   -webkit-backdrop-filter: blur(2px);
 }
 
-.gallery-caption:empty {
-  display: none;
-}
+.gallery-caption:empty { display: none; }
 
-/* ---------- Mobile arrow buttons ----------
- * Hidden by default (desktop has no arrows per spec §5.2). Shown only at
- * narrow widths where touch is the dominant input. Anchored to viewport
- * sides for thumb reach.
- */
+/* ---------- Mobile arrow buttons ---------- */
+
 .gallery-arrow {
   position: fixed;
   top: 50%;
@@ -146,47 +278,180 @@
   display: none;
   align-items: center;
   justify-content: center;
-  color: var(--color-fg-dark);
-  background-color: rgba(0, 0, 0, 0.45);
+  color: var(--color-fg-light);
+  background-color: rgba(255, 255, 255, 0.85);
   border-radius: 50%;
   cursor: pointer;
   transition: opacity var(--dur-ui) var(--ease-ui);
 }
 
 .gallery-arrow:hover,
-.gallery-arrow:focus-visible {
-  opacity: 0.85;
-}
+.gallery-arrow:focus-visible { opacity: 0.85; }
 
-.gallery-arrow svg {
-  width: 22px;
-  height: 22px;
-}
+.gallery-arrow svg { width: 22px; height: 22px; }
 
 .gallery-arrow-prev { left: var(--space-3); }
 .gallery-arrow-next { right: var(--space-3); }
 
+/* ---------- Description section ---------- */
+
+.section-description {
+  /* Pad so static elements don't overlap text. */
+  padding: calc(var(--page-pad-y) * 2 + 1.5em) var(--page-pad-x) calc(var(--page-pad-y) * 2 + 60px);
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.section-description::-webkit-scrollbar { width: 0; height: 0; }
+
+.description-content {
+  max-width: clamp(33ch, 58vw, 72ch);
+  margin: 0 auto;
+  font-size: clamp(24px, 2.8vw, 80px);
+  font-weight: var(--fw-light);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-display);
+  text-align: justify;
+}
+
+.description-content p { margin: 0; }
+.description-content p + p { margin-top: 0.9em; }
+
+/* ---------- Line reveal (description text, Get in touch CTA on entry) ----- */
+
+.reveal-line-clip {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: baseline;
+  line-height: inherit;
+}
+
+.reveal-line {
+  display: inline-block;
+  transform: translateY(100%);
+  transition: transform var(--dur-line-reveal) var(--ease-line-reveal);
+  line-height: inherit;
+  will-change: transform;
+}
+
+.reveal-in .reveal-line {
+  transform: none;
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+/* ---------- Mobile layout ---------- */
+
 @media (max-width: 768px) {
-  /* Spec §5.2 mobile: arrows visible, small and tappable */
-  .gallery-arrow:not([hidden]) {
-    display: flex;
-  }
-  /* Slightly smaller fixed height to leave more breathing room on phones */
+  /* Mobile arrow buttons visible (overrides desktop display: none) */
+  .gallery-arrow:not([hidden]) { display: flex; }
+
+  /* Mobile gallery: each image fits the viewport with small horizontal
+   * margins. Native horizontal scroll with snap-to-image; touch-action
+   * locks horizontal panning to the track so vertical swipes propagate to
+   * the snap-transition handler on .project-shell. */
   .gallery-track {
-    height: 60vh;
-    gap: 16px;
-    padding-left: var(--space-4);
-    padding-right: var(--space-4);
+    height: auto;
+    max-height: 70vh;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    touch-action: pan-x;
+    transform: none !important; /* desktop JS-driven transform is disabled */
+    padding-left: var(--space-3);
+    padding-right: var(--space-3);
+    gap: var(--space-3);
+  }
+  .gallery-track::-webkit-scrollbar { width: 0; height: 0; }
+
+  .gallery-item {
+    width: 90vw;
+    height: auto;
+    max-height: 70vh;
+    scroll-snap-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .gallery-item img,
+  .gallery-item video,
+  .gallery-item picture {
+    width: 100%;
+    height: auto;
+    max-height: 70vh;
+    object-fit: contain;
+    object-position: center;
   }
 }
 
-/* ---------- Reduced motion ----------
- * Gallery scrolling is JS-driven so it picks up prefers-reduced-motion at
- * runtime (gallery.js). The CSS only needs to make sure transitions don't
- * keep running.
- */
-@media (prefers-reduced-motion: reduce) {
-  .gallery-track {
-    scroll-behavior: auto;
+@media (max-width: 600px) {
+  /* Mobile static-element positions match the legacy live site. */
+  .static-get-in-touch {
+    top: var(--page-pad-y);
+    left: var(--page-pad-x);
+    right: auto;
+    font-size: clamp(18px, 4.8vw, 20px);
   }
+  .static-get-in-touch .dot { width: 8px; height: 8px; }
+
+  .static-back-arrow {
+    top: var(--page-pad-y);
+    right: var(--page-pad-x);
+    bottom: auto;
+    width: 32px;
+    height: 32px;
+  }
+  .static-back-arrow svg { width: 28px; height: 28px; }
+
+  /* Hide the page logo on mobile to keep the chrome minimal — the back
+   * arrow already handles "return to Home" on small screens. */
+  .site-header { display: none; }
+
+  /* Mobile info row: full width, wrap if needed */
+  .static-info-row {
+    left: var(--page-pad-x);
+    right: var(--page-pad-x);
+    bottom: var(--page-pad-y);
+    gap: clamp(12px, 3vw, 24px);
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+  .static-info-row .info-cell {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .static-info-row dt {
+    font-size: clamp(11px, 2.8vw, 13px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .static-info-row dd {
+    font-size: clamp(15px, 3.5vw, 20px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .description-content {
+    text-align: left;
+    font-size: 28px;
+    line-height: 1.13;
+  }
+  .section-description {
+    padding-top: calc(var(--page-pad-y) * 2 + 40px);
+    padding-bottom: calc(var(--page-pad-y) * 2 + 60px);
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .section-description       { transition: none; }
+  .reveal-line               { transition: none; }
+  .gallery-track             { scroll-behavior: auto; }
 }

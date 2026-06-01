@@ -2,57 +2,63 @@
  * gallery.js — Project page gallery interactions.
  *
  * Renders the project's media list as a horizontal filmstrip and wires up
- * desktop wheel scroll, drag, mobile arrow buttons, touch swipe, and video
- * autoplay observation. Captions appear as small overlays at the bottom-left
- * of each item when present.
+ * desktop wheel scroll, drag, mobile arrow buttons, and video autoplay
+ * observation. Captions appear as small overlays at the bottom-left of each
+ * item when present.
  *
  * Per BUILD_SPEC.md §5.2:
- *   - Scroll always controls the gallery; ~30% of visible width per event.
- *   - No keyboard navigation in the regular view (arrow keys only in
- *     Image fullscreen, which is Phase 8).
- *   - Past the last image, wheel forward should trigger a Snap transition
- *     to the Description section — that snap arrives in Phase 7; for now
- *     a forward-at-end wheel event is a no-op.
- *   - Click/tap on a media item opens Image fullscreen (Phase 8). Phase 6
- *     calls onItemActivate, which logs until Phase 8 wires the modal.
+ *   - Desktop: scroll always controls the gallery; ~30% of visible width
+ *     per event, with a step-lock so a quick wheel gesture doesn't stack
+ *     into traversing the whole row.
+ *   - Mobile: each image fits the viewport horizontally with small
+ *     margins. Native scroll-snap drives the row; touch-action: pan-x on
+ *     the track lets vertical swipes propagate to the snap handler in
+ *     project.js.
+ *   - When the gallery reaches its right edge and the user keeps scrolling
+ *     forward, onForwardAtEnd() fires so project.js can snap to the
+ *     description section.
+ *   - Click/tap activates onItemActivate(index); Phase 8 will open the
+ *     Image fullscreen modal there.
  *
- * Videos autoplay when ≥ 90% visible (IntersectionObserver threshold 0.9)
- * and pause otherwise. They have no controls in the gallery; fullscreen
- * adds native controls.
+ * The exported initGallery returns an API ({ destroy }) the caller can use
+ * to tear handlers down on navigation.
  */
 
-import { prefersReducedMotion } from './utils.js';
+import { prefersReducedMotion, isMobileViewport } from './utils.js';
 
-const SCROLL_FRACTION = 0.3;          // 30% of visible width per wheel event
-const DRAG_CLICK_THRESHOLD = 5;       // px; movement above this counts as drag
-const SWIPE_THRESHOLD = 50;           // px; minimum horizontal swipe distance
+const SCROLL_FRACTION = 0.3;
+const SCROLL_TRANSITION_MS = 350;
+const DRAG_CLICK_THRESHOLD = 5;
 const VIDEO_VISIBILITY_THRESHOLD = 0.9;
 
-/**
- * Initialize the gallery for the current project.
- * @param {Object}   opts
- * @param {Array}    opts.items           media array (project.media)
- * @param {string}   opts.projectTitle    used for fallback alt text
- * @param {Element}  opts.gallery         the .gallery container
- * @param {Element}  opts.track           the .gallery-track inner element
- * @param {Element}  opts.prevBtn         the previous-image button (mobile)
- * @param {Element}  opts.nextBtn         the next-image button (mobile)
- * @param {Function} [opts.onItemActivate] called with (index) when an item is clicked
- */
-export function initGallery({ items, projectTitle, gallery, track, prevBtn, nextBtn, onItemActivate }) {
-  if (!items?.length || !gallery || !track) return;
+export function initGallery({
+  items,
+  projectTitle,
+  gallery,
+  track,
+  prevBtn,
+  nextBtn,
+  onItemActivate,
+  onForwardAtEnd
+}) {
+  if (!items?.length || !gallery || !track) return { destroy() {} };
 
   renderItems({ items, projectTitle, track, onItemActivate });
 
   const videoObserver = observeVideos(track);
-  setupWheel({ gallery, track });
-  setupDrag({ gallery, track, onItemActivate });
-  setupTouch({ gallery, track });
-  setupArrows({ prevBtn, nextBtn, gallery, track });
+  const mqlMobile = window.matchMedia('(max-width: 768px)');
+
+  // Desktop-only: JS-driven horizontal scroll. Mobile uses native scroll.
+  const wheelCleanup = setupWheel({ gallery, track, mqlMobile, onForwardAtEnd });
+  const dragCleanup  = setupDrag({ gallery, track, mqlMobile, onItemActivate });
+  const arrowCleanup = setupArrows({ prevBtn, nextBtn, gallery, track, mqlMobile });
 
   return {
     destroy() {
       videoObserver?.disconnect();
+      wheelCleanup?.();
+      dragCleanup?.();
+      arrowCleanup?.();
     }
   };
 }
@@ -80,7 +86,6 @@ function renderItems({ items, projectTitle, track, onItemActivate }) {
 
     if (onItemActivate) {
       fig.addEventListener('click', (e) => {
-        // setupDrag may flag a recent click as a drag; respect that flag.
         if (track.dataset.suppressNextClick === '1') {
           delete track.dataset.suppressNextClick;
           return;
@@ -118,7 +123,6 @@ function buildPicture(media, projectTitle, index) {
   img.src = src;
   img.alt = alt;
   img.decoding = 'async';
-  // Spec §9: eager-load the first two; lazy-load the rest.
   if (index < 2) {
     img.loading = 'eager';
     if ('fetchPriority' in img) img.fetchPriority = index === 0 ? 'high' : 'low';
@@ -148,22 +152,46 @@ function buildVideo(media, projectTitle, index) {
 
 /* ---------- Wheel (desktop) ---------- */
 
-function setupWheel({ gallery, track }) {
-  // The wheel handler is attached to the gallery container so it works
-  // anywhere on the page, per spec §5.2 "scroll always controls the
-  // gallery regardless of cursor position".
-  gallery.addEventListener('wheel', (e) => {
+function setupWheel({ gallery, track, mqlMobile, onForwardAtEnd }) {
+  let isAnimating = false;
+  let animationTimer = null;
+
+  const handler = (e) => {
+    if (mqlMobile.matches) return; // mobile uses native scroll
+    if (isAnimating) {
+      e.preventDefault();
+      return;
+    }
+
     const delta = pickAxis(e.deltaX, e.deltaY);
     if (delta === 0) return;
-    const step = gallery.clientWidth * SCROLL_FRACTION * Math.sign(delta);
+
     const max = trackMaxScroll(track, gallery);
     const current = currentScroll(track);
+    const step = gallery.clientWidth * SCROLL_FRACTION * Math.sign(delta);
     const next = clamp(current + step, 0, max);
-    // Phase 7 will replace this no-op-at-edges with the Snap-to-Description.
-    if (next === current) return;
-    e.preventDefault();
-    applyScroll(track, next);
-  }, { passive: false });
+
+    if (next !== current) {
+      e.preventDefault();
+      isAnimating = true;
+      applyScroll(track, next);
+      clearTimeout(animationTimer);
+      animationTimer = setTimeout(() => { isAnimating = false; }, SCROLL_TRANSITION_MS + 20);
+      return;
+    }
+
+    // Already at an edge. Forward-at-end triggers the snap to Description.
+    if (delta > 0 && current >= max && onForwardAtEnd) {
+      e.preventDefault();
+      onForwardAtEnd();
+    }
+  };
+
+  gallery.addEventListener('wheel', handler, { passive: false });
+  return () => {
+    clearTimeout(animationTimer);
+    gallery.removeEventListener('wheel', handler);
+  };
 }
 
 function pickAxis(dx, dy) {
@@ -172,22 +200,22 @@ function pickAxis(dx, dy) {
 
 /* ---------- Drag (pointer) ---------- */
 
-function setupDrag({ gallery, track, onItemActivate }) {
+function setupDrag({ gallery, track, mqlMobile, onItemActivate }) {
   let pointerId = null;
   let startX = 0;
   let startScroll = 0;
   let dragged = false;
 
-  gallery.addEventListener('pointerdown', (e) => {
+  const down = (e) => {
+    if (mqlMobile.matches) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     pointerId = e.pointerId;
     startX = e.clientX;
     startScroll = currentScroll(track);
     dragged = false;
     gallery.setPointerCapture(pointerId);
-  });
-
-  gallery.addEventListener('pointermove', (e) => {
+  };
+  const move = (e) => {
     if (pointerId !== e.pointerId) return;
     const dx = e.clientX - startX;
     if (Math.abs(dx) < DRAG_CLICK_THRESHOLD) return;
@@ -195,78 +223,61 @@ function setupDrag({ gallery, track, onItemActivate }) {
     const max = trackMaxScroll(track, gallery);
     const next = clamp(startScroll - dx, 0, max);
     applyScroll(track, next, /* instant */ true);
-  });
-
-  gallery.addEventListener('pointerup', (e) => {
+  };
+  const up = (e) => {
     if (pointerId !== e.pointerId) return;
     if (dragged && onItemActivate) {
-      // A drag just ended on top of a media item. Suppress the next click
-      // so the click-to-fullscreen handler doesn't fire.
       track.dataset.suppressNextClick = '1';
     }
     try { gallery.releasePointerCapture(pointerId); } catch {}
     pointerId = null;
-  });
+  };
+  const cancel = () => { pointerId = null; };
 
-  gallery.addEventListener('pointercancel', () => { pointerId = null; });
-}
-
-/* ---------- Touch (mobile swipe) ---------- */
-
-function setupTouch({ gallery, track }) {
-  // Pointer events already handle touch drag. This handler exists so a
-  // quick swipe (movement above SWIPE_THRESHOLD with little time elapsed)
-  // advances by one viewport-width step, matching the mobile "horizontal
-  // swipe = navigate between images" expectation.
-  let startX = 0;
-  let startTime = 0;
-  let active = false;
-
-  gallery.addEventListener('touchstart', (e) => {
-    if (e.touches.length !== 1) { active = false; return; }
-    startX = e.touches[0].clientX;
-    startTime = performance.now();
-    active = true;
-  }, { passive: true });
-
-  gallery.addEventListener('touchend', (e) => {
-    if (!active) return;
-    active = false;
-    const endX = e.changedTouches[0]?.clientX ?? startX;
-    const dx = endX - startX;
-    const elapsed = performance.now() - startTime;
-    if (Math.abs(dx) < SWIPE_THRESHOLD || elapsed > 400) return;
-    // pointermove drag already moved the track; nothing further needed here.
-    // This event hook is reserved for "swipe = next/prev image step" in a
-    // later refinement; current behavior keeps free-drag without snapping.
-  }, { passive: true });
+  gallery.addEventListener('pointerdown', down);
+  gallery.addEventListener('pointermove', move);
+  gallery.addEventListener('pointerup', up);
+  gallery.addEventListener('pointercancel', cancel);
+  return () => {
+    gallery.removeEventListener('pointerdown', down);
+    gallery.removeEventListener('pointermove', move);
+    gallery.removeEventListener('pointerup', up);
+    gallery.removeEventListener('pointercancel', cancel);
+  };
 }
 
 /* ---------- Arrow buttons (mobile) ---------- */
 
-function setupArrows({ prevBtn, nextBtn, gallery, track }) {
-  if (!prevBtn || !nextBtn) return;
+function setupArrows({ prevBtn, nextBtn, gallery, track, mqlMobile }) {
+  if (!prevBtn || !nextBtn) return null;
 
-  // Reveal arrows on mobile only. CSS hides them by default; we toggle the
-  // hidden attribute based on a media query so screen readers also skip
-  // them on desktop.
-  const mql = window.matchMedia('(max-width: 768px)');
   const apply = () => {
-    prevBtn.hidden = !mql.matches;
-    nextBtn.hidden = !mql.matches;
+    prevBtn.hidden = !mqlMobile.matches;
+    nextBtn.hidden = !mqlMobile.matches;
   };
   apply();
-  mql.addEventListener?.('change', apply);
+  mqlMobile.addEventListener?.('change', apply);
 
-  prevBtn.addEventListener('click', () => step(track, gallery, -1));
-  nextBtn.addEventListener('click', () => step(track, gallery, +1));
+  const prev = () => stepMobileArrow(track, -1);
+  const next = () => stepMobileArrow(track, +1);
+  prevBtn.addEventListener('click', prev);
+  nextBtn.addEventListener('click', next);
+
+  return () => {
+    mqlMobile.removeEventListener?.('change', apply);
+    prevBtn.removeEventListener('click', prev);
+    nextBtn.removeEventListener('click', next);
+  };
 }
 
-function step(track, gallery, direction) {
-  const max = trackMaxScroll(track, gallery);
-  const stepSize = gallery.clientWidth * SCROLL_FRACTION;
-  const next = clamp(currentScroll(track) + direction * stepSize, 0, max);
-  applyScroll(track, next);
+function stepMobileArrow(track, direction) {
+  // Mobile uses native scroll with snap. Step by one snap-aligned item.
+  const items = Array.from(track.querySelectorAll('.gallery-item'));
+  if (items.length === 0) return;
+  const itemWidth = items[0].getBoundingClientRect().width;
+  const gap = parseFloat(getComputedStyle(track).gap) || 0;
+  const offset = direction * (itemWidth + gap);
+  track.scrollBy({ left: offset, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
 }
 
 /* ---------- Video autoplay observer ---------- */
@@ -280,7 +291,7 @@ function observeVideos(track) {
     for (const entry of entries) {
       const v = entry.target;
       if (entry.intersectionRatio >= VIDEO_VISIBILITY_THRESHOLD) {
-        v.play().catch(() => { /* autoplay blocked; ignore */ });
+        v.play().catch(() => {});
       } else {
         v.pause();
       }
@@ -300,19 +311,16 @@ function currentScroll(track) {
 }
 
 function applyScroll(track, value, instant = false) {
-  // We translate the track rather than using native scrollLeft so the
-  // visual position is decoupled from any browser scroll-restore.
   const v = Math.max(0, value);
   if (instant || prefersReducedMotion()) {
     track.style.transition = 'none';
   } else {
-    track.style.transition = `transform ${0.35}s var(--ease-ui, ease)`;
+    track.style.transition = `transform ${SCROLL_TRANSITION_MS}ms var(--ease-ui, ease)`;
   }
   track.style.transform = `translate3d(-${v}px, 0, 0)`;
 }
 
 function trackMaxScroll(track, gallery) {
-  // The track's full width minus the visible viewport width.
   return Math.max(0, track.scrollWidth - gallery.clientWidth);
 }
 
