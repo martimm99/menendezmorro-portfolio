@@ -27,6 +27,7 @@
     <link rel="stylesheet" href="/css/reset.css">
     <link rel="stylesheet" href="/css/base.css">
     <link rel="stylesheet" href="/css/project.css">
+    <link rel="stylesheet" href="/css/fullscreen.css">
     <link rel="stylesheet" href="/css/responsive.css">
 
     <script type="module" src="/js/main.js"></script>
@@ -86,6 +87,16 @@
 
     <div class="toast" data-toast hidden role="status" aria-live="polite">
       <span data-toast-message></span>
+    </div>
+
+    <div class="fullscreen-stage" data-fullscreen-stage hidden role="dialog" aria-modal="true" aria-label="Image preview">
+      <div class="fullscreen-media" data-fullscreen-media></div>
+      <p class="fullscreen-caption" data-fullscreen-caption hidden></p>
+      <button class="fullscreen-close" data-fullscreen-close type="button" aria-label="Close preview">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M6 6L18 18M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
     </div>
 
     <noscript>

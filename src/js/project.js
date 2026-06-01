@@ -25,6 +25,7 @@
  */
 
 import { initGallery } from './gallery.js';
+import { initFullscreen, openFullscreen } from './fullscreen.js';
 import { copyText, showToast, escapeHtml, prefersReducedMotion } from './utils.js';
 
 const SNAP_DURATION_MS = 1000;
@@ -55,6 +56,7 @@ export function initProject(data, slug) {
   renderDescription(project);
   setupNavigation(data.site);
   setupSnapTransition();
+  initFullscreen();
 
   const galleryAPI = initGallery({
     items: project.media,
@@ -64,7 +66,11 @@ export function initProject(data, slug) {
     prevBtn: document.querySelector('[data-gallery-prev]'),
     nextBtn: document.querySelector('[data-gallery-next]'),
     onItemActivate: (index) => {
-      console.info(`gallery: open fullscreen for ${project.slug} index ${index}`);
+      // Open the fullscreen state for the clicked gallery item. We
+      // re-query the DOM here because gallery.js owns the item list and
+      // the click handler passes only the index.
+      const item = document.querySelectorAll('.gallery-item')[index];
+      if (item) openFullscreen(item);
     },
     onForwardAtEnd: snapToDescription,
     // Gate the gallery wheel handler so it only processes events while

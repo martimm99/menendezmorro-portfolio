@@ -1,0 +1,135 @@
+/*
+ * fullscreen.css — Image fullscreen state for the Project page.
+ *
+ * Per BUILD_SPEC.md v1.5 §5.4 — the clicked gallery media expands from
+ * its in-gallery position to a centered ~90vw position, then shrinks
+ * back on close. Only the expanded media, its caption (if any), and
+ * the close button are visible while the state is open.
+ *
+ * The expansion is driven by JS positioning the .fullscreen-media box
+ * via inline top/left/width/height — those four properties transition
+ * via the rules here. The caption and close button fade in after the
+ * box has expanded (and out before it shrinks back).
+ */
+
+.fullscreen-stage {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-fullscreen);
+  pointer-events: none;       /* children opt back in */
+}
+
+.fullscreen-stage[hidden] {
+  display: none;
+}
+
+/* The media box is positioned absolutely inside the stage. JS sets
+ * top/left/width/height inline; we transition all four. The cubic
+ * curve is "standard" easing — fast start, settled end. */
+.fullscreen-media {
+  position: absolute;
+  pointer-events: auto;
+  overflow: hidden;
+  transition:
+    top    0.42s cubic-bezier(0.4, 0, 0.2, 1),
+    left   0.42s cubic-bezier(0.4, 0, 0.2, 1),
+    width  0.42s cubic-bezier(0.4, 0, 0.2, 1),
+    height 0.42s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fullscreen-media picture,
+.fullscreen-media img,
+.fullscreen-media video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Caption: positioned by JS below the expanded media. Hidden while the
+ * image is mid-animation; fades in after the box reaches its target
+ * and fades out at the start of the close animation. */
+.fullscreen-caption {
+  position: absolute;
+  pointer-events: none;
+  margin: 0;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-light);
+  letter-spacing: var(--ls-label);
+  line-height: var(--lh-snug);
+  text-align: left;
+  color: var(--color-fg-light);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.fullscreen-caption[hidden] {
+  display: none;
+}
+
+.fullscreen-stage.is-open .fullscreen-caption:not([hidden]) {
+  opacity: 0.6;
+  transition: opacity 0.25s ease 0.22s; /* fade in after expand mostly done */
+}
+
+/* Close button: visible the moment the stage opens. */
+.fullscreen-close {
+  position: absolute;
+  top: var(--page-pad-y);
+  right: var(--page-pad-x);
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--color-fg-light);
+  pointer-events: auto;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.fullscreen-close svg {
+  width: 28px;
+  height: 28px;
+}
+
+.fullscreen-stage.is-open .fullscreen-close {
+  opacity: 1;
+}
+
+/* While the fullscreen state is open, the rest of the project page UI
+ * is hidden. visibility: hidden (not display: none) so the gallery
+ * items keep their layout — that lets the close animation snap the
+ * media back to the original gallery rect. The chrome-mask pseudos
+ * are pure paint, so display: none is fine there. */
+.project-page.fullscreen-active .site-header,
+.project-page.fullscreen-active .static-get-in-touch,
+.project-page.fullscreen-active .static-info-row,
+.project-page.fullscreen-active .static-back-arrow,
+.project-page.fullscreen-active .gallery {
+  visibility: hidden;
+}
+
+.project-page.fullscreen-active::before,
+.project-page.fullscreen-active::after {
+  display: none;
+}
+
+/* The source gallery item itself is visually hidden during fullscreen so
+ * the user doesn't see a "twin" of the expanded media in the gallery
+ * layout. visibility: hidden again — keeps layout intact for the close
+ * rect calculation. */
+.gallery-item.is-source-fullscreen {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fullscreen-media,
+  .fullscreen-caption,
+  .fullscreen-close {
+    transition: none;
+  }
+}
