@@ -66,7 +66,12 @@ export function initProject(data, slug) {
     onItemActivate: (index) => {
       console.info(`gallery: open fullscreen for ${project.slug} index ${index}`);
     },
-    onForwardAtEnd: snapToDescription
+    onForwardAtEnd: snapToDescription,
+    // Gate the gallery wheel handler so it only processes events while
+    // the gallery section owns the viewport. When the description is
+    // showing (or the snap animation is mid-flight), project.js's own
+    // window-level wheel listener takes over.
+    isActive: () => !snapState.showDescription && !snapState.isAnimating
   });
 
   teardown = galleryAPI;

@@ -39,7 +39,8 @@ export function initGallery({
   prevBtn,
   nextBtn,
   onItemActivate,
-  onForwardAtEnd
+  onForwardAtEnd,
+  isActive
 }) {
   if (!items?.length || !gallery || !track) return { destroy() {} };
 
@@ -49,7 +50,7 @@ export function initGallery({
   const mqlMobile = window.matchMedia('(max-width: 768px)');
 
   // Desktop-only: JS-driven horizontal scroll. Mobile uses native scroll.
-  const wheelCleanup = setupWheel({ gallery, track, mqlMobile, onForwardAtEnd });
+  const wheelCleanup = setupWheel({ gallery, track, mqlMobile, onForwardAtEnd, isActive });
   const dragCleanup  = setupDrag({ gallery, track, mqlMobile, onItemActivate });
   const arrowCleanup = setupArrows({ prevBtn, nextBtn, gallery, track, mqlMobile });
 
@@ -152,7 +153,7 @@ function buildVideo(media, projectTitle, index) {
 
 /* ---------- Wheel (desktop) ---------- */
 
-function setupWheel({ gallery, track, mqlMobile, onForwardAtEnd }) {
+function setupWheel({ gallery, track, mqlMobile, onForwardAtEnd, isActive }) {
   // One wheel gesture → exactly one image step, regardless of gesture
   // length. A touchpad swipe sends ~16ms-spaced wheel events for as long
   // as the fingers move plus a ~300ms inertia tail; only the first event
@@ -161,12 +162,21 @@ function setupWheel({ gallery, track, mqlMobile, onForwardAtEnd }) {
   // the next, so it also reads as "one gesture → one step." Drag is
   // intentionally NOT routed through this — it stays as the free-scroll
   // pointer handler so a power user can still pull the track by hand.
+  //
+  // The listener is on window, not on .gallery, so wheel events arrive
+  // regardless of where the cursor sits (especially over static elements
+  // like the info row or back arrow, which are siblings of project-shell
+  // and don't bubble through gallery). The isActive callback gates the
+  // handler so it stays silent while the description section is showing
+  // or while the snap animation is running — project.js's description
+  // handler takes over in those states.
   let isAnimating = false;
   let animationTimer = null;
   let lastWheelAt = 0;
 
   const handler = (e) => {
-    if (mqlMobile.matches) return; // mobile uses native scroll-snap
+    if (isActive && !isActive()) return; // description showing or snap animating
+    if (mqlMobile.matches) return;        // mobile uses native scroll-snap
 
     const delta = pickAxis(e.deltaX, e.deltaY);
     if (delta === 0) return;
@@ -210,10 +220,10 @@ function setupWheel({ gallery, track, mqlMobile, onForwardAtEnd }) {
     animationTimer = setTimeout(() => { isAnimating = false; }, SCROLL_TRANSITION_MS + 20);
   }
 
-  gallery.addEventListener('wheel', handler, { passive: false });
+  window.addEventListener('wheel', handler, { passive: false });
   return () => {
     clearTimeout(animationTimer);
-    gallery.removeEventListener('wheel', handler);
+    window.removeEventListener('wheel', handler);
   };
 }
 
