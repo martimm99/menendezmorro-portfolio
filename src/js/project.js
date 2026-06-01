@@ -113,16 +113,57 @@ function renderDescription(project) {
   const text = project.longDescription
     || `${project.description}\n\nLong description coming soon — to be authored via the Decap CMS.`;
 
+  // Spec §2 Line reveal: each text line is wrapped in a clipped container
+  // whose contents start translated 100% below and slide up. To get the
+  // line-by-line effect without manually splitting at line breaks (which
+  // depend on font metrics, container width, etc.), we wrap each word in
+  // .reveal-line-clip > .reveal-line, then measure each word's top after
+  // layout and assign one --reveal-delay per visual line — so all words on
+  // the same line animate together.
   const paragraphs = text.split(/\n+/).map((p) => p.trim()).filter(Boolean);
   container.innerHTML = paragraphs
-    .map((p, i) => `
-      <p class="description-paragraph">
-        <span class="reveal-line-clip">
-          <span class="reveal-line" style="--reveal-delay: ${i * LINE_REVEAL_DELAY_PER_LINE_MS}ms;">${escapeHtml(p)}</span>
-        </span>
-      </p>
-    `)
+    .map((p) => `<p class="description-paragraph">${wrapWords(p)}</p>`)
     .join('');
+
+  // Two rAFs: the first ensures the new innerHTML is committed, the second
+  // ensures layout has settled so getBoundingClientRect reflects the final
+  // wrapping. measurement runs while the section is offscreen (no transform
+  // dependency — all reveal-lines share the same transform here, so their
+  // relative tops still cluster correctly per visual line).
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => assignLineDelays(container));
+  });
+}
+
+function wrapWords(paragraph) {
+  // Split keeping whitespace runs so the rendered text wraps at the same
+  // points it would as plain text. Whitespace tokens are emitted as-is.
+  const tokens = paragraph.split(/(\s+)/);
+  return tokens.map((t) => {
+    if (t.length === 0) return '';
+    if (/^\s+$/.test(t)) return t;
+    return `<span class="reveal-line-clip"><span class="reveal-line">${escapeHtml(t)}</span></span>`;
+  }).join('');
+}
+
+function assignLineDelays(container) {
+  const lines = container.querySelectorAll('.reveal-line');
+  if (lines.length === 0) return;
+  // Group words by rounded top — the granularity tolerates sub-pixel layout
+  // differences without smearing lines together.
+  const groups = new Map();
+  for (const line of lines) {
+    const top = Math.round(line.getBoundingClientRect().top);
+    if (!groups.has(top)) groups.set(top, []);
+    groups.get(top).push(line);
+  }
+  const orderedTops = [...groups.keys()].sort((a, b) => a - b);
+  orderedTops.forEach((top, lineIdx) => {
+    const delay = lineIdx * LINE_REVEAL_DELAY_PER_LINE_MS;
+    for (const line of groups.get(top)) {
+      line.style.setProperty('--reveal-delay', `${delay}ms`);
+    }
+  });
 }
 
 /* ---------- Navigation + chrome wiring ---------- */

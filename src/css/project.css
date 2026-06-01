@@ -14,9 +14,39 @@
 .project-page {
   --page-pad-x: 40px;
   --page-pad-y: 20px;
+  --chrome-mask-top: 100px;
+  --chrome-mask-bottom: 100px;
   background-color: var(--color-bg-light);
   color: var(--color-fg-light);
   overflow: hidden; /* sections are fixed; we manage scroll ourselves */
+}
+
+/* Chrome masks. Pseudo-element overlays at the top and bottom of the
+ * viewport that hide any text scrolled in from the description section.
+ * Z-index sits between content sections (1–2) and static elements (70+),
+ * so static elements remain visible on top of the mask but scrolling
+ * description text disappears behind it. Background matches the page so
+ * the mask is invisible against the section's white surface — only the
+ * masking effect on scrolling content is visible. */
+.project-page::before,
+.project-page::after {
+  content: '';
+  position: fixed;
+  left: 0;
+  right: 0;
+  background-color: var(--color-bg-light);
+  z-index: 50;
+  pointer-events: none;
+}
+
+.project-page::before {
+  top: 0;
+  height: var(--chrome-mask-top);
+}
+
+.project-page::after {
+  bottom: 0;
+  height: var(--chrome-mask-bottom);
 }
 
 /* ---------- Project shell + section layering ---------- */
@@ -296,10 +326,14 @@
 /* ---------- Description section ---------- */
 
 .section-description {
-  /* Pad so static elements don't overlap text. The top pad is generous
-   * (~120px) so the first line of description clears the header and the
-   * Get in touch CTA. Bottom pad clears the info row and back arrow. */
-  padding: 120px var(--page-pad-x) calc(var(--page-pad-y) * 2 + 60px);
+  /* Pad below the chrome masks so the initial first line sits clear of
+   * the masked zones with a small breathing-room buffer. Padding scales
+   * with the same --chrome-mask-* variables, so resizing the mask
+   * automatically reshapes the section without per-viewport tweaks. */
+  padding-top: calc(var(--chrome-mask-top) + 20px);
+  padding-right: var(--page-pad-x);
+  padding-bottom: calc(var(--chrome-mask-bottom) + 20px);
+  padding-left: var(--page-pad-x);
   overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -453,10 +487,8 @@
     font-size: 28px;
     line-height: 1.13;
   }
-  .section-description {
-    padding-top: calc(var(--page-pad-y) * 2 + 40px);
-    padding-bottom: calc(var(--page-pad-y) * 2 + 60px);
-  }
+  /* Mobile keeps the same mask-aware padding from the default rule,
+   * so no override is needed here. */
 }
 
 /* ---------- Reduced motion ---------- */
