@@ -171,6 +171,18 @@ p {
   align-self: stretch;
   align-items: center;
   gap: var(--space-2);
+  /* .static-get-in-touch has padding-block: var(--space-2). flex
+   * stretch only fills the parent's CONTENT box, so a plain
+   * translateY(100%) leaves the padding-bottom area visible above
+   * the clip. Shifting an extra padding-bottom worth clears the
+   * full padding box. The corresponding active-state rule below
+   * has to repeat the selector at matching specificity because
+   * .reveal-landing-in .reveal-up (0,2,0) tied with this selector
+   * (0,2,0) lets later rules win — so we make it explicit. */
+  transform: translateY(calc(100% + var(--space-2)));
+}
+.reveal-landing-in .static-get-in-touch > .reveal-up {
+  transform: none;
 }
 
 .info-cell > .reveal-up {
