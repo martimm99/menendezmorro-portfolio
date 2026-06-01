@@ -24,7 +24,7 @@
  * to tear handlers down on navigation.
  */
 
-import { prefersReducedMotion, isMobileViewport } from './utils.js';
+import { prefersReducedMotion } from './utils.js';
 
 const SCROLL_FRACTION = 0.3;
 const SCROLL_TRANSITION_MS = 350;

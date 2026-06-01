@@ -3,24 +3,8 @@
  * other module imports it. Speculative utilities don't belong in this file.
  */
 
-export function debounce(fn, wait) {
-  let timer = null;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn(...args), wait);
-  };
-}
-
-export function clamp(value, min, max) {
-  return Math.min(Math.max(value, min), max);
-}
-
 export function prefersReducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
-
-export function isMobileViewport() {
-  return window.matchMedia('(max-width: 768px)').matches;
 }
 
 export function escapeHtml(str) {

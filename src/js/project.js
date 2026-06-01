@@ -33,6 +33,14 @@ const LINE_REVEAL_DELAY_PER_LINE_MS = 80;
 let teardown = null;
 let snapState = { showDescription: false, isAnimating: false };
 let touchStart = null;
+// Two-step snap-back on desktop: a single scroll-up gesture that just
+// reaches the top of the description should park the user there. The
+// next *separate* scroll-up gesture is the one that snaps back to
+// gallery. This flag is set when scrollTop first hits 0 from a wheel-up
+// and is consumed (and cleared) by the next wheel-up that arrives after
+// a > GESTURE_GAP_MS gap. Cleared eagerly when the user starts scrolling
+// in any other direction, or when leaving the description entirely.
+let armedForSnapBack = false;
 
 export function initProject(data, slug) {
   const project = data.projects.find((p) => p.slug === slug);
@@ -203,13 +211,51 @@ function setupSnapTransition() {
   const descriptionSection = document.querySelector('[data-section-description]');
   if (!descriptionSection) return;
 
-  // Intercept wheel-up at top of description to snap back to gallery.
+  // Two-step snap-back on the wheel: a single continuous scroll-up gesture
+  // that takes the user to the top of the description should park them
+  // there; only a *separate* scroll-up gesture after that snaps back to
+  // gallery. We tell gestures apart by the timestamp gap between
+  // consecutive wheel events (same idea as the Home wheel burst detection).
+  const GESTURE_GAP_MS = 200;
+  let lastWheelAt = 0;
+
   descriptionSection.addEventListener('wheel', (e) => {
     if (!snapState.showDescription || snapState.isAnimating) return;
-    if (e.deltaY < 0 && descriptionSection.scrollTop <= 0) {
-      e.preventDefault();
-      snapToGallery();
+
+    // Not at the top — native scroll handles everything; just track the
+    // burst so we don't mistake the first event of the next gesture for a
+    // continuation of this one.
+    if (descriptionSection.scrollTop > 0) {
+      armedForSnapBack = false;
+      lastWheelAt = e.timeStamp;
+      return;
     }
+
+    // At the top, but scrolling sideways or downward — not a snap-back
+    // attempt. Disarm.
+    if (e.deltaY >= 0) {
+      armedForSnapBack = false;
+      lastWheelAt = e.timeStamp;
+      return;
+    }
+
+    // At the top, wheel-up.
+    const isNewBurst = (e.timeStamp - lastWheelAt) > GESTURE_GAP_MS;
+    lastWheelAt = e.timeStamp;
+
+    if (armedForSnapBack && isNewBurst) {
+      // Second, separate scroll-up gesture at the top → snap back.
+      e.preventDefault();
+      armedForSnapBack = false;
+      snapToGallery();
+      return;
+    }
+
+    // Either we just arrived at the top in this gesture, or we're still
+    // inside the same gesture (continued wheel events / inertia). Arm and
+    // wait for the next gesture.
+    armedForSnapBack = true;
+    e.preventDefault();
   }, { passive: false });
 
   // Mobile vertical swipe — listen on document so a swipe that starts
@@ -248,6 +294,7 @@ function snapToDescription() {
   const descriptionContent = document.querySelector('[data-description-content]');
   if (!shell || !descriptionSection) return;
 
+  armedForSnapBack = false;
   snapState.showDescription = true;
   snapState.isAnimating = true;
   shell.classList.add('show-description');
@@ -271,6 +318,7 @@ function snapToGallery() {
   const descriptionContent = document.querySelector('[data-description-content]');
   if (!shell || !descriptionSection) return;
 
+  armedForSnapBack = false;
   snapState.showDescription = false;
   snapState.isAnimating = true;
   shell.classList.remove('show-description');

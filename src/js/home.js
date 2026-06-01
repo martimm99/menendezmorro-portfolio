@@ -4,7 +4,12 @@
  * Responsibilities:
  *   - Render project[index]: cover (image or video), title, role, info row.
  *   - Handle wheel, drag (mouse/touch), and keyboard arrows → horizontal sweep.
- *   - Click on title or role → router.navigateTo('/<slug>').
+ *   - Click on title or role → cross-shell navigation via
+ *     window.location.assign('/<slug>'). Phase 10 will replace the reload
+ *     with a vertical sweep.
+ *   - Click on Contact link → in-shell router.navigateTo('/contact')
+ *     (Contact is still the same home shell until Phase 9 ships a
+ *     dedicated contact.html).
  *   - Preload adjacent covers with fetchpriority="low" via Image() prefetch.
  *
  * Per BUILD_SPEC.md §5.1, Home does not render captions on the cover, even
@@ -13,7 +18,6 @@
 
 import { horizontalSweep, slideTextSlots } from './transitions.js';
 import { navigateTo } from './router.js';
-import { prefersReducedMotion } from './utils.js';
 
 let state = {
   data: null,
