@@ -270,7 +270,16 @@ function setupDrag({ gallery, track, mqlMobile, onItemActivate }) {
   let startX = 0;
   let startScroll = 0;
   let dragged = false;
+  let captured = false;
 
+  // IMPORTANT: setPointerCapture is intentionally NOT called on
+  // pointerdown. With pointer capture active, the browser redirects
+  // synthesized click events to the capturing element — so a plain
+  // click on a gallery item never reaches the figure's click handler
+  // (the click target becomes .gallery, which doesn't listen). Capture
+  // is set only once we cross DRAG_CLICK_THRESHOLD so that drags still
+  // continue when the cursor leaves the gallery, but a non-drag click
+  // flows normally to the figure.
   const down = (e) => {
     if (mqlMobile.matches) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
@@ -278,13 +287,19 @@ function setupDrag({ gallery, track, mqlMobile, onItemActivate }) {
     startX = e.clientX;
     startScroll = currentScroll(track);
     dragged = false;
-    gallery.setPointerCapture(pointerId);
+    captured = false;
   };
   const move = (e) => {
     if (pointerId !== e.pointerId) return;
     const dx = e.clientX - startX;
     if (Math.abs(dx) < DRAG_CLICK_THRESHOLD) return;
-    dragged = true;
+    if (!dragged) {
+      dragged = true;
+      try {
+        gallery.setPointerCapture(pointerId);
+        captured = true;
+      } catch {}
+    }
     const max = trackMaxScroll(track, gallery);
     const next = clamp(startScroll - dx, 0, max);
     applyScroll(track, next, /* instant */ true);
@@ -294,10 +309,13 @@ function setupDrag({ gallery, track, mqlMobile, onItemActivate }) {
     if (dragged && onItemActivate) {
       track.dataset.suppressNextClick = '1';
     }
-    try { gallery.releasePointerCapture(pointerId); } catch {}
+    if (captured) {
+      try { gallery.releasePointerCapture(pointerId); } catch {}
+    }
     pointerId = null;
+    captured = false;
   };
-  const cancel = () => { pointerId = null; };
+  const cancel = () => { pointerId = null; captured = false; };
 
   gallery.addEventListener('pointerdown', down);
   gallery.addEventListener('pointermove', move);
