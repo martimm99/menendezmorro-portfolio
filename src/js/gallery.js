@@ -26,8 +26,8 @@
 
 import { prefersReducedMotion } from './utils.js';
 
-const SCROLL_FRACTION = 0.3;
 const SCROLL_TRANSITION_MS = 350;
+const GESTURE_GAP_MS = 150;            // wheel events more than this far apart start a new gesture
 const DRAG_CLICK_THRESHOLD = 5;
 const VIDEO_VISIBILITY_THRESHOLD = 0.9;
 
