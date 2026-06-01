@@ -296,8 +296,10 @@
 /* ---------- Description section ---------- */
 
 .section-description {
-  /* Pad so static elements don't overlap text. */
-  padding: calc(var(--page-pad-y) * 2 + 1.5em) var(--page-pad-x) calc(var(--page-pad-y) * 2 + 60px);
+  /* Pad so static elements don't overlap text. The top pad is generous
+   * (~120px) so the first line of description clears the header and the
+   * Get in touch CTA. Bottom pad clears the info row and back arrow. */
+  padding: 120px var(--page-pad-x) calc(var(--page-pad-y) * 2 + 60px);
   overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -306,8 +308,11 @@
 .section-description::-webkit-scrollbar { width: 0; height: 0; }
 
 .description-content {
+  /* Left-anchored block, not centered: matches the legacy live site where
+   * the description column sits at the left page padding and the right
+   * side stays empty. */
   max-width: clamp(33ch, 58vw, 72ch);
-  margin: 0 auto;
+  margin: 0;
   font-size: clamp(24px, 2.8vw, 80px);
   font-weight: var(--fw-light);
   line-height: var(--lh-snug);
