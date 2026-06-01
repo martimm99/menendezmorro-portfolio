@@ -1,10 +1,10 @@
 /**
  * main.js — entry point loaded by every HTML shell.
  *
- * Two shells exist: index.html (.home-page body) and project.html
- * (.project-page body). Phase 9 will add contact.html. The shell that
- * loads is determined by Netlify's _redirects rules; this module looks
- * at the body class to decide which page module to call.
+ * Three shells exist: index.html (.home-page body), project.html
+ * (.project-page body) and contact.html (.contact-page body). The
+ * shell that loads is determined by Netlify's _redirects rules; this
+ * module looks at the body class to decide which page module to call.
  *
  * Cross-shell navigation (e.g. clicking the logo on Project to return
  * Home) goes via window.location.assign in the page modules. That keeps
@@ -19,10 +19,6 @@ import { initHome } from './home.js';
 
 let dataReady = null;
 let homeInitialized = false;
-
-const PLACEHOLDER_MESSAGES = {
-  contact: 'Contact page coming in Phase 9'
-};
 
 async function init() {
   try {
@@ -51,28 +47,22 @@ async function handleRouteChange() {
 async function applyRoute(data) {
   const route = getCurrentRoute();
   const slug = getCurrentSlug();
-  const onHomeShell = document.body.classList.contains('home-page');
+  const onHomeShell    = document.body.classList.contains('home-page');
   const onProjectShell = document.body.classList.contains('project-page');
+  const onContactShell = document.body.classList.contains('contact-page');
 
   if (onHomeShell) {
     if (route === 'home') {
-      hidePlaceholder();
       if (!homeInitialized) {
         initHome(data);
         homeInitialized = true;
       }
       return;
     }
-    if (route === 'contact') {
-      showPlaceholder('contact');
-      return;
-    }
-    // Home shell loaded but URL says project — only happens via pushState
-    // shenanigans. Reload to fetch the correct shell.
-    if (route === 'project') {
-      window.location.assign(window.location.pathname);
-      return;
-    }
+    // Home shell loaded but URL says project or contact — pushState changed
+    // path without a reload. Fetch the correct shell.
+    window.location.assign(window.location.pathname);
+    return;
   }
 
   if (onProjectShell) {
@@ -81,34 +71,31 @@ async function applyRoute(data) {
       initProject(data, slug);
       return;
     }
-    // Project shell loaded but URL says home or contact — pushState changed
-    // path without a full reload. Reload to fetch the correct shell.
+    window.location.assign(window.location.pathname);
+    return;
+  }
+
+  if (onContactShell) {
+    if (route === 'contact') {
+      const { initContact } = await import('./contact.js');
+      initContact(data);
+      return;
+    }
     window.location.assign(window.location.pathname);
   }
 }
 
-function showPlaceholder(route) {
-  const placeholder = document.querySelector('[data-placeholder]');
-  const message = document.querySelector('[data-placeholder-message]');
-  if (!placeholder || !message) {
-    console.warn(`main: route "${route}" needs the placeholder elements that only the home shell ships.`);
-    return;
-  }
-  message.textContent = PLACEHOLDER_MESSAGES[route] || 'Page not available yet';
-  placeholder.hidden = false;
-}
-
-function hidePlaceholder() {
-  const placeholder = document.querySelector('[data-placeholder]');
-  if (placeholder) placeholder.hidden = true;
-}
-
 function showError(message) {
+  // Best-effort error surface; pages that ship a placeholder element
+  // (currently only the home shell, from earlier phases) get a visible
+  // message, others log to the console.
   const placeholder = document.querySelector('[data-placeholder]');
   const placeholderMessage = document.querySelector('[data-placeholder-message]');
   if (placeholder && placeholderMessage) {
     placeholderMessage.textContent = message;
     placeholder.hidden = false;
+  } else {
+    console.error(message);
   }
 }
 

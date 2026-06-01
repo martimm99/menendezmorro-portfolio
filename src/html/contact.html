@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#ffffff">
+
+    <title>Contact — {{siteTitle}}</title>
+    <meta name="description" content="{{siteDescription}}">
+    <link rel="canonical" href="{{siteUrl}}/contact">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Contact — {{siteTitle}}">
+    <meta property="og:description" content="{{siteDescription}}">
+    <meta property="og:url" content="{{siteUrl}}/contact">
+    <meta property="og:image" content="{{siteUrl}}/{{ogImage}}">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Contact — {{siteTitle}}">
+    <meta name="twitter:description" content="{{siteDescription}}">
+    <meta name="twitter:image" content="{{siteUrl}}/{{ogImage}}">
+
+    <link rel="icon" href="/assets/favicon.png" sizes="256x256">
+    <link rel="preload" href="/assets/fonts/Geist-Regular.woff2" as="font" type="font/woff2" crossorigin>
+
+    <link rel="stylesheet" href="/css/tokens.css">
+    <link rel="stylesheet" href="/css/reset.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/contact.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+
+    <script type="module" src="/js/main.js"></script>
+  </head>
+  <body class="contact-page surface-description">
+    <header class="site-header">
+      <a class="site-logo" href="/" data-nav-home aria-label="Back to home — MENÉNDEZ MORRO">MENÉNDEZ MORRO</a>
+    </header>
+
+    <main class="contact-content">
+      <div class="contact-text" data-contact-copy></div>
+
+      <a class="static-get-in-touch" href="#" data-action-copy-email aria-label="Copy email address to clipboard">
+        <span class="dot" aria-hidden="true"></span>
+        <span class="label">Get in touch</span>
+      </a>
+
+      <dl class="static-info-row contact-info" data-contact-socials></dl>
+    </main>
+
+    <a class="static-back-arrow" href="/" data-nav-home aria-label="Back to home">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M6 6L18 18M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </a>
+
+    <div class="toast" data-toast hidden role="status" aria-live="polite">
+      <span data-toast-message></span>
+    </div>
+
+    <noscript>
+      <div class="noscript-notice">
+        This site needs JavaScript to render its content. Please enable JS or switch to a modern browser.
+      </div>
+    </noscript>
+  </body>
+</html>

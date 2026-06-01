@@ -1,0 +1,252 @@
+/*
+ * contact.css — Contact page layout.
+ *
+ * Mirrors the legacy live site (BUILD_SPEC.md §5.3 — "identical to the
+ * current live site") with the same code quality and animation patterns
+ * used elsewhere in the rebuild: the X close button replaces the legacy
+ * arrow (v1.6), the email-copy toast replaces the mailto link, and the
+ * contact copy uses the shared Line reveal markup (base.css) driven by
+ * utils.wrapTextInRevealLines + utils.assignRevealLineDelays.
+ *
+ * Three regions stack on a CSS grid:
+ *   - contact-text + Get in touch CTA   (top)
+ *   - contact-info (INSTAGRAM, …)       (middle)
+ *   - back-button                       (bottom-right)
+ */
+
+.contact-page {
+  --page-pad-x: 40px;
+  --page-pad-y: 20px;
+  background-color: var(--color-bg-light);
+  color: var(--color-fg-light);
+  overflow: hidden;
+}
+
+/* ---------- Header ---------- */
+
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-header);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--page-pad-y) var(--page-pad-x);
+  color: var(--color-fg-light);
+  pointer-events: none;
+}
+
+.site-logo {
+  pointer-events: auto;
+  font-size: var(--fs-logo);
+  font-weight: var(--fw-regular);
+  letter-spacing: 0.02em;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* ---------- Main grid ---------- */
+
+.contact-content {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: calc(var(--page-pad-y) * 2 + 40px) var(--page-pad-x) calc(var(--page-pad-y) * 2 + 60px);
+  gap: var(--space-5);
+}
+
+/* ---------- Contact text + Get in touch ---------- */
+
+.contact-text {
+  max-width: clamp(33ch, 58vw, 72ch);
+  margin: 0;
+  font-size: clamp(24px, 2.8vw, 80px);
+  font-weight: var(--fw-light);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-display);
+  text-align: justify;
+  color: var(--color-fg-light);
+}
+
+.contact-text p {
+  margin: 0;
+}
+
+.contact-text p + p {
+  margin-top: 0.9em;
+}
+
+/* Get in touch CTA — same shape as on the Project page, but here it
+ * isn't position: fixed; it sits in the top row of the grid next to
+ * the contact text on desktop. */
+.contact-page .static-get-in-touch {
+  position: absolute;
+  top: var(--page-pad-y);
+  right: var(--page-pad-x);
+  z-index: var(--z-info);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-fg-light);
+  font-size: clamp(18px, 1.4vw, 22px);
+  font-weight: var(--fw-regular);
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 1;
+  padding: var(--space-2) 0;
+}
+
+.contact-page .static-get-in-touch .dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--color-accent);
+  flex: 0 0 auto;
+}
+
+.contact-page .static-get-in-touch .label {
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+  text-decoration-thickness: 1px;
+}
+
+/* ---------- Info row (socials) ---------- */
+
+.contact-info {
+  position: absolute;
+  left: var(--page-pad-x);
+  bottom: calc(var(--page-pad-y) + 60px);
+  z-index: var(--z-info);
+  margin: 0;
+  display: flex;
+  gap: clamp(20px, 3vw, 48px);
+  color: var(--color-fg-light);
+}
+
+.contact-info .info-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.contact-info dt {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-light);
+  letter-spacing: var(--ls-label);
+  opacity: 0.7;
+}
+
+.contact-info dd {
+  margin: var(--space-1) 0 0;
+  font-size: var(--fs-project-info-value);
+  font-weight: var(--fw-light);
+  line-height: var(--lh-snug);
+}
+
+.contact-info dd a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 1px;
+}
+
+/* ---------- Back button (X icon) ---------- */
+
+.contact-page .static-back-arrow {
+  position: fixed;
+  right: var(--page-pad-x);
+  bottom: var(--page-pad-y);
+  z-index: var(--z-info);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  color: var(--color-fg-light);
+  text-decoration: none;
+}
+
+.contact-page .static-back-arrow svg {
+  width: 28px;
+  height: 28px;
+}
+
+/* ---------- Toast (Email copied) ---------- */
+
+.toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: var(--z-toast);
+  transform: translate(-50%, -50%);
+  padding: var(--space-3) var(--space-5);
+  background-color: var(--color-toast-bg);
+  color: var(--color-toast-fg);
+  font-size: var(--fs-cta);
+  font-weight: var(--fw-light);
+  letter-spacing: var(--ls-display);
+  border-radius: 6px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
+}
+
+.toast.is-visible { opacity: 1; }
+.toast[hidden]    { display: none; }
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 600px) {
+  /* Legacy mobile layout: Get in touch top-left, X back-button top-right,
+   * info row bottom, contact copy fills the middle. */
+  .site-header { display: none; }
+
+  .contact-content {
+    padding-top: calc(var(--page-pad-y) * 2 + 40px);
+    padding-bottom: calc(var(--page-pad-y) * 2 + 60px);
+  }
+
+  .contact-page .static-get-in-touch {
+    top: var(--page-pad-y);
+    left: var(--page-pad-x);
+    right: auto;
+    font-size: clamp(18px, 4.8vw, 20px);
+  }
+  .contact-page .static-get-in-touch .dot { width: 8px; height: 8px; }
+
+  .contact-page .static-back-arrow {
+    top: var(--page-pad-y);
+    right: var(--page-pad-x);
+    bottom: auto;
+    width: 32px;
+    height: 32px;
+  }
+  .contact-page .static-back-arrow svg { width: 28px; height: 28px; }
+
+  .contact-text {
+    font-size: clamp(28px, 5vw, 50px);
+    text-align: left;
+  }
+
+  .contact-info {
+    left: var(--page-pad-x);
+    right: var(--page-pad-x);
+    bottom: var(--page-pad-y);
+    gap: clamp(12px, 3vw, 24px);
+  }
+
+  .contact-info dt {
+    font-size: clamp(11px, 2.8vw, 13px);
+  }
+  .contact-info dd {
+    font-size: clamp(15px, 3.5vw, 20px);
+  }
+}

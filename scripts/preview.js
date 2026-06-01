@@ -56,12 +56,12 @@ function resolveRequestPath(urlPath) {
 
   // Template fallback — mirrors public/_redirects so local preview matches
   // Netlify production. Extensionless paths that don't map to a real file
-  // resolve to index.html for /contact (until Phase 9), or to project.html
-  // for any other slug.
+  // resolve to contact.html for /contact, or to project.html for any other
+  // slug.
   if (!extname(safe)) {
     if (safe === '/contact' || safe === '/contact/') {
-      const home = join(ROOT, 'index.html');
-      if (existsSync(home)) return home;
+      const contact = join(ROOT, 'contact.html');
+      if (existsSync(contact)) return contact;
     }
     const project = join(ROOT, 'project.html');
     if (existsSync(project)) return project;
