@@ -190,15 +190,33 @@ function goToCurrentProject(e) {
 
 function setupWheel() {
   // Spec §5.1: wheel/trackpad scroll maps to horizontal navigation. One
-  // wheel event should produce one navigation. The state.isAnimating gate
-  // (and the ~1s sweep that sets it) prevents subsequent events during
-  // the animation from stacking — a long trackpad gesture advances one
-  // project per sweep, but a single mouse-wheel click navigates right
-  // away instead of waiting on a debounce timer.
+  // wheel input gesture should produce exactly one navigation.
+  //
+  // Two reasons a naive "wheel → navigate" gates badly:
+  //   1. macOS scroll gestures emit a 0-delta phase marker as the first
+  //      wheel event of a gesture. A < 5 magnitude threshold filtered
+  //      that marker, but it also filtered the small first event of
+  //      slow mouse-wheel clicks, making the first click feel dead.
+  //   2. Trackpad inertia keeps firing events for ~300ms after the user
+  //      lifts; without rate-limiting, a long flick could chain multiple
+  //      navigations as inertia events outlast the 1s isAnimating gate.
+  //
+  // Burst detection handles both: the first wheel event whose timestamp
+  // is more than 150ms after the previous wheel event navigates; the
+  // rest of the burst (including inertia) updates the last-wheel
+  // timestamp without triggering. A new gesture (gap > 150ms) navigates
+  // again. delta === 0 is always ignored.
+  const BURST_GAP_MS = 150;
+  let lastWheelAt = 0;
+
   window.addEventListener('wheel', (e) => {
-    if (state.isAnimating) return;
     const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-    if (Math.abs(delta) < 5) return;
+    if (delta === 0) return;
+    const now = e.timeStamp || Date.now();
+    const isFirstOfBurst = (now - lastWheelAt) > BURST_GAP_MS;
+    lastWheelAt = now;
+    if (state.isAnimating) return;
+    if (!isFirstOfBurst) return;
     navigate(delta > 0 ? 'next' : 'prev');
   }, { passive: true });
 }
