@@ -27,7 +27,8 @@
 import { prefersReducedMotion } from './utils.js';
 
 const SCROLL_TRANSITION_MS = 350;
-const GESTURE_GAP_MS = 150;            // wheel events more than this far apart start a new gesture
+const GESTURE_GAP_MS = 80;             // wheel events more than this far apart start a new gesture
+const INERTIA_DELTA_THRESHOLD = 3;     // |delta| below this is treated as inertia tail and ignored
 const DRAG_CLICK_THRESHOLD = 5;
 const VIDEO_VISIBILITY_THRESHOLD = 0.9;
 
@@ -184,6 +185,13 @@ function setupWheel({ gallery, track, mqlMobile, onForwardAtEnd, isActive }) {
     // Take control of the wheel — we don't want native scroll fighting
     // the JS-driven snap, and the page itself doesn't scroll anyway.
     e.preventDefault();
+
+    // Touchpad inertia decays exponentially from the swipe's peak delta
+    // down to near zero. Filtering events below INERTIA_DELTA_THRESHOLD
+    // (without updating lastWheelAt) cuts the long tail of "real-event"
+    // bookkeeping that would otherwise keep extending the burst window
+    // past the user's second swipe.
+    if (Math.abs(delta) < INERTIA_DELTA_THRESHOLD) return;
 
     const isNewGesture = (e.timeStamp - lastWheelAt) > GESTURE_GAP_MS;
     lastWheelAt = e.timeStamp;

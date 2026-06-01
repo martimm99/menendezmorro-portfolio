@@ -234,19 +234,29 @@ function setupSnapTransition() {
   // cursor to stay as zoom-in *and* lets wheel events keep targeting
   // gallery items even though they're visually under the description.
   //
-  // GESTURE_GAP_MS is 150ms — tight enough that a normal touchpad pause
-  // between two distinct swipes (typically >150ms after inertia tails
-  // off) is recognised as a new gesture, but still well above the
-  // ~16ms gap between events inside a single touchpad gesture.
-  // AT_TOP_THRESHOLD tolerates the sub-pixel scrollTop values macOS
-  // browsers sometimes leave after smooth scrolls.
-  const GESTURE_GAP_MS = 150;
+  // GESTURE_GAP_MS is 80ms and INERTIA_DELTA_THRESHOLD is 3 — combined,
+  // they let a normal touchpad pause between two distinct swipes register
+  // as a new gesture without waiting out the full inertia tail. Touchpad
+  // inertia events decay exponentially: by filtering events with
+  // |deltaY| < 3 (without updating lastWheelAt), the "burst-extending"
+  // bookkeeping stops ~200ms after the user lifts instead of dragging on
+  // for the full 500ms tail. AT_TOP_THRESHOLD tolerates the sub-pixel
+  // scrollTop values macOS browsers sometimes leave after smooth scrolls.
+  const GESTURE_GAP_MS = 80;
+  const INERTIA_DELTA_THRESHOLD = 3;
   const AT_TOP_THRESHOLD = 1;
   let lastWheelAt = 0;
 
   window.addEventListener('wheel', (e) => {
     if (!snapState.showDescription) return;
     if (snapState.isAnimating) {
+      e.preventDefault();
+      return;
+    }
+
+    // Skip very small events (inertia tail) — they shouldn't count
+    // toward the burst window or reset the arm flag.
+    if (Math.abs(e.deltaY) < INERTIA_DELTA_THRESHOLD && Math.abs(e.deltaX) < INERTIA_DELTA_THRESHOLD) {
       e.preventDefault();
       return;
     }
