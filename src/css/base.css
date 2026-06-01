@@ -130,14 +130,24 @@ p {
  *   Home -> Project / Contact:  sub-page slides DOWN over Home.
  *   Project / Contact -> Home:  sub-page slides UP off the top.
  *
- * main.js tags the transition with a destination type
- * ('to-home' / 'to-project' / 'to-contact') on the pageswap event,
- * and the rules below pick the right keyframes for that direction.
+ * Direction is picked by the body class of the DESTINATION page,
+ * via :has() on <html>. During a cross-document VT, the new page's
+ * CSS evaluates the animation rules, so the body class we're
+ * filtering on is always the page we're arriving at.
+ *
+ * We previously typed the transition with view-transition types
+ * added in a pageswap listener and matched them via
+ * :active-view-transition-type(...). The JS-side typing worked
+ * (Chrome's types.add API is wired) but the CSS pseudo-class did
+ * not match in our target browsers — the rules silently fell back
+ * to the UA crossfade. The :has(body.X) form has no such gap: it
+ * relies only on :has() and view-transition pseudos, both of
+ * which have been GA for longer than cross-document VTs.
  *
  * Project <-> Contact navigation doesn't exist in the UI, so we
- * only need three cases. Anything else (e.g. a typed URL, a
- * reload, or a cross-origin link) falls through to the browser
- * default (instant), which matches "no animation".
+ * only need three destination cases. Anything else (a typed URL,
+ * a reload, a cross-origin link) doesn't trigger a VT and falls
+ * through to the browser default (instant).
  *
  * Browsers without cross-document view-transition support
  * (Firefox, older WebKit) ignore @view-transition entirely;
@@ -147,27 +157,25 @@ p {
   navigation: auto;
 }
 
-/* Home -> sub-page: Home (old) stays in place, sub-page (new) slides
- * down over it. Selectors are written flat (no CSS nesting) so the
- * pseudo-class:pseudo-element chain is explicit and not synthesized
- * via :is() from a nested rule. */
-html:active-view-transition-type(to-project)::view-transition-old(root),
-html:active-view-transition-type(to-contact)::view-transition-old(root) {
+/* Arriving at a sub-page: Home (old) stays in place, sub-page (new)
+ * slides down over it. */
+html:has(body.project-page)::view-transition-old(root),
+html:has(body.contact-page)::view-transition-old(root) {
   animation: vt-stay var(--dur-sweep) linear both;
 }
-html:active-view-transition-type(to-project)::view-transition-new(root),
-html:active-view-transition-type(to-contact)::view-transition-new(root) {
+html:has(body.project-page)::view-transition-new(root),
+html:has(body.contact-page)::view-transition-new(root) {
   animation: vt-sweep-down var(--dur-sweep) var(--ease-sweep) both;
 }
 
-/* Sub-page -> Home: sub-page (old) slides up off the top, Home (new)
+/* Arriving at Home: sub-page (old) slides up off the top, Home (new)
  * stays revealed underneath. Old must paint above new for the "slides
  * up off" feel to read correctly. */
-html:active-view-transition-type(to-home)::view-transition-old(root) {
+html:has(body.home-page)::view-transition-old(root) {
   animation: vt-sweep-up var(--dur-sweep) var(--ease-sweep) both;
   z-index: 2;
 }
-html:active-view-transition-type(to-home)::view-transition-new(root) {
+html:has(body.home-page)::view-transition-new(root) {
   animation: vt-stay var(--dur-sweep) linear both;
   z-index: 1;
 }
@@ -191,12 +199,12 @@ html:active-view-transition-type(to-home)::view-transition-new(root) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html:active-view-transition-type(to-home)::view-transition-old(root),
-  html:active-view-transition-type(to-home)::view-transition-new(root),
-  html:active-view-transition-type(to-project)::view-transition-old(root),
-  html:active-view-transition-type(to-project)::view-transition-new(root),
-  html:active-view-transition-type(to-contact)::view-transition-old(root),
-  html:active-view-transition-type(to-contact)::view-transition-new(root) {
+  html:has(body.home-page)::view-transition-old(root),
+  html:has(body.home-page)::view-transition-new(root),
+  html:has(body.project-page)::view-transition-old(root),
+  html:has(body.project-page)::view-transition-new(root),
+  html:has(body.contact-page)::view-transition-old(root),
+  html:has(body.contact-page)::view-transition-new(root) {
     animation: none !important;
   }
 }

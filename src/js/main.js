@@ -9,10 +9,10 @@
  * Cross-shell navigation (e.g. clicking the logo on Project to return
  * Home) goes via window.location.assign in the page modules. The
  * vertical sweep animation between Home and a sub-page is driven by
- * the Cross-document View Transitions API (Phase 10) — see base.css
- * for the keyframes and the pageswap listener below for the direction
- * typing. Browsers without view-transition support reload instantly,
- * which is an acceptable graceful fallback.
+ * the Cross-document View Transitions API (Phase 10) — see base.css.
+ * Direction is picked there by :has(body.<page>-page) on the new
+ * page, so no JS coordination is needed. Browsers without view-
+ * transition support reload instantly — acceptable graceful fallback.
  *
  * The whole render path is synchronous: data is read from
  * window.__SITE_DATA__ (inlined by scripts/build.js), and the page
@@ -27,24 +27,6 @@ import { getCurrentRoute, getCurrentSlug } from './router.js';
 import { initHome } from './home.js';
 import { initProject } from './project.js';
 import { initContact } from './contact.js';
-
-// Tag every cross-document navigation with its destination kind so
-// base.css can pick the right vertical sweep direction. Set up at
-// module load (before init() runs) so the very first navigation in a
-// session is already typed. Optional chaining covers the rare case
-// where activation/entry is missing (e.g. some reload variants).
-window.addEventListener('pageswap', (e) => {
-  if (!e.viewTransition) return;
-  const url = e.activation?.entry?.url ?? window.location.href;
-  const path = new URL(url).pathname;
-  if (path === '/' || path === '/index.html') {
-    e.viewTransition.types.add('to-home');
-  } else if (path === '/contact' || path === '/contact/' || path === '/contact.html') {
-    e.viewTransition.types.add('to-contact');
-  } else {
-    e.viewTransition.types.add('to-project');
-  }
-});
 
 let homeInitialized = false;
 let data = null;
