@@ -1,28 +1,26 @@
 /**
- * data.js — loads content/projects.json and content/site.json.
+ * data.js — synchronous read of the site data inlined into the HTML
+ * shell at build time.
  *
- * Returns a stable object shaped as { projects, site } so consumers can
- * destructure once at startup. The fetch is cached for the lifetime of the
- * page (the data is shipped statically, no need to refetch).
+ * The build script (scripts/build.js, see buildSiteDataScript) emits
+ * a <script>window.__SITE_DATA__ = {...}</script> tag in the <head>
+ * of every HTML file, immediately before the deferred main.js module.
+ * That inline script runs synchronously during HTML parsing, so by
+ * the time main.js executes, __SITE_DATA__ is already set.
+ *
+ * Reading the data synchronously matters for cross-document view
+ * transitions (Phase 10): the snapshot of the destination page is
+ * taken at first paint, which happens after deferred modules finish
+ * executing but before any await yields to the event loop. If we
+ * fetched data asynchronously the snapshot would capture an empty
+ * <body> and the vertical sweep would look like a featureless panel
+ * appearing and vanishing.
  */
 
-let cache = null;
-
 export function loadData() {
-  if (cache) return cache;
-  cache = Promise.all([
-    fetch('/content/projects.json').then(assertOk).then((r) => r.json()),
-    fetch('/content/site.json').then(assertOk).then((r) => r.json())
-  ]).then(([projectsDoc, site]) => ({
-    projects: projectsDoc.projects,
-    site
-  }));
-  return cache;
-}
-
-function assertOk(response) {
-  if (!response.ok) {
-    throw new Error(`data: fetch failed for ${response.url} — ${response.status}`);
+  const data = globalThis.__SITE_DATA__;
+  if (!data || typeof data !== 'object') {
+    throw new Error('data: window.__SITE_DATA__ is missing — was the page built with scripts/build.js?');
   }
-  return response;
+  return data;
 }

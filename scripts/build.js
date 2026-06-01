@@ -10,9 +10,17 @@
  *   2. Clean the build outputs in public/ (preserving static placeholders
  *      like 404.html, admin/, robots.txt, _redirects, sitemap.xml).
  *   3. Copy src/css, src/js, assets/, content/ into public/.
- *   4. Read content/site.json and substitute {{tokens}} in each HTML file
- *      as it lands in public/. Tokens currently supported: siteTitle,
- *      siteDescription, siteUrl, ogImage.
+ *   4. Read content/site.json + content/projects.json and substitute
+ *      {{tokens}} in each HTML file as it lands in public/. Tokens
+ *      supported: siteTitle, siteDescription, siteUrl, ogImage,
+ *      siteDataScript. The last one is a literal <script> tag that
+ *      writes the full data object onto window.__SITE_DATA__ before
+ *      the deferred main.js module runs — so data.js can read it
+ *      synchronously and the page renders before first paint. This
+ *      matters for cross-document view transitions (Phase 10): the
+ *      new page's snapshot is taken at first paint, and an empty
+ *      snapshot makes the vertical sweep look like a featureless
+ *      solid panel appearing and vanishing.
  *
  * Build outputs (everything below is recreated each run):
  *   public/css/         from src/css/
@@ -37,6 +45,7 @@ const SRC = join(projectRoot, 'src');
 const ASSETS = join(projectRoot, 'assets');
 const CONTENT = join(projectRoot, 'content');
 const SITE_JSON = join(CONTENT, 'site.json');
+const PROJECTS_JSON = join(CONTENT, 'projects.json');
 
 const COPY_DIRS = [
   { from: join(SRC, 'css'),   to: join(PUBLIC, 'css') },
@@ -50,6 +59,22 @@ async function readSiteConfig() {
     throw new Error(`build: ${SITE_JSON} not found (content is missing).`);
   }
   return JSON.parse(await readFile(SITE_JSON, 'utf8'));
+}
+
+async function readProjectsConfig() {
+  if (!existsSync(PROJECTS_JSON)) {
+    throw new Error(`build: ${PROJECTS_JSON} not found (content is missing).`);
+  }
+  return JSON.parse(await readFile(PROJECTS_JSON, 'utf8'));
+}
+
+// Produce the inline <script> tag that exposes the full site data on
+// window.__SITE_DATA__. JSON.stringify is escaped so that any literal
+// '</script>' inside copy strings can't break out of the tag.
+function buildSiteDataScript(site, projectsDoc) {
+  const data = { projects: projectsDoc.projects, site };
+  const json = JSON.stringify(data).replace(/<\/(script)/gi, '<\\/$1');
+  return `<script>window.__SITE_DATA__=${json};</script>`;
 }
 
 async function listSourceHtml() {
@@ -78,32 +103,34 @@ async function copyDirs() {
   }
 }
 
-function substituteTokens(template, site) {
+function substituteTokens(template, tokens) {
   return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
-    if (Object.prototype.hasOwnProperty.call(site, key)) {
-      return String(site[key]);
+    if (Object.prototype.hasOwnProperty.call(tokens, key)) {
+      return String(tokens[key]);
     }
     console.warn(`build: unknown template token ${match} — leaving as-is.`);
     return match;
   });
 }
 
-async function buildHtml(files, site) {
+async function buildHtml(files, tokens) {
   for (const name of files) {
     const src = join(SRC, 'html', name);
     const dst = join(PUBLIC, name);
     const template = await readFile(src, 'utf8');
-    const output = substituteTokens(template, site);
+    const output = substituteTokens(template, tokens);
     await writeFile(dst, output);
   }
 }
 
 async function main() {
   const site = await readSiteConfig();
+  const projectsDoc = await readProjectsConfig();
   const htmlFiles = await listSourceHtml();
   await cleanPublic(htmlFiles);
   await copyDirs();
-  await buildHtml(htmlFiles, site);
+  const tokens = { ...site, siteDataScript: buildSiteDataScript(site, projectsDoc) };
+  await buildHtml(htmlFiles, tokens);
   console.log(`build: ${htmlFiles.length} HTML file(s), ${COPY_DIRS.length} directories copied.`);
 }
 

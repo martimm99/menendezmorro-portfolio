@@ -13,11 +13,20 @@
  * for the keyframes and the pageswap listener below for the direction
  * typing. Browsers without view-transition support reload instantly,
  * which is an acceptable graceful fallback.
+ *
+ * The whole render path is synchronous: data is read from
+ * window.__SITE_DATA__ (inlined by scripts/build.js), and the page
+ * modules are statically imported so module evaluation completes
+ * before first paint. This is required for the new page's view
+ * transition snapshot to capture the rendered content, not an empty
+ * shell.
  */
 
 import { loadData } from './data.js';
 import { getCurrentRoute, getCurrentSlug } from './router.js';
 import { initHome } from './home.js';
+import { initProject } from './project.js';
+import { initContact } from './contact.js';
 
 // Tag every cross-document navigation with its destination kind so
 // base.css can pick the right vertical sweep direction. Set up at
@@ -37,34 +46,24 @@ window.addEventListener('pageswap', (e) => {
   }
 });
 
-let dataReady = null;
 let homeInitialized = false;
+let data = null;
 
-async function init() {
+function init() {
   try {
-    dataReady = loadData();
-    const data = await dataReady;
-    applyRoute(data);
+    data = loadData();
+    applyRoute();
   } catch (err) {
     console.error('main: initialization failed', err);
     showError('Could not load site content. Try reloading the page.');
     return;
   }
 
-  window.addEventListener('popstate', handleRouteChange);
-  window.addEventListener('route-change', handleRouteChange);
+  window.addEventListener('popstate', applyRoute);
+  window.addEventListener('route-change', applyRoute);
 }
 
-async function handleRouteChange() {
-  try {
-    const data = await dataReady;
-    applyRoute(data);
-  } catch (err) {
-    console.error('main: route change failed', err);
-  }
-}
-
-async function applyRoute(data) {
+function applyRoute() {
   const route = getCurrentRoute();
   const slug = getCurrentSlug();
   const onHomeShell    = document.body.classList.contains('home-page');
@@ -87,7 +86,6 @@ async function applyRoute(data) {
 
   if (onProjectShell) {
     if (route === 'project') {
-      const { initProject } = await import('./project.js');
       initProject(data, slug);
       return;
     }
@@ -97,7 +95,6 @@ async function applyRoute(data) {
 
   if (onContactShell) {
     if (route === 'contact') {
-      const { initContact } = await import('./contact.js');
       initContact(data);
       return;
     }
