@@ -119,9 +119,13 @@
 /* ---------- Info row (socials) ---------- */
 
 .contact-info {
-  position: absolute;
+  /* Position-match the Project page info row exactly (project.css's
+   * .static-info-row): position: fixed; left: page-pad-x; bottom:
+   * page-pad-y. The X back button on the right corner doesn't compete
+   * for that space, so no extra bottom offset is needed. */
+  position: fixed;
   left: var(--page-pad-x);
-  bottom: calc(var(--page-pad-y) + 60px);
+  bottom: var(--page-pad-y);
   z-index: var(--z-info);
   margin: 0;
   display: flex;
