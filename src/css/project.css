@@ -376,36 +376,9 @@
 .description-content p { margin: 0; }
 .description-content p + p { margin-top: 0.9em; }
 
-/* ---------- Line reveal (description text, Get in touch CTA on entry) ----- */
-
-.reveal-line-clip {
-  display: inline-block;
-  /* clip-path (not overflow: hidden) is intentional. An inline-block's
-   * baseline shifts to its bottom margin edge whenever overflow is
-   * anything other than visible — and with one inline-block per word on
-   * a line, that shift adds ~20% of the font-size of dead space above
-   * every line, inflating the visible line gap. clip-path keeps overflow
-   * visible so the baseline stays at the text baseline, while still
-   * clipping the .reveal-line that sits below the box during the
-   * pre-animation translateY(100%) state. */
-  clip-path: inset(0);
-  -webkit-clip-path: inset(0);
-  vertical-align: baseline;
-  line-height: inherit;
-}
-
-.reveal-line {
-  display: inline-block;
-  transform: translateY(100%);
-  transition: transform var(--dur-line-reveal) var(--ease-line-reveal);
-  line-height: inherit;
-  will-change: transform;
-}
-
-.reveal-in .reveal-line {
-  transform: none;
-  transition-delay: var(--reveal-delay, 0ms);
-}
+/* Line reveal markup (.reveal-line-clip / .reveal-line / .reveal-in)
+ * lives in base.css so the Project description AND the Contact page
+ * can both rely on it. */
 
 /* ---------- Mobile layout ---------- */
 

@@ -26,7 +26,14 @@
 
 import { initGallery } from './gallery.js';
 import { initFullscreen, openFullscreen } from './fullscreen.js';
-import { copyText, showToast, escapeHtml, prefersReducedMotion } from './utils.js';
+import {
+  copyText,
+  showToast,
+  escapeHtml,
+  prefersReducedMotion,
+  wrapTextInRevealLines,
+  assignRevealLineDelays
+} from './utils.js';
 
 const SNAP_DURATION_MS = 1000;
 const LINE_REVEAL_DELAY_PER_LINE_MS = 80;
@@ -141,47 +148,16 @@ function renderDescription(project) {
   // the same line animate together.
   const paragraphs = text.split(/\n+/).map((p) => p.trim()).filter(Boolean);
   container.innerHTML = paragraphs
-    .map((p) => `<p class="description-paragraph">${wrapWords(p)}</p>`)
+    .map((p) => `<p class="description-paragraph">${wrapTextInRevealLines(p)}</p>`)
     .join('');
 
   // Two rAFs: the first ensures the new innerHTML is committed, the second
   // ensures layout has settled so getBoundingClientRect reflects the final
-  // wrapping. measurement runs while the section is offscreen (no transform
+  // wrapping. Measurement runs while the section is offscreen (no transform
   // dependency — all reveal-lines share the same transform here, so their
   // relative tops still cluster correctly per visual line).
   requestAnimationFrame(() => {
-    requestAnimationFrame(() => assignLineDelays(container));
-  });
-}
-
-function wrapWords(paragraph) {
-  // Split keeping whitespace runs so the rendered text wraps at the same
-  // points it would as plain text. Whitespace tokens are emitted as-is.
-  const tokens = paragraph.split(/(\s+)/);
-  return tokens.map((t) => {
-    if (t.length === 0) return '';
-    if (/^\s+$/.test(t)) return t;
-    return `<span class="reveal-line-clip"><span class="reveal-line">${escapeHtml(t)}</span></span>`;
-  }).join('');
-}
-
-function assignLineDelays(container) {
-  const lines = container.querySelectorAll('.reveal-line');
-  if (lines.length === 0) return;
-  // Group words by rounded top — the granularity tolerates sub-pixel layout
-  // differences without smearing lines together.
-  const groups = new Map();
-  for (const line of lines) {
-    const top = Math.round(line.getBoundingClientRect().top);
-    if (!groups.has(top)) groups.set(top, []);
-    groups.get(top).push(line);
-  }
-  const orderedTops = [...groups.keys()].sort((a, b) => a - b);
-  orderedTops.forEach((top, lineIdx) => {
-    const delay = lineIdx * LINE_REVEAL_DELAY_PER_LINE_MS;
-    for (const line of groups.get(top)) {
-      line.style.setProperty('--reveal-delay', `${delay}ms`);
-    }
+    requestAnimationFrame(() => assignRevealLineDelays(container, LINE_REVEAL_DELAY_PER_LINE_MS));
   });
 }
 

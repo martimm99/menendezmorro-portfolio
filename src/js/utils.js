@@ -66,3 +66,48 @@ export function showToast(message, duration = 2000) {
     }, 350);
   }, duration);
 }
+
+/**
+ * Wrap each word of a paragraph in nested .reveal-line-clip /
+ * .reveal-line spans so the Line reveal animation (spec §2) can drive
+ * them. Whitespace runs are preserved so text wrapping happens at the
+ * same points it would as plain text.
+ *
+ * Returns an HTML string. The caller is responsible for putting the
+ * result into the DOM and then calling assignRevealLineDelays() to
+ * group the words into visual lines.
+ */
+export function wrapTextInRevealLines(text) {
+  const tokens = String(text).split(/(\s+)/);
+  return tokens.map((t) => {
+    if (t.length === 0) return '';
+    if (/^\s+$/.test(t)) return t;
+    return `<span class="reveal-line-clip"><span class="reveal-line">${escapeHtml(t)}</span></span>`;
+  }).join('');
+}
+
+/**
+ * After wrapped reveal markup is in the DOM, group .reveal-line elements
+ * by their visual-line top position and stagger a --reveal-delay CSS
+ * variable across lines, so each visual line rises together when the
+ * container picks up the .reveal-in class.
+ *
+ * delayMs is the per-line stagger (80ms by default).
+ */
+export function assignRevealLineDelays(container, delayMs = 80) {
+  const lines = container.querySelectorAll('.reveal-line');
+  if (lines.length === 0) return;
+  const groups = new Map();
+  for (const line of lines) {
+    const top = Math.round(line.getBoundingClientRect().top);
+    if (!groups.has(top)) groups.set(top, []);
+    groups.get(top).push(line);
+  }
+  const orderedTops = [...groups.keys()].sort((a, b) => a - b);
+  orderedTops.forEach((top, lineIdx) => {
+    const delay = lineIdx * delayMs;
+    for (const line of groups.get(top)) {
+      line.style.setProperty('--reveal-delay', `${delay}ms`);
+    }
+  });
+}

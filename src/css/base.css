@@ -85,3 +85,40 @@ p {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
+
+/* ---------- Line reveal animation ----------
+ * Shared by the Project page description, the Contact page copy, and
+ * any other text that animates in line-by-line on entry. The wrapper
+ * is .reveal-line-clip (clip-path: inset(0) so the inline-block keeps
+ * its text-baseline anchoring); the slide-up element is .reveal-line.
+ * Adding the .reveal-in class on a common ancestor triggers all
+ * descendant .reveal-line elements to transition into place. Each
+ * .reveal-line gets a --reveal-delay CSS variable set by JS so the
+ * visual lines fire in sequence rather than all at once.
+ *
+ * clip-path (not overflow: hidden) is intentional: an inline-block's
+ * baseline shifts to its bottom margin edge whenever overflow is
+ * anything other than visible, which with one inline-block per word
+ * inflates the visible line gap. clip-path keeps overflow: visible so
+ * the baseline stays at the text baseline.
+ */
+.reveal-line-clip {
+  display: inline-block;
+  clip-path: inset(0);
+  -webkit-clip-path: inset(0);
+  vertical-align: baseline;
+  line-height: inherit;
+}
+
+.reveal-line {
+  display: inline-block;
+  transform: translateY(100%);
+  transition: transform var(--dur-line-reveal) var(--ease-line-reveal);
+  line-height: inherit;
+  will-change: transform;
+}
+
+.reveal-in .reveal-line {
+  transform: none;
+  transition-delay: var(--reveal-delay, 0ms);
+}
