@@ -42,14 +42,6 @@ const LINE_REVEAL_DELAY_PER_LINE_MS = 80;
 let teardown = null;
 let snapState = { showDescription: false, isAnimating: false };
 let touchStart = null;
-// Two-step snap-back on desktop: a single scroll-up gesture that just
-// reaches the top of the description should park the user there. The
-// next *separate* scroll-up gesture is the one that snaps back to
-// gallery. This flag is set when scrollTop first hits 0 from a wheel-up
-// and is consumed (and cleared) by the next wheel-up that arrives after
-// a > GESTURE_GAP_MS gap. Cleared eagerly when the user starts scrolling
-// in any other direction, or when leaving the description entirely.
-let armedForSnapBack = false;
 
 export function initProject(data, slug) {
   const project = data.projects.find((p) => p.slug === slug);
@@ -198,22 +190,18 @@ function setupNavigation(site) {
 /* ---------- Combined wheel + snap transition ----------
  *
  * One window-level wheel listener owns both the gallery's per-image
- * stepping and the description's two-step snap-back. This used to be
- * split across two listeners (gallery.js had its own; this file had
- * one for snap-back) — but having TWO non-passive-or-otherwise wheel
- * listeners on window produced flaky touchpad routing where every
- * second swipe required a cursor nudge to fire. Home has always
- * worked with one. Now the project page works the same way.
+ * stepping and the gallery <-> description snap. Having two listeners
+ * (gallery had its own) produced flaky touchpad routing where every
+ * second swipe required a cursor nudge to fire — home has always
+ * worked with one, and the project page works the same way now.
  *
  * passive: true: gallery scrolls via CSS transform (no native scroll
  * container to preventDefault on), and the description's edge bounce
  * is contained by overscroll-behavior-y: contain (see project.css).
  *
- * Burst detection: wheel events more than BURST_GAP_MS apart count as
- * separate gestures (same threshold as home.js). One gesture → one
- * gallery step, or one half of the two-step snap-back. Touchpad
- * inertia events between gestures land inside the burst window and
- * are absorbed.
+ * Burst detection: wheel events more than BURST_GAP_MS apart count
+ * as separate gestures (same threshold as home.js). One gesture →
+ * one gallery step, or one snap transition.
  *
  * AT_TOP_THRESHOLD tolerates sub-pixel scrollTop values macOS
  * browsers sometimes leave after smooth scrolls.
@@ -251,21 +239,12 @@ function setupWheelAndSnap(galleryAPI) {
   }
 
   function handleDescriptionWheel(deltaY) {
-    if (descriptionSection.scrollTop >= AT_TOP_THRESHOLD) {
-      armedForSnapBack = false;
-      return;
-    }
-    if (deltaY >= 0) {
-      armedForSnapBack = false;
-      return;
-    }
-    // At the top, wheel-up: arm on the first burst, snap on the next.
-    if (armedForSnapBack) {
-      armedForSnapBack = false;
-      snapToGallery();
-    } else {
-      armedForSnapBack = true;
-    }
+    // Native scroll handles wheel events when the user isn't yet at
+    // the top of the description. Only a wheel-up that lands while
+    // already at the top should snap back to the gallery.
+    if (descriptionSection.scrollTop >= AT_TOP_THRESHOLD) return;
+    if (deltaY >= 0) return;
+    snapToGallery();
   }
 
   // Mobile vertical swipe — listen on document so a swipe that starts
@@ -304,7 +283,6 @@ function snapToDescription() {
   const descriptionContent = document.querySelector('[data-description-content]');
   if (!shell || !descriptionSection) return;
 
-  armedForSnapBack = false;
   snapState.showDescription = true;
   snapState.isAnimating = true;
   shell.classList.add('show-description');
@@ -328,7 +306,6 @@ function snapToGallery() {
   const descriptionContent = document.querySelector('[data-description-content]');
   if (!shell || !descriptionSection) return;
 
-  armedForSnapBack = false;
   snapState.showDescription = false;
   snapState.isAnimating = true;
   shell.classList.remove('show-description');
