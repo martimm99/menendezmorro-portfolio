@@ -174,6 +174,7 @@ function setupWheel({ gallery, track, mqlMobile, onForwardAtEnd, isActive }) {
   let isAnimating = false;
   let animationTimer = null;
   let lastWheelAt = 0;
+  let lastDirection = 0;          // +1 after a processed forward step, -1 after back, 0 before any
 
   const handler = (e) => {
     if (isActive && !isActive()) return; // description showing or snap animating
@@ -193,9 +194,19 @@ function setupWheel({ gallery, track, mqlMobile, onForwardAtEnd, isActive }) {
     // past the user's second swipe.
     if (Math.abs(delta) < INERTIA_DELTA_THRESHOLD) return;
 
+    // Gesture detection. Two ways a wheel event can start a new step:
+    //   1. The timestamp gap from the last real event exceeds the
+    //      burst window (the user has visibly stopped between gestures).
+    //   2. The direction changed from the last processed step (the
+    //      user reversed). Without this, a back-swipe that lands
+    //      within the forward-swipe's inertia tail is treated as
+    //      continuation and silently dropped — which is exactly the
+    //      "can't scroll back from the last image" symptom.
+    const direction = delta > 0 ? 1 : -1;
+    const isDirectionChange = lastDirection !== 0 && direction !== lastDirection;
     const isNewGesture = (e.timeStamp - lastWheelAt) > GESTURE_GAP_MS;
     lastWheelAt = e.timeStamp;
-    if (!isNewGesture) return;
+    if (!isNewGesture && !isDirectionChange) return;
     if (isAnimating) return;
 
     const items = track.querySelectorAll('.gallery-item');
@@ -220,6 +231,8 @@ function setupWheel({ gallery, track, mqlMobile, onForwardAtEnd, isActive }) {
         startAnimationLock();
       }
     }
+
+    lastDirection = direction;
   };
 
   function startAnimationLock() {
