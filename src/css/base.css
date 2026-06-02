@@ -137,28 +137,11 @@ p {
 /* ===========================================================
  * Cross-document view transitions (BUILD_SPEC §2, Phase 10)
  * ===========================================================
- * Vertical sweep between Home and a sub-page:
- *   Home -> Project / Contact:  sub-page slides DOWN over Home.
- *   Project / Contact -> Home:  sub-page slides UP off the top.
- *
- * Direction is picked by the body class of the DESTINATION page,
- * via :has() on <html>. During a cross-document VT, the new page's
- * CSS evaluates the animation rules, so the body class we're
- * filtering on is always the page we're arriving at.
- *
- * We previously typed the transition with view-transition types
- * added in a pageswap listener and matched them via
- * :active-view-transition-type(...). The JS-side typing worked
- * (Chrome's types.add API is wired) but the CSS pseudo-class did
- * not match in our target browsers — the rules silently fell back
- * to the UA crossfade. The :has(body.X) form has no such gap: it
- * relies only on :has() and view-transition pseudos, both of
- * which have been GA for longer than cross-document VTs.
- *
- * Project <-> Contact navigation doesn't exist in the UI, so we
- * only need three destination cases. Anything else (a typed URL,
- * a reload, a cross-origin link) doesn't trigger a VT and falls
- * through to the browser default (instant).
+ * Vertical sweep between Home and a sub-page. Direction is picked
+ * off the destination page's <html class="..."> (set statically in
+ * each shell). Project <-> Contact navigation doesn't exist in the
+ * UI; anything else (typed URL, reload, cross-origin link) doesn't
+ * trigger a VT and falls through to the browser default (instant).
  *
  * Browsers without cross-document view-transition support
  * (Firefox, older WebKit) ignore @view-transition entirely;
@@ -181,22 +164,35 @@ p {
  * visible" to "hidden," edge sweeping bottom -> up — top elements
  * (logo, Get in touch) stay visible until the end. NEW (Home) is
  * revealed from the bottom as OLD shrinks. OLD must paint above
- * NEW for the reveal direction to read correctly. */
+ * NEW for the reveal direction to read correctly.
+ *
+ * Direction is picked off the <html> class (set statically in each
+ * HTML shell), not :has(body.X). Direct class matching on the
+ * pseudo's originating element is well-trodden territory, whereas
+ * :has() combined with cross-document ::view-transition-* pseudos
+ * sometimes silently fails — and we want zero intermittent fallback
+ * to the UA default fade.
+ *
+ * All clip-path values use the four-arg inset(top right bottom left)
+ * form so keyframe endpoints share an identical syntactic shape;
+ * mixing inset(0) and inset(0 0 100% 0) is technically valid but
+ * has caused some engines to drop the interpolation and skip the
+ * animation entirely. */
 
-html:has(body.project-page)::view-transition-old(root),
-html:has(body.contact-page)::view-transition-old(root) {
+html.project-page::view-transition-old(root),
+html.contact-page::view-transition-old(root) {
   animation: vt-stay var(--dur-sweep) linear both;
 }
-html:has(body.project-page)::view-transition-new(root),
-html:has(body.contact-page)::view-transition-new(root) {
+html.project-page::view-transition-new(root),
+html.contact-page::view-transition-new(root) {
   animation: vt-clip-reveal var(--dur-sweep) var(--ease-sweep) both;
 }
 
-html:has(body.home-page)::view-transition-old(root) {
+html.home-page::view-transition-old(root) {
   animation: vt-clip-hide var(--dur-sweep) var(--ease-sweep) both;
   z-index: 2;
 }
-html:has(body.home-page)::view-transition-new(root) {
+html.home-page::view-transition-new(root) {
   animation: vt-stay var(--dur-sweep) linear both;
   z-index: 1;
 }
@@ -207,25 +203,25 @@ html:has(body.home-page)::view-transition-new(root) {
  * keyframes apply via the inherited animation properties on
  * ::view-transition-image-pair. */
 @keyframes vt-stay {
-  from, to { opacity: 1; clip-path: inset(0); }
+  from, to { opacity: 1; clip-path: inset(0 0 0 0); }
 }
 
 @keyframes vt-clip-reveal {
   from { clip-path: inset(0 0 100% 0); }
-  to   { clip-path: inset(0); }
+  to   { clip-path: inset(0 0 0 0); }
 }
 @keyframes vt-clip-hide {
-  from { clip-path: inset(0); }
+  from { clip-path: inset(0 0 0 0); }
   to   { clip-path: inset(0 0 100% 0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html:has(body.home-page)::view-transition-old(root),
-  html:has(body.home-page)::view-transition-new(root),
-  html:has(body.project-page)::view-transition-old(root),
-  html:has(body.project-page)::view-transition-new(root),
-  html:has(body.contact-page)::view-transition-old(root),
-  html:has(body.contact-page)::view-transition-new(root) {
+  html.home-page::view-transition-old(root),
+  html.home-page::view-transition-new(root),
+  html.project-page::view-transition-old(root),
+  html.project-page::view-transition-new(root),
+  html.contact-page::view-transition-old(root),
+  html.contact-page::view-transition-new(root) {
     animation: none !important;
   }
 }
