@@ -1,13 +1,17 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
     <title>Content Manager — MENÉNDEZ MORRO</title>
   </head>
   <body>
     <!-- Decap CMS entry. Schema in ./config.yml. See BUILD_SPEC.md §7. -->
+    <!-- Netlify Identity widget: handles the Login with Netlify modal
+         that wraps the underlying GitHub OAuth handshake. Must load
+         before decap-cms.js so Decap can pick up the identity backend. -->
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
     <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
   </body>
 </html>

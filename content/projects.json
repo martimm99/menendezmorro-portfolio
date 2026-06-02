@@ -1,7 +1,6 @@
 {
   "projects": [
     {
-      "id": "morro",
       "slug": "morro",
       "title": "Morro",
       "role": "Branding and Art Direction",
@@ -12,19 +11,41 @@
       "description": "Digital design studio.",
       "longDescription": "",
       "links": [
-        { "url": "https://www.instagram.com/uepmorro/", "text": "@uepmorro" }
+        {
+          "url": "https://www.instagram.com/uepmorro/",
+          "text": "@uepmorro"
+        }
       ],
       "duration": "1 month",
       "cost": "Collaboration",
       "media": [
-        { "type": "image", "src": "assets/media/morro/morro-1.jpg", "alt": "Morro image 1", "caption": "" },
-        { "type": "image", "src": "assets/media/morro/morro-2.jpg", "alt": "Morro image 2", "caption": "" },
-        { "type": "image", "src": "assets/media/morro/morro-3.jpg", "alt": "Morro image 3", "caption": "" },
-        { "type": "image", "src": "assets/media/morro/morro-4.jpg", "alt": "Morro image 4", "caption": "" }
+        {
+          "type": "image",
+          "src": "assets/media/morro/morro-1.jpg",
+          "alt": "Morro image 1",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/morro/morro-2.jpg",
+          "alt": "Morro image 2",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/morro/morro-3.jpg",
+          "alt": "Morro image 3",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/morro/morro-4.jpg",
+          "alt": "Morro image 4",
+          "caption": ""
+        }
       ]
     },
     {
-      "id": "lufthansa-innovation-hub",
       "slug": "lufthansa-innovation-hub",
       "title": "Lufthansa Innovation Hub",
       "role": "Graphic Design & Motion Graphics",
@@ -35,19 +56,41 @@
       "description": "Digital solutions for the next in travel and mobility.",
       "longDescription": "",
       "links": [
-        { "url": "https://lh-innovationhub.de/en/", "text": "Website" }
+        {
+          "url": "https://lh-innovationhub.de/en/",
+          "text": "Website"
+        }
       ],
       "duration": "9 months",
       "cost": "Employee",
       "media": [
-        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-1.jpg", "alt": "Lufthansa Innovation Hub image 1", "caption": "" },
-        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-2.jpg", "alt": "Lufthansa Innovation Hub image 2", "caption": "" },
-        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-3.jpg", "alt": "Lufthansa Innovation Hub image 3", "caption": "" },
-        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-4.jpg", "alt": "Lufthansa Innovation Hub image 4", "caption": "" }
+        {
+          "type": "image",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-1.jpg",
+          "alt": "Lufthansa Innovation Hub image 1",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-2.jpg",
+          "alt": "Lufthansa Innovation Hub image 2",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-3.jpg",
+          "alt": "Lufthansa Innovation Hub image 3",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-4.jpg",
+          "alt": "Lufthansa Innovation Hub image 4",
+          "caption": ""
+        }
       ]
     },
     {
-      "id": "build-a-rocket",
       "slug": "build-a-rocket",
       "title": "Build A Rocket",
       "role": "Web Design",
@@ -58,19 +101,41 @@
       "description": "Full-service gaming agency.",
       "longDescription": "",
       "links": [
-        { "url": "https://buildarocket.com/en", "text": "Website" }
+        {
+          "url": "https://buildarocket.com/en",
+          "text": "Website"
+        }
       ],
       "duration": "3.5 months",
       "cost": "4.000€",
       "media": [
-        { "type": "image", "src": "assets/media/build-a-rocket/build-a-rocket-1.jpg", "alt": "Build A Rocket image 1", "caption": "" },
-        { "type": "image", "src": "assets/media/build-a-rocket/build-a-rocket-2.jpg", "alt": "Build A Rocket image 2", "caption": "" },
-        { "type": "image", "src": "assets/media/build-a-rocket/build-a-rocket-3.jpg", "alt": "Build A Rocket image 3", "caption": "" },
-        { "type": "image", "src": "assets/media/build-a-rocket/build-a-rocket-4.jpg", "alt": "Build A Rocket image 4", "caption": "" }
+        {
+          "type": "image",
+          "src": "assets/media/build-a-rocket/build-a-rocket-1.jpg",
+          "alt": "Build A Rocket image 1",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/build-a-rocket/build-a-rocket-2.jpg",
+          "alt": "Build A Rocket image 2",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/build-a-rocket/build-a-rocket-3.jpg",
+          "alt": "Build A Rocket image 3",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/build-a-rocket/build-a-rocket-4.jpg",
+          "alt": "Build A Rocket image 4",
+          "caption": ""
+        }
       ]
     },
     {
-      "id": "reaviva",
       "slug": "reaviva",
       "title": "Gestión Reaviva",
       "role": "Branding and Web Design & Development",
@@ -81,19 +146,41 @@
       "description": "Technical services for construction projects.",
       "longDescription": "",
       "links": [
-        { "url": "https://www.gestionreaviva.com/", "text": "Website" }
+        {
+          "url": "https://www.gestionreaviva.com/",
+          "text": "Website"
+        }
       ],
       "duration": "3 months",
       "cost": "4.000€",
       "media": [
-        { "type": "image", "src": "assets/media/reaviva/reaviva-1.jpg", "alt": "Gestión Reaviva image 1", "caption": "" },
-        { "type": "image", "src": "assets/media/reaviva/reaviva-2.jpg", "alt": "Gestión Reaviva image 2", "caption": "" },
-        { "type": "image", "src": "assets/media/reaviva/reaviva-3.jpg", "alt": "Gestión Reaviva image 3", "caption": "" },
-        { "type": "image", "src": "assets/media/reaviva/reaviva-4.jpg", "alt": "Gestión Reaviva image 4", "caption": "" }
+        {
+          "type": "image",
+          "src": "assets/media/reaviva/reaviva-1.jpg",
+          "alt": "Gestión Reaviva image 1",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/reaviva/reaviva-2.jpg",
+          "alt": "Gestión Reaviva image 2",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/reaviva/reaviva-3.jpg",
+          "alt": "Gestión Reaviva image 3",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/reaviva/reaviva-4.jpg",
+          "alt": "Gestión Reaviva image 4",
+          "caption": ""
+        }
       ]
     },
     {
-      "id": "festival-z",
       "slug": "festival-z",
       "title": "Festival Z",
       "role": "Creative Direction",
@@ -104,19 +191,41 @@
       "description": "Performing arts festival.",
       "longDescription": "",
       "links": [
-        { "url": "https://www.festivalz.org/en/", "text": "Website" }
+        {
+          "url": "https://www.festivalz.org/en/",
+          "text": "Website"
+        }
       ],
       "duration": "5 months",
       "cost": "4.500€",
       "media": [
-        { "type": "image", "src": "assets/media/festival-z/festival-z-1.jpg", "alt": "Festival Z image 1", "caption": "" },
-        { "type": "image", "src": "assets/media/festival-z/festival-z-2.jpg", "alt": "Festival Z image 2", "caption": "" },
-        { "type": "image", "src": "assets/media/festival-z/festival-z-3.jpg", "alt": "Festival Z image 3", "caption": "" },
-        { "type": "image", "src": "assets/media/festival-z/festival-z-4.jpg", "alt": "Festival Z image 4", "caption": "" }
+        {
+          "type": "image",
+          "src": "assets/media/festival-z/festival-z-1.jpg",
+          "alt": "Festival Z image 1",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/festival-z/festival-z-2.jpg",
+          "alt": "Festival Z image 2",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/festival-z/festival-z-3.jpg",
+          "alt": "Festival Z image 3",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/festival-z/festival-z-4.jpg",
+          "alt": "Festival Z image 4",
+          "caption": ""
+        }
       ]
     },
     {
-      "id": "titles",
       "slug": "titles",
       "title": "Titles",
       "role": "Graphic Design",
@@ -127,20 +236,45 @@
       "description": "Titles design for audiovisual projects.",
       "longDescription": "",
       "links": [
-        { "url": "https://www.youtube.com/watch?v=D46HaA131vU", "text": "Un altre petó" },
-        { "url": "https://www.youtube.com/watch?v=SzteXtJIies", "text": "Me Olvido" }
+        {
+          "url": "https://www.youtube.com/watch?v=D46HaA131vU",
+          "text": "Un altre petó"
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=SzteXtJIies",
+          "text": "Me Olvido"
+        }
       ],
       "duration": "2 weeks",
       "cost": "Collaboration",
       "media": [
-        { "type": "image", "src": "assets/media/titles/titles-1.jpg", "alt": "Titles image 1", "caption": "" },
-        { "type": "image", "src": "assets/media/titles/titles-2.jpg", "alt": "Titles image 2", "caption": "" },
-        { "type": "image", "src": "assets/media/titles/titles-3.jpg", "alt": "Titles image 3", "caption": "" },
-        { "type": "image", "src": "assets/media/titles/titles-4.jpg", "alt": "Titles image 4", "caption": "" }
+        {
+          "type": "image",
+          "src": "assets/media/titles/titles-1.jpg",
+          "alt": "Titles image 1",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/titles/titles-2.jpg",
+          "alt": "Titles image 2",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/titles/titles-3.jpg",
+          "alt": "Titles image 3",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/titles/titles-4.jpg",
+          "alt": "Titles image 4",
+          "caption": ""
+        }
       ]
     },
     {
-      "id": "architecture",
       "slug": "architecture",
       "title": "Architecture",
       "role": "Photography and Postproduction",
@@ -154,14 +288,33 @@
       "duration": "2–5 days",
       "cost": "250–800€",
       "media": [
-        { "type": "image", "src": "assets/media/architecture/architecture-1.jpg", "alt": "Architecture image 1", "caption": "" },
-        { "type": "image", "src": "assets/media/architecture/architecture-2.jpg", "alt": "Architecture image 2", "caption": "" },
-        { "type": "image", "src": "assets/media/architecture/architecture-3.jpg", "alt": "Architecture image 3", "caption": "" },
-        { "type": "image", "src": "assets/media/architecture/architecture-4.jpg", "alt": "Architecture image 4", "caption": "" }
+        {
+          "type": "image",
+          "src": "assets/media/architecture/architecture-1.jpg",
+          "alt": "Architecture image 1",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/architecture/architecture-2.jpg",
+          "alt": "Architecture image 2",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/architecture/architecture-3.jpg",
+          "alt": "Architecture image 3",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/architecture/architecture-4.jpg",
+          "alt": "Architecture image 4",
+          "caption": ""
+        }
       ]
     },
     {
-      "id": "concerts",
       "slug": "concerts",
       "title": "Concerts",
       "role": "Photography and Postproduction",
@@ -172,15 +325,38 @@
       "description": "Concert photography for artists, labels and media.",
       "longDescription": "",
       "links": [
-        { "url": "https://fleek.25gramos.com/live_show/live-show-w-gloosito/", "text": "25Gramos" }
+        {
+          "url": "https://fleek.25gramos.com/live_show/live-show-w-gloosito/",
+          "text": "25Gramos"
+        }
       ],
       "duration": "3 days",
       "cost": "250–800€",
       "media": [
-        { "type": "image", "src": "assets/media/concerts/concerts-1.jpg", "alt": "Concerts image 1", "caption": "" },
-        { "type": "image", "src": "assets/media/concerts/concerts-2.jpg", "alt": "Concerts image 2", "caption": "" },
-        { "type": "image", "src": "assets/media/concerts/concerts-3.jpg", "alt": "Concerts image 3", "caption": "" },
-        { "type": "image", "src": "assets/media/concerts/concerts-4.jpg", "alt": "Concerts image 4", "caption": "" }
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-1.jpg",
+          "alt": "Concerts image 1",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-2.jpg",
+          "alt": "Concerts image 2",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-3.jpg",
+          "alt": "Concerts image 3",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-4.jpg",
+          "alt": "Concerts image 4",
+          "caption": ""
+        }
       ]
     }
   ]

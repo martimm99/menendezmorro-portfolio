@@ -1,18 +1,136 @@
-# Decap CMS configuration — stub.
-# The full collection schema (Site settings + Projects) lands in Phase 11.
-# See BUILD_SPEC.md §7 for the authoritative field list.
+# Decap CMS configuration — Phase 11.
+# Schema follows BUILD_SPEC.md §7. Authoring is over Git Gateway,
+# authenticated via Netlify Identity with GitHub OAuth (see §7
+# Authentication). Manual setup steps for the owner are listed in
+# the admin/README inside this folder.
+#
+# Editing this file: keep the field shapes in sync with the actual
+# JSON shapes of content/site.json and content/projects.json. The
+# build pipeline (scripts/validate-data.js) enforces those shapes,
+# so a stale schema here will reject CMS saves until they line up.
 
 backend:
-  name: github
-  # TODO Phase 11: replace with the real GitHub repo slug (owner/repo).
-  repo: OWNER/REPO
+  name: git-gateway
   branch: main
+  # Show "Login with Netlify Identity" — Netlify Identity is configured
+  # in the Netlify dashboard to use GitHub as its OAuth provider, so the
+  # actual sign-in is a GitHub OAuth handshake under the hood.
 
-media_folder: assets/media
-public_folder: /assets/media
+media_folder: "assets/media"
+public_folder: "/assets/media"
+# Note: Decap doesn't natively scope media uploads to a per-project
+# subfolder when the project is an entry inside a single JSON file
+# (file collection + list widget). Uploads via this CMS go to the
+# top-level assets/media folder; the renderer accepts both the legacy
+# per-slug paths (assets/media/<slug>/<filename>) and flat paths
+# (assets/media/<filename>). Per-slug organization remains possible
+# via git for the owner who wants it.
 
-# Phase 11 will define:
-#   collections:
-#     - name: site        # singleton — site-wide settings (BUILD_SPEC.md §6.2)
-#     - name: projects    # list, drag-to-reorder (BUILD_SPEC.md §6.1 and §7)
-collections: []
+collections:
+  # -------------------------------------------------------------------
+  # Site settings — a singleton ("File" collection with one file).
+  # -------------------------------------------------------------------
+  - name: "site"
+    label: "Site settings"
+    delete: false
+    editor:
+      preview: false
+    files:
+      - name: "settings"
+        label: "Settings"
+        file: "content/site.json"
+        fields:
+          - { name: "siteTitle",       label: "Site title",       widget: "string" }
+          - { name: "siteDescription", label: "Site description", widget: "text" }
+          - { name: "siteUrl",         label: "Site URL",         widget: "string" }
+          - { name: "ogImage",         label: "OG image",         widget: "image" }
+          - { name: "contactEmail",    label: "Contact email",    widget: "string" }
+          - name: "contactCopy"
+            label: "Contact copy (paragraphs)"
+            widget: "list"
+            field: { name: "paragraph", label: "Paragraph", widget: "text" }
+          - name: "socials"
+            label: "Social links"
+            widget: "list"
+            fields:
+              - { name: "label",       label: "Label",        widget: "string" }
+              - { name: "url",         label: "URL",          widget: "string" }
+              - { name: "displayText", label: "Display text", widget: "string" }
+          - name: "analytics"
+            label: "Analytics"
+            widget: "object"
+            fields:
+              - { name: "googleAnalyticsId", label: "Google Analytics ID", widget: "string", required: false }
+
+  # -------------------------------------------------------------------
+  # Projects — a single content/projects.json file. The "projects"
+  # field inside is a list widget, which gives Decap drag-to-reorder
+  # at the project level (and again inside each project's media list).
+  # -------------------------------------------------------------------
+  - name: "projects"
+    label: "Projects"
+    delete: false
+    editor:
+      preview: false
+    files:
+      - name: "list"
+        label: "Projects list"
+        file: "content/projects.json"
+        fields:
+          - name: "projects"
+            label: "Projects"
+            label_singular: "Project"
+            widget: "list"
+            summary: "{{fields.title}} ({{fields.year}})"
+            fields:
+              - { name: "slug",            label: "Slug", widget: "string", hint: "URL path — lowercase, hyphens, no spaces" }
+              - { name: "title",           label: "Title", widget: "string" }
+              - { name: "role",            label: "Role", widget: "string" }
+              - { name: "year",            label: "Year", widget: "string" }
+              - { name: "location",        label: "Location", widget: "string" }
+              - name: "type"
+                label: "Type"
+                widget: "select"
+                options:
+                  - { label: "Design", value: "design" }
+                  - { label: "Photo",  value: "photo" }
+              - name: "subcategory"
+                label: "Subcategory"
+                widget: "select"
+                multiple: true
+                required: false
+                default: []
+                options:
+                  - { label: "Branding",     value: "branding" }
+                  - { label: "Web",          value: "web" }
+                  - { label: "Titles",       value: "titles" }
+                  - { label: "Architecture", value: "architecture" }
+                  - { label: "Live",         value: "live" }
+              - { name: "description",     label: "Short description", widget: "text", hint: "Shown in the Home info row." }
+              - { name: "longDescription", label: "Long description",  widget: "markdown", required: false }
+              - name: "links"
+                label: "Links"
+                widget: "list"
+                required: false
+                default: []
+                fields:
+                  - { name: "url",  label: "URL",          widget: "string" }
+                  - { name: "text", label: "Display text", widget: "string" }
+              - { name: "duration", label: "Duration", widget: "string", required: false }
+              - { name: "cost",     label: "Cost",     widget: "string", required: false }
+              - name: "media"
+                label: "Media"
+                label_singular: "Media item"
+                widget: "list"
+                summary: "{{fields.type}} — {{fields.alt}}"
+                fields:
+                  - name: "type"
+                    label: "Type"
+                    widget: "select"
+                    options:
+                      - { label: "Image", value: "image" }
+                      - { label: "Video", value: "video" }
+                  - { name: "src",     label: "File",    widget: "file" }
+                  - { name: "alt",     label: "Alt text", widget: "string", hint: "Required for accessibility; auto-filled if blank." }
+                  - { name: "caption", label: "Caption", widget: "string", required: false, hint: "Optional small label under the image." }
+                  - { name: "poster",  label: "Poster (videos only)", widget: "image", required: false }

@@ -11,7 +11,6 @@
  * In addition to pure JSON Schema validation, the script performs cross-field
  * checks that JSON Schema cannot express cleanly:
  *
- *   - id === slug for every project
  *   - slugs are unique across all projects
  *   - video media items are warned (not failed) when they lack a poster
  *
@@ -49,12 +48,11 @@ const projectsSchema = {
       type: 'object',
       additionalProperties: false,
       required: [
-        'id', 'slug', 'title', 'role', 'year', 'location', 'type',
+        'slug', 'title', 'role', 'year', 'location', 'type',
         'subcategory', 'description', 'longDescription', 'links',
         'duration', 'cost', 'media'
       ],
       properties: {
-        id:              { type: 'string', pattern: SLUG_PATTERN },
         slug:            { type: 'string', pattern: SLUG_PATTERN },
         title:           { type: 'string', minLength: 1 },
         role:            { type: 'string', minLength: 1 },
@@ -171,9 +169,6 @@ function crossFieldChecks(projects) {
 
   projects.forEach((project, idx) => {
     const where = `/projects/${idx}`;
-    if (project.id !== project.slug) {
-      errors.push(`  projects.json${where}: id "${project.id}" does not match slug "${project.slug}"`);
-    }
     if (seenSlugs.has(project.slug)) {
       errors.push(`  projects.json${where}/slug: duplicate slug "${project.slug}" (also at /projects/${seenSlugs.get(project.slug)})`);
     } else {

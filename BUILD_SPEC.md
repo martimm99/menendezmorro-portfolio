@@ -1,8 +1,11 @@
 # MENÉNDEZ MORRO — Portfolio Rebuild Build Spec
 
-**Version:** 1.6 (Approved)
-**Date:** June 1, 2026
+**Version:** 1.7 (Approved)
+**Date:** June 2, 2026
 **Status:** Approved — build authorized
+
+**Changes from v1.6:**
+- Project data model: `id` field removed. `slug` is now the sole identifier for a project. The Decap CMS schema (Phase 11) drops `id` from the form; `scripts/validate-data.js` no longer enforces the `id === slug` cross-check; existing `content/projects.json` had `id` stripped from all eight entries. No behavioural change — `id` was never read by the renderer.
 
 **Changes from v1.5:**
 - Back button visual changed from an arrow to an **X icon** on both the Project page and the Contact page. Position (bottom-right) and behavior (vertical sweep back to Home) unchanged. References updated in §2 and §5.2/§5.3.
@@ -317,7 +320,6 @@ Triggered by clicking/tapping an image or video in the Project page Gallery. Beh
 {
   "projects": [
     {
-      "id": "morro",
       "slug": "morro",
       "title": "Morro",
       "role": "Branding and Art Direction",
@@ -343,7 +345,7 @@ Triggered by clicking/tapping an image or video in the Project page Gallery. Beh
 ```
 
 **Field notes:**
-- `id` and `slug` are usually identical. `id` is internal; `slug` appears in the URL.
+- `slug` is the URL path and the project's identifier in the data model.
 - `type`: either `"design"` or `"photo"`. Unused in UI but preserved for future filtering.
 - `subcategory`: always an array. Currently unused in UI; preserved for future filtering. Empty arrays are valid.
 - `links`: array of `{url, text}` objects. Can be empty (`[]`) for projects with no external links — the UI hides the LINKS section in that case. Can have multiple entries for projects with several relevant links (e.g., Titles, Concerts).
