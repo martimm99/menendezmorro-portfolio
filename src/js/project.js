@@ -84,17 +84,65 @@ export function initProject(data, slug) {
 /* ---------- Head metadata ---------- */
 
 function updateHead(site, project) {
-  document.title = `${project.title} — ${site.siteTitle}`;
-  setMeta('meta[name="description"]', 'content', project.description || site.siteDescription);
-  setMeta('meta[property="og:title"]', 'content', `${project.title} — ${site.siteTitle}`);
-  setMeta('meta[property="og:description"]', 'content', project.description || site.siteDescription);
-  setMeta('meta[property="og:url"]', 'content', `${site.siteUrl}/${project.slug}`);
-  setMeta('link[rel="canonical"]', 'href', `${site.siteUrl}/${project.slug}`);
+  const pageTitle = `${project.title} — ${site.siteTitle}`;
+  const pageDescription = project.description || site.siteDescription;
+  const pageUrl = `${site.siteUrl}/${project.slug}`;
+  // First media item as the social-preview image. Falls back to the
+  // site-wide OG image if a project has no media (shouldn't happen
+  // per validator, but be defensive).
+  const firstMedia = (project.media || []).find((m) => m && m.src);
+  const projectImage = firstMedia
+    ? `${site.siteUrl}/${String(firstMedia.src).replace(/^\//, '')}`
+    : `${site.siteUrl}/${String(site.ogImage || '').replace(/^\//, '')}`;
+
+  document.title = pageTitle;
+  setMeta('meta[name="description"]',           'content', pageDescription);
+  setMeta('link[rel="canonical"]',              'href',    pageUrl);
+  setMeta('meta[property="og:title"]',          'content', pageTitle);
+  setMeta('meta[property="og:description"]',    'content', pageDescription);
+  setMeta('meta[property="og:url"]',            'content', pageUrl);
+  setMeta('meta[property="og:image"]',          'content', projectImage);
+  setMeta('meta[name="twitter:title"]',         'content', pageTitle);
+  setMeta('meta[name="twitter:description"]',   'content', pageDescription);
+  setMeta('meta[name="twitter:image"]',         'content', projectImage);
+
+  injectStructuredData(site, project, pageUrl, projectImage);
 }
 
 function setMeta(selector, attr, value) {
   const el = document.querySelector(selector);
   if (el) el.setAttribute(attr, value);
+}
+
+// Inject a JSON-LD CreativeWork block describing the project, per
+// BUILD_SPEC §10 (SEO baseline). The block lives in <head> so search
+// crawlers and Open Graph parsers pick it up alongside the meta tags.
+function injectStructuredData(site, project, url, image) {
+  const existing = document.head.querySelector('script[type="application/ld+json"][data-project-ld]');
+  if (existing) existing.remove();
+
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    name: project.title,
+    headline: project.title,
+    description: project.description || site.siteDescription,
+    url,
+    image,
+    inLanguage: 'en',
+    creator: {
+      '@type': 'Person',
+      name: 'Martí Menéndez'
+    }
+  };
+  if (project.year)     data.dateCreated = String(project.year);
+  if (project.location) data.locationCreated = { '@type': 'Place', name: project.location };
+
+  const tag = document.createElement('script');
+  tag.type = 'application/ld+json';
+  tag.dataset.projectLd = '';
+  tag.textContent = JSON.stringify(data);
+  document.head.appendChild(tag);
 }
 
 /* ---------- Static info row ---------- */

@@ -12,7 +12,7 @@
     "optimize-images": "node scripts/optimize-images.js",
     "generate-placeholders": "node scripts/generate-placeholders.js",
     "build-sitemap": "node scripts/build-sitemap.js",
-    "build": "node scripts/build.js",
+    "build": "node scripts/build.js && node scripts/build-sitemap.js",
     "preview": "npm run build && node scripts/preview.js"
   },
   "devDependencies": {

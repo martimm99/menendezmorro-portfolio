@@ -1,8 +1,12 @@
 # MENÉNDEZ MORRO — Portfolio Rebuild Build Spec
 
-**Version:** 1.7 (Approved)
+**Version:** 1.8 (Approved)
 **Date:** June 2, 2026
 **Status:** Approved — build authorized
+
+**Changes from v1.7:**
+- §4 slug migration: legacy hash URL redirects dropped from scope. Browsers don't send the URL fragment to the server, so a Netlify-side 301 can't intercept `/#morro` (only `/` ever arrives). Shared legacy links land on Home as-is. The slug migration map is retained as historical reference. `public/_redirects` no longer carries a Phase 12 TODO for hash redirects.
+- §11 deployment plan: line "301 redirects for old hash URLs configured in `_redirects`" removed; no redirect file work remains for go-live.
 
 **Changes from v1.6:**
 - Project data model: `id` field removed. `slug` is now the sole identifier for a project. The Decap CMS schema (Phase 11) drops `id` from the form; `scripts/validate-data.js` no longer enforces the `id === slug` cross-check; existing `content/projects.json` had `id` stripped from all eight entries. No behavioural change — `id` was never read by the renderer.
@@ -154,9 +158,7 @@ Eight projects in the new portfolio. The new slugs are canonical; legacy hash UR
 | Architecture | `/architecture` | `/#binifaldo` |
 | Concerts | `/concerts` | `/#gloosito`, `/#madison_beer`, `/#alequi`, `/#delaossa`, `/#maylaya`, `/#mda`, `/#coaatmca` |
 
-All legacy hash URLs not in the above map (e.g., `/#nicki_nicole`, removed projects) redirect to Home (`/`).
-
-301 redirects configured in `public/_redirects` (Netlify) so any shared legacy link still resolves correctly.
+The map is retained for historical reference only. **Legacy hash URLs are not redirected by the rebuild.** Browsers don't send a URL fragment (the `#…` part) to the server, so Netlify only ever sees `/` for any `/#x` request — there's no point of interception where a server-side 301 could fire. Every legacy hash link, mapped or not, lands the user on Home; from there they navigate to the right project the same way any first-time visitor would.
 
 ---
 
@@ -585,7 +587,6 @@ menendezmorro-portfolio/
 
 **Phase 3: Go live**
 - Update DNS records at Nominalia to point at Netlify.
-- 301 redirects for old hash URLs configured in `_redirects`.
 - Verify the domain resolves to the new site (allow up to 24h for DNS propagation; typically faster).
 - Confirm Google Analytics is firing.
 

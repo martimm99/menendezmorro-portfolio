@@ -7,5 +7,8 @@
 /contact   /contact.html   200
 /*         /project.html   200
 
-# Phase 12 will add 301s for legacy hash URLs listed in BUILD_SPEC.md §4
-# (/#morro -> /morro, /#gestion_reaviva -> /reaviva, etc.).
+# Legacy hash URLs (/#morro etc., listed in BUILD_SPEC.md §4) are NOT
+# redirected. Browsers don't send the fragment to the server, so Netlify
+# never sees the #morro part — every /#x request arrives here as /, and
+# we serve the home page as-is. Shared legacy links land on /; the slug
+# migration map in the spec is retained for historical reference only.
