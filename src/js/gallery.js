@@ -27,8 +27,7 @@
 import { prefersReducedMotion } from './utils.js';
 
 const SCROLL_TRANSITION_MS = 350;
-const GESTURE_GAP_MS = 80;             // wheel events more than this far apart start a new gesture
-const INERTIA_DELTA_THRESHOLD = 3;     // |delta| below this is treated as inertia tail and ignored
+const BURST_GAP_MS = 150;              // wheel events more than this far apart start a new gesture
 const DRAG_CLICK_THRESHOLD = 5;
 const VIDEO_VISIBILITY_THRESHOLD = 0.9;
 
@@ -155,26 +154,34 @@ function buildVideo(media, projectTitle, index) {
 /* ---------- Wheel (desktop) ---------- */
 
 function setupWheel({ gallery, track, mqlMobile, onForwardAtEnd, isActive }) {
-  // One wheel gesture → exactly one image step, regardless of gesture
-  // length. A touchpad swipe sends ~16ms-spaced wheel events for as long
-  // as the fingers move plus a ~300ms inertia tail; only the first event
-  // of that burst should advance the gallery, and the rest are absorbed
-  // here. A mouse wheel click is a single event with a long gap before
-  // the next, so it also reads as "one gesture → one step." Drag is
-  // intentionally NOT routed through this — it stays as the free-scroll
-  // pointer handler so a power user can still pull the track by hand.
+  // One wheel gesture → exactly one image step. A touchpad swipe
+  // sends ~16ms-spaced events for as long as the fingers move plus a
+  // ~300ms inertia tail; only the first event of that burst should
+  // advance the gallery. A mouse wheel click is a single event with
+  // a long gap before the next, so it also reads as "one gesture →
+  // one step." Drag is intentionally NOT routed through this — it
+  // stays as the free-scroll pointer handler so a power user can
+  // still pull the track by hand.
   //
-  // The listener is on window, not on .gallery, so wheel events arrive
-  // regardless of where the cursor sits (especially over static elements
-  // like the info row or back arrow, which are siblings of project-shell
-  // and don't bubble through gallery). The isActive callback gates the
-  // handler so it stays silent while the description section is showing
-  // or while the snap animation is running — project.js's description
-  // handler takes over in those states.
+  // The listener is on window so events arrive regardless of where
+  // the cursor sits (especially over static elements like the info
+  // row or back arrow). isActive gates it: silent while the
+  // description section is showing or while the snap animation is
+  // running, since project.js's description handler takes over.
+  //
+  // passive: true is deliberate (mirrors home.js's wheel listener,
+  // which has always been reliable). The gallery scrolls via CSS
+  // transform on .gallery-track — there is no native scrollable
+  // element to fight, so preventDefault would be a no-op anyway.
+  // The earlier passive: false / capture: true version routed wheel
+  // events through Chrome's main-thread synchronous path; that path
+  // throttles between gestures and only re-engages on pointer
+  // motion, which produced the "have to nudge the cursor between
+  // swipes" bug. Passive listeners deliver from the compositor
+  // thread without that throttling.
   let isAnimating = false;
   let animationTimer = null;
   let lastWheelAt = 0;
-  let lastDirection = 0;          // +1 after a processed forward step, -1 after back, 0 before any
 
   const handler = (e) => {
     if (isActive && !isActive()) return; // description showing or snap animating
@@ -183,31 +190,10 @@ function setupWheel({ gallery, track, mqlMobile, onForwardAtEnd, isActive }) {
     const delta = pickAxis(e.deltaX, e.deltaY);
     if (delta === 0) return;
 
-    // Take control of the wheel — we don't want native scroll fighting
-    // the JS-driven snap, and the page itself doesn't scroll anyway.
-    e.preventDefault();
-
-    // Touchpad inertia decays exponentially from the swipe's peak delta
-    // down to near zero. Filtering events below INERTIA_DELTA_THRESHOLD
-    // (without updating lastWheelAt) cuts the long tail of "real-event"
-    // bookkeeping that would otherwise keep extending the burst window
-    // past the user's second swipe.
-    if (Math.abs(delta) < INERTIA_DELTA_THRESHOLD) return;
-
-    // Gesture detection. Two ways a wheel event can start a new step:
-    //   1. The timestamp gap from the last real event exceeds the
-    //      burst window (the user has visibly stopped between gestures).
-    //   2. The direction changed from the last processed step (the
-    //      user reversed). Without this, a back-swipe that lands
-    //      within the forward-swipe's inertia tail is treated as
-    //      continuation and silently dropped — which is exactly the
-    //      "can't scroll back from the last image" symptom.
-    const direction = delta > 0 ? 1 : -1;
-    const isDirectionChange = lastDirection !== 0 && direction !== lastDirection;
-    const isNewGesture = (e.timeStamp - lastWheelAt) > GESTURE_GAP_MS;
+    const isFirstOfBurst = (e.timeStamp - lastWheelAt) > BURST_GAP_MS;
     lastWheelAt = e.timeStamp;
-    if (!isNewGesture && !isDirectionChange) return;
     if (isAnimating) return;
+    if (!isFirstOfBurst) return;
 
     const items = track.querySelectorAll('.gallery-item');
     if (items.length === 0) return;
@@ -231,8 +217,6 @@ function setupWheel({ gallery, track, mqlMobile, onForwardAtEnd, isActive }) {
         startAnimationLock();
       }
     }
-
-    lastDirection = direction;
   };
 
   function startAnimationLock() {
@@ -241,18 +225,10 @@ function setupWheel({ gallery, track, mqlMobile, onForwardAtEnd, isActive }) {
     animationTimer = setTimeout(() => { isAnimating = false; }, SCROLL_TRANSITION_MS + 20);
   }
 
-  // Capture phase, not bubble: on Chrome, after a cross-document view
-  // transition the browser sometimes doesn't fire bubble-phase wheel
-  // listeners on window until the cursor moves — events get stuck
-  // routed to a stale target-resolution cache that only refreshes on
-  // pointer motion. Capture phase flows window -> target before any
-  // element-level handling, which bypasses that cache and makes
-  // touchpad scroll responsive from page load without the user
-  // having to nudge the cursor first.
-  window.addEventListener('wheel', handler, { passive: false, capture: true });
+  window.addEventListener('wheel', handler, { passive: true });
   return () => {
     clearTimeout(animationTimer);
-    window.removeEventListener('wheel', handler, { capture: true });
+    window.removeEventListener('wheel', handler);
   };
 }
 
