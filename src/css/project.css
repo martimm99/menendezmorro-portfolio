@@ -288,15 +288,22 @@
   cursor: zoom-in;
 }
 
+/* Image height is the smaller of 70vh and 50vw. On a typical
+ * desktop viewport (e.g. 1280x800) the vh wins and the gallery
+ * sits at 70vh; on a narrower-but-still-desktop viewport (e.g.
+ * a 1024-wide window on a tall display) the vw cap kicks in and
+ * shrinks the gallery so each image's auto-computed width (height
+ * × aspect ratio) stays inside the visible area. 50vw fits images
+ * up to a 16:9 aspect with the page's horizontal padding. */
 .gallery-item picture {
   display: block;
-  height: 70vh;
+  height: min(70vh, 50vw);
 }
 
 .gallery-item img,
 .gallery-item video {
   display: block;
-  height: 70vh;
+  height: min(70vh, 50vw);
   width: auto;
   object-fit: cover;
   -webkit-user-drag: none;

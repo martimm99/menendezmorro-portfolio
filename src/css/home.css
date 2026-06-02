@@ -188,7 +188,9 @@
 }
 
 .info-cell dt {
-  font-size: clamp(10px, 0.7vw, 12px);
+  /* Used to be clamp(10px, 0.7vw, 12px) — dropped the responsive
+   * shrink because the narrow-viewport size read as too small. */
+  font-size: 12px;
   font-weight: var(--fw-light);
   letter-spacing: var(--ls-label);
   opacity: 0.7;
@@ -196,7 +198,8 @@
 
 .info-cell dd {
   margin: var(--space-1) 0 0;
-  font-size: clamp(12px, 0.95vw, 16px);
+  /* Same fixed-at-the-max treatment as dt above. */
+  font-size: 16px;
   font-weight: var(--fw-light);
   line-height: var(--lh-snug);
   white-space: normal;

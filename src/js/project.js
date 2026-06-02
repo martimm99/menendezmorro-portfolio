@@ -267,7 +267,12 @@ function setupWheelAndSnap(galleryAPI) {
   const descriptionSection = document.querySelector('[data-section-description]');
   if (!descriptionSection) return;
 
-  const STEP_COOLDOWN_MS = 400;
+  // Cooldown was 400ms (SCROLL_TRANSITION_MS + a 50ms buffer) but a
+  // strong touchpad fling can keep firing wheel events with enough
+  // delta to look like real input past 400ms, triggering an extra
+  // step or two. 700ms outlasts a typical inertia tail so one swipe
+  // = one image.
+  const STEP_COOLDOWN_MS = 700;
   const AT_TOP_THRESHOLD = 1;
   let lastActionAt = 0;
 
