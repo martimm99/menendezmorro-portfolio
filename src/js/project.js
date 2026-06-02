@@ -207,46 +207,35 @@ function setupSnapTransition() {
   // that takes the user to the top of the description should park them
   // there; only a *separate* scroll-up gesture after that snaps back to
   // gallery. We tell gestures apart by the timestamp gap between
-  // consecutive wheel events (same idea as the Home wheel burst detection).
+  // consecutive wheel events — same pattern as the Home wheel burst
+  // detection (BURST_GAP_MS = 150ms, mirroring home.js exactly).
   //
-  // The listener is on window, not on the section, so wheel events still
-  // arrive when the cursor sits over a static element (header logo, Get
-  // in touch, info row, back arrow) — those are siblings of
-  // .project-shell and a section-scoped listener wouldn't see them.
+  // The listener is on window so wheel events still arrive when the
+  // cursor sits over a static element (header logo, Get in touch, info
+  // row, back arrow) — those are siblings of .project-shell and a
+  // section-scoped listener wouldn't see them. .section-gallery gets
+  // pointer-events: none while .show-description is active (see
+  // project.css) to keep Chrome's hover-state cache from sending the
+  // event to a gallery item that's visually under the description.
   //
-  // The wheel-routing piece is handled by pointer-events: none on
-  // .section-gallery while .show-description is active (see project.css):
-  // without it, Chrome's hover-state cache lingers on the gallery when
-  // the description slides over a stationary cursor, which causes the
-  // cursor to stay as zoom-in *and* lets wheel events keep targeting
-  // gallery items even though they're visually under the description.
-  //
-  // GESTURE_GAP_MS is 80ms and INERTIA_DELTA_THRESHOLD is 3 — combined,
-  // they let a normal touchpad pause between two distinct swipes register
-  // as a new gesture without waiting out the full inertia tail. Touchpad
-  // inertia events decay exponentially: by filtering events with
-  // |deltaY| < 3 (without updating lastWheelAt), the "burst-extending"
-  // bookkeeping stops ~200ms after the user lifts instead of dragging on
-  // for the full 500ms tail. AT_TOP_THRESHOLD tolerates the sub-pixel
-  // scrollTop values macOS browsers sometimes leave after smooth scrolls.
-  const GESTURE_GAP_MS = 80;
-  const INERTIA_DELTA_THRESHOLD = 3;
+  // passive: true is deliberate. The earlier passive: false /
+  // preventDefault() version forced Chrome to route every wheel event on
+  // the page through the throttled main-thread path (wheel passive-ness
+  // is per-event, not per-listener — a single non-passive listener on
+  // the page makes the whole event non-passive). That throttle is what
+  // caused the "have to nudge the cursor between swipes" bug. The
+  // preventDefault calls were only there to stop overscroll bounce; we
+  // now contain that via overscroll-behavior-y on .section-description
+  // (see project.css), so the listener doesn't need preventDefault.
+  // AT_TOP_THRESHOLD tolerates sub-pixel scrollTop values macOS browsers
+  // sometimes leave after smooth scrolls.
+  const BURST_GAP_MS = 150;
   const AT_TOP_THRESHOLD = 1;
   let lastWheelAt = 0;
 
   window.addEventListener('wheel', (e) => {
     if (!snapState.showDescription) return;
-    if (snapState.isAnimating) {
-      e.preventDefault();
-      return;
-    }
-
-    // Skip very small events (inertia tail) — they shouldn't count
-    // toward the burst window or reset the arm flag.
-    if (Math.abs(e.deltaY) < INERTIA_DELTA_THRESHOLD && Math.abs(e.deltaX) < INERTIA_DELTA_THRESHOLD) {
-      e.preventDefault();
-      return;
-    }
+    if (snapState.isAnimating) return;
 
     // Not at the top — native scroll handles the wheel when the cursor is
     // over the description; we just track the burst so the next gesture's
@@ -266,12 +255,11 @@ function setupSnapTransition() {
     }
 
     // At the top, wheel-up.
-    const isNewBurst = (e.timeStamp - lastWheelAt) > GESTURE_GAP_MS;
+    const isNewBurst = (e.timeStamp - lastWheelAt) > BURST_GAP_MS;
     lastWheelAt = e.timeStamp;
 
     if (armedForSnapBack && isNewBurst) {
       // Second, separate scroll-up gesture at the top → snap back.
-      e.preventDefault();
       armedForSnapBack = false;
       snapToGallery();
       return;
@@ -281,8 +269,7 @@ function setupSnapTransition() {
     // inside the same gesture (continued wheel events / inertia). Arm and
     // wait for the next gesture.
     armedForSnapBack = true;
-    e.preventDefault();
-  }, { passive: false });
+  }, { passive: true });
 
   // Mobile vertical swipe — listen on document so a swipe that starts
   // over a static element (info row, back arrow, header logo) still

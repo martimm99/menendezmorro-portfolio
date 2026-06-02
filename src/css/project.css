@@ -354,6 +354,14 @@
   padding-bottom: calc(var(--chrome-mask-bottom) + 20px);
   padding-left: var(--page-pad-x);
   overflow-y: auto;
+  /* Stop overscroll bounce at the top / bottom — the snap-to-gallery
+   * handler used to call e.preventDefault() to block the bounce, but
+   * that forced the wheel listener to be passive: false, which in turn
+   * forced Chrome to route every wheel event on the page through the
+   * throttled main-thread path (passive-ness is per-event, not per-
+   * listener). Containing overscroll here lets the wheel listener be
+   * passive: true. */
+  overscroll-behavior-y: contain;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
