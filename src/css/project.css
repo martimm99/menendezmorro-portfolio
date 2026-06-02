@@ -266,7 +266,12 @@
   padding-left: var(--page-pad-x);
   padding-right: var(--page-pad-x);
   flex: 0 0 auto;
-  will-change: transform;
+  /* No will-change: transform here. The browser auto-promotes the
+   * track to a compositor layer while its CSS transition is running,
+   * and forcing an always-on layer made wheel-event hit testing flaky
+   * (the cursor sitting over the track during inertia caused Chrome
+   * to route wheel events to the layer in a way that occasionally
+   * stalled until pointer motion). */
 }
 
 /* Block-level figure. NOT flex — flex-column on the figure makes the

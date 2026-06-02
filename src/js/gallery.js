@@ -46,22 +46,16 @@ export function initGallery({
   const videoObserver = observeVideos(track);
   const mqlMobile = window.matchMedia('(max-width: 768px)');
 
-  // Wheel handling lives in project.js so there's a single wheel
-  // listener on window — having two listeners (one here, one in
-  // project.js for description snap-back) made wheel routing flaky
-  // between gestures, requiring a cursor nudge to re-engage. Gallery
-  // exposes step() instead, and project.js's wheel listener calls in.
+  // Wheel handling lives in project.js. Gallery exposes step()
+  // instead; project.js's wheel handler owns all the throttling and
+  // calls step() once per real gesture.
   const dragCleanup  = setupDrag({ gallery, track, mqlMobile, onItemActivate });
   const arrowCleanup = setupArrows({ prevBtn, nextBtn, gallery, track, mqlMobile });
 
-  let isStepLocked = false;
-  let stepLockTimer = null;
-
-  // Stepping API for project.js's wheel listener. Returns a small
-  // status string so the caller can decide what to do at the gallery
-  // edges (e.g. snap to description on "at-end-forward").
+  // Step API. Returns a status string so the caller knows whether
+  // the gallery moved or sat at an edge — at-end-forward is the
+  // signal that project.js should snap to description instead.
   function step(direction) {
-    if (isStepLocked) return 'locked';
     if (mqlMobile.matches) return 'mobile';
     const allItems = track.querySelectorAll('.gallery-item');
     if (allItems.length === 0) return 'empty';
@@ -69,30 +63,21 @@ export function initGallery({
     if (direction > 0) {
       if (index < allItems.length - 1) {
         snapToIndex(track, allItems, index + 1);
-        lockStep();
         return 'stepped';
       }
       return 'at-end';
     } else {
       if (index > 0) {
         snapToIndex(track, allItems, index - 1);
-        lockStep();
         return 'stepped';
       }
       return 'at-start';
     }
   }
 
-  function lockStep() {
-    isStepLocked = true;
-    clearTimeout(stepLockTimer);
-    stepLockTimer = setTimeout(() => { isStepLocked = false; }, SCROLL_TRANSITION_MS + 20);
-  }
-
   return {
     destroy() {
       videoObserver?.disconnect();
-      clearTimeout(stepLockTimer);
       dragCleanup?.();
       arrowCleanup?.();
     },

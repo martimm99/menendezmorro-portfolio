@@ -187,65 +187,69 @@ function setupNavigation(site) {
   }
 }
 
-/* ---------- Combined wheel + snap transition ----------
+/* ---------- Wheel + touch + snap ----------
  *
- * One window-level wheel listener owns both the gallery's per-image
- * stepping and the gallery <-> description snap. Having two listeners
- * (gallery had its own) produced flaky touchpad routing where every
- * second swipe required a cursor nudge to fire — home has always
- * worked with one, and the project page works the same way now.
+ * One window-level wheel listener owns the gallery's per-image
+ * stepping and the gallery <-> description snap. Throttling is a
+ * straight "no actions for STEP_COOLDOWN_MS after the last action"
+ * rule on the listener side. Earlier attempts used burst-gap
+ * detection (the home.js pattern) but that updated lastWheelAt on
+ * every event, so touchpad inertia kept extending the burst
+ * window — a user's next swipe arriving inside the inertia tail
+ * was treated as continuation and dropped, and only a cursor
+ * nudge (which cancels Chrome's inertia delivery) brought the
+ * listener back. An action-cooldown is anchored to "time since
+ * we last did something" instead, so inertia events simply land
+ * during the cooldown window and are ignored without extending
+ * it.
  *
- * passive: true: gallery scrolls via CSS transform (no native scroll
- * container to preventDefault on), and the description's edge bounce
- * is contained by overscroll-behavior-y: contain (see project.css).
+ * For the gallery <-> description snap, snapState.isAnimating
+ * already blocks the listener for the full snap duration (1s),
+ * so the cooldown only needs to cover the gallery's per-image
+ * scroll (SCROLL_TRANSITION_MS = 350ms in gallery.js) plus a
+ * small buffer to outlast typical touchpad inertia.
  *
- * Burst detection: wheel events more than BURST_GAP_MS apart count
- * as separate gestures (same threshold as home.js). One gesture →
- * one gallery step, or one snap transition.
- *
- * AT_TOP_THRESHOLD tolerates sub-pixel scrollTop values macOS
- * browsers sometimes leave after smooth scrolls.
+ * passive: true: gallery scrolls via CSS transform (no native
+ * scroll container to preventDefault on), and the description's
+ * edge bounce is contained by overscroll-behavior-y: contain in
+ * project.css. AT_TOP_THRESHOLD tolerates sub-pixel scrollTop
+ * values macOS browsers sometimes leave after smooth scrolls.
  */
 function setupWheelAndSnap(galleryAPI) {
   const descriptionSection = document.querySelector('[data-section-description]');
   if (!descriptionSection) return;
 
-  const BURST_GAP_MS = 150;
+  const STEP_COOLDOWN_MS = 400;
   const AT_TOP_THRESHOLD = 1;
-  let lastWheelAt = 0;
+  let lastActionAt = 0;
 
   window.addEventListener('wheel', (e) => {
     if (snapState.isAnimating) return;
+    if (e.timeStamp - lastActionAt < STEP_COOLDOWN_MS) return;
 
     const delta = pickAxis(e.deltaX, e.deltaY);
     if (delta === 0) return;
 
-    const isFirstOfBurst = (e.timeStamp - lastWheelAt) > BURST_GAP_MS;
-    lastWheelAt = e.timeStamp;
-    if (!isFirstOfBurst) return;
-
     if (snapState.showDescription) {
-      handleDescriptionWheel(e.deltaY);
+      // Native scroll handles wheel events anywhere inside the
+      // description that isn't at the very top. A wheel-up landing
+      // while already at the top snaps back to gallery.
+      if (descriptionSection.scrollTop >= AT_TOP_THRESHOLD) return;
+      if (e.deltaY >= 0) return;
+      snapToGallery();
+      // snapState.isAnimating gates everything for SNAP_DURATION_MS
+      // so we don't need to update lastActionAt here.
     } else {
-      handleGalleryWheel(delta);
+      const result = galleryAPI.step(delta);
+      if (result === 'stepped') {
+        lastActionAt = e.timeStamp;
+      } else if (result === 'at-end' && delta > 0) {
+        snapToDescription();
+        // snapState.isAnimating gates the next events; no lastActionAt
+        // update needed.
+      }
     }
   }, { passive: true });
-
-  function handleGalleryWheel(delta) {
-    const result = galleryAPI.step(delta);
-    if (result === 'at-end' && delta > 0) {
-      snapToDescription();
-    }
-  }
-
-  function handleDescriptionWheel(deltaY) {
-    // Native scroll handles wheel events when the user isn't yet at
-    // the top of the description. Only a wheel-up that lands while
-    // already at the top should snap back to the gallery.
-    if (descriptionSection.scrollTop >= AT_TOP_THRESHOLD) return;
-    if (deltaY >= 0) return;
-    snapToGallery();
-  }
 
   // Mobile vertical swipe — listen on document so a swipe that starts
   // over a static element (info row, back arrow, header logo) still
