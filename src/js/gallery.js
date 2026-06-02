@@ -27,7 +27,6 @@
 import { prefersReducedMotion } from './utils.js';
 
 const SCROLL_TRANSITION_MS = 350;
-const BURST_GAP_MS = 150;              // wheel events more than this far apart start a new gesture
 const DRAG_CLICK_THRESHOLD = 5;
 const VIDEO_VISIBILITY_THRESHOLD = 0.9;
 
@@ -38,29 +37,67 @@ export function initGallery({
   track,
   prevBtn,
   nextBtn,
-  onItemActivate,
-  onForwardAtEnd,
-  isActive
+  onItemActivate
 }) {
-  if (!items?.length || !gallery || !track) return { destroy() {} };
+  if (!items?.length || !gallery || !track) return { destroy() {}, step() {}, isMobile: () => false };
 
   renderItems({ items, projectTitle, track, onItemActivate });
 
   const videoObserver = observeVideos(track);
   const mqlMobile = window.matchMedia('(max-width: 768px)');
 
-  // Desktop-only: JS-driven horizontal scroll. Mobile uses native scroll.
-  const wheelCleanup = setupWheel({ gallery, track, mqlMobile, onForwardAtEnd, isActive });
+  // Wheel handling lives in project.js so there's a single wheel
+  // listener on window — having two listeners (one here, one in
+  // project.js for description snap-back) made wheel routing flaky
+  // between gestures, requiring a cursor nudge to re-engage. Gallery
+  // exposes step() instead, and project.js's wheel listener calls in.
   const dragCleanup  = setupDrag({ gallery, track, mqlMobile, onItemActivate });
   const arrowCleanup = setupArrows({ prevBtn, nextBtn, gallery, track, mqlMobile });
+
+  let isStepLocked = false;
+  let stepLockTimer = null;
+
+  // Stepping API for project.js's wheel listener. Returns a small
+  // status string so the caller can decide what to do at the gallery
+  // edges (e.g. snap to description on "at-end-forward").
+  function step(direction) {
+    if (isStepLocked) return 'locked';
+    if (mqlMobile.matches) return 'mobile';
+    const allItems = track.querySelectorAll('.gallery-item');
+    if (allItems.length === 0) return 'empty';
+    const index = getCurrentIndex(track, allItems);
+    if (direction > 0) {
+      if (index < allItems.length - 1) {
+        snapToIndex(track, allItems, index + 1);
+        lockStep();
+        return 'stepped';
+      }
+      return 'at-end';
+    } else {
+      if (index > 0) {
+        snapToIndex(track, allItems, index - 1);
+        lockStep();
+        return 'stepped';
+      }
+      return 'at-start';
+    }
+  }
+
+  function lockStep() {
+    isStepLocked = true;
+    clearTimeout(stepLockTimer);
+    stepLockTimer = setTimeout(() => { isStepLocked = false; }, SCROLL_TRANSITION_MS + 20);
+  }
 
   return {
     destroy() {
       videoObserver?.disconnect();
-      wheelCleanup?.();
+      clearTimeout(stepLockTimer);
       dragCleanup?.();
       arrowCleanup?.();
-    }
+    },
+    step,
+    isMobile: () => mqlMobile.matches
   };
 }
 
@@ -151,86 +188,17 @@ function buildVideo(media, projectTitle, index) {
   return video;
 }
 
-/* ---------- Wheel (desktop) ---------- */
-
-function setupWheel({ gallery, track, mqlMobile, onForwardAtEnd, isActive }) {
-  // One wheel gesture → exactly one image step. A touchpad swipe
-  // sends ~16ms-spaced events for as long as the fingers move plus a
-  // ~300ms inertia tail; only the first event of that burst should
-  // advance the gallery. A mouse wheel click is a single event with
-  // a long gap before the next, so it also reads as "one gesture →
-  // one step." Drag is intentionally NOT routed through this — it
-  // stays as the free-scroll pointer handler so a power user can
-  // still pull the track by hand.
-  //
-  // The listener is on window so events arrive regardless of where
-  // the cursor sits (especially over static elements like the info
-  // row or back arrow). isActive gates it: silent while the
-  // description section is showing or while the snap animation is
-  // running, since project.js's description handler takes over.
-  //
-  // passive: true is deliberate (mirrors home.js's wheel listener,
-  // which has always been reliable). The gallery scrolls via CSS
-  // transform on .gallery-track — there is no native scrollable
-  // element to fight, so preventDefault would be a no-op anyway.
-  // The earlier passive: false / capture: true version routed wheel
-  // events through Chrome's main-thread synchronous path; that path
-  // throttles between gestures and only re-engages on pointer
-  // motion, which produced the "have to nudge the cursor between
-  // swipes" bug. Passive listeners deliver from the compositor
-  // thread without that throttling.
-  let isAnimating = false;
-  let animationTimer = null;
-  let lastWheelAt = 0;
-
-  const handler = (e) => {
-    if (isActive && !isActive()) return; // description showing or snap animating
-    if (mqlMobile.matches) return;        // mobile uses native scroll-snap
-
-    const delta = pickAxis(e.deltaX, e.deltaY);
-    if (delta === 0) return;
-
-    const isFirstOfBurst = (e.timeStamp - lastWheelAt) > BURST_GAP_MS;
-    lastWheelAt = e.timeStamp;
-    if (isAnimating) return;
-    if (!isFirstOfBurst) return;
-
-    const items = track.querySelectorAll('.gallery-item');
-    if (items.length === 0) return;
-
-    // Resolve "current image" from the actual scroll position so a
-    // drag-induced offset doesn't desync the snap target.
-    const index = getCurrentIndex(track, items);
-
-    if (delta > 0) {
-      if (index < items.length - 1) {
-        snapToIndex(track, items, index + 1);
-        startAnimationLock();
-      } else if (onForwardAtEnd) {
-        // At the last image and still swiping forward → hand off to the
-        // snap-to-Description transition managed by project.js.
-        onForwardAtEnd();
-      }
-    } else {
-      if (index > 0) {
-        snapToIndex(track, items, index - 1);
-        startAnimationLock();
-      }
-    }
-  };
-
-  function startAnimationLock() {
-    isAnimating = true;
-    clearTimeout(animationTimer);
-    animationTimer = setTimeout(() => { isAnimating = false; }, SCROLL_TRANSITION_MS + 20);
-  }
-
-  window.addEventListener('wheel', handler, { passive: true });
-  return () => {
-    clearTimeout(animationTimer);
-    window.removeEventListener('wheel', handler);
-  };
-}
+/* ---------- Wheel handling (gallery step) ----------
+ *
+ * The wheel listener for the gallery lives in project.js, not here.
+ * Putting it here as a second window-level wheel listener (alongside
+ * project.js's description snap-back listener) made Chrome's wheel
+ * routing flaky between gestures — touchpad swipes required a cursor
+ * nudge to re-engage. Home doesn't have that problem because home has
+ * exactly one window wheel listener. So now project.js does too: it
+ * calls galleryAPI.step(delta) on each wheel burst when in gallery
+ * mode, and handles the snap-back path itself when in description
+ * mode. */
 
 function snapToIndex(track, items, index) {
   // items[0].offsetLeft accounts for the track's left padding; subtracting
@@ -256,7 +224,7 @@ function getCurrentIndex(track, items) {
   return closest;
 }
 
-function pickAxis(dx, dy) {
+export function pickAxis(dx, dy) {
   return Math.abs(dx) > Math.abs(dy) ? dx : dy;
 }
 

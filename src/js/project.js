@@ -24,7 +24,7 @@
  * sensible instead of throwing.
  */
 
-import { initGallery } from './gallery.js';
+import { initGallery, pickAxis } from './gallery.js';
 import { initFullscreen, openFullscreen } from './fullscreen.js';
 import {
   copyText,
@@ -63,7 +63,6 @@ export function initProject(data, slug) {
   renderInfoRow(project);
   renderDescription(project);
   setupNavigation(data.site);
-  setupSnapTransition();
   initFullscreen();
 
   const galleryAPI = initGallery({
@@ -79,14 +78,13 @@ export function initProject(data, slug) {
       // the click handler passes only the index.
       const item = document.querySelectorAll('.gallery-item')[index];
       if (item) openFullscreen(item);
-    },
-    onForwardAtEnd: snapToDescription,
-    // Gate the gallery wheel handler so it only processes events while
-    // the gallery section owns the viewport. When the description is
-    // showing (or the snap animation is mid-flight), project.js's own
-    // window-level wheel listener takes over.
-    isActive: () => !snapState.showDescription && !snapState.isAnimating
+    }
   });
+
+  // Single wheel + touch listener owns both the gallery stepping and
+  // the description snap-back. See setupWheelAndSnap for why this is
+  // one handler instead of two.
+  setupWheelAndSnap(galleryAPI);
 
   teardown = galleryAPI;
 }
@@ -197,79 +195,78 @@ function setupNavigation(site) {
   }
 }
 
-/* ---------- Snap transition (gallery <-> description) ---------- */
-
-function setupSnapTransition() {
+/* ---------- Combined wheel + snap transition ----------
+ *
+ * One window-level wheel listener owns both the gallery's per-image
+ * stepping and the description's two-step snap-back. This used to be
+ * split across two listeners (gallery.js had its own; this file had
+ * one for snap-back) — but having TWO non-passive-or-otherwise wheel
+ * listeners on window produced flaky touchpad routing where every
+ * second swipe required a cursor nudge to fire. Home has always
+ * worked with one. Now the project page works the same way.
+ *
+ * passive: true: gallery scrolls via CSS transform (no native scroll
+ * container to preventDefault on), and the description's edge bounce
+ * is contained by overscroll-behavior-y: contain (see project.css).
+ *
+ * Burst detection: wheel events more than BURST_GAP_MS apart count as
+ * separate gestures (same threshold as home.js). One gesture → one
+ * gallery step, or one half of the two-step snap-back. Touchpad
+ * inertia events between gestures land inside the burst window and
+ * are absorbed.
+ *
+ * AT_TOP_THRESHOLD tolerates sub-pixel scrollTop values macOS
+ * browsers sometimes leave after smooth scrolls.
+ */
+function setupWheelAndSnap(galleryAPI) {
   const descriptionSection = document.querySelector('[data-section-description]');
   if (!descriptionSection) return;
 
-  // Two-step snap-back on the wheel: a single continuous scroll-up gesture
-  // that takes the user to the top of the description should park them
-  // there; only a *separate* scroll-up gesture after that snaps back to
-  // gallery. We tell gestures apart by the timestamp gap between
-  // consecutive wheel events — same pattern as the Home wheel burst
-  // detection (BURST_GAP_MS = 150ms, mirroring home.js exactly).
-  //
-  // The listener is on window so wheel events still arrive when the
-  // cursor sits over a static element (header logo, Get in touch, info
-  // row, back arrow) — those are siblings of .project-shell and a
-  // section-scoped listener wouldn't see them. .section-gallery gets
-  // pointer-events: none while .show-description is active (see
-  // project.css) to keep Chrome's hover-state cache from sending the
-  // event to a gallery item that's visually under the description.
-  //
-  // passive: true is deliberate. The earlier passive: false /
-  // preventDefault() version forced Chrome to route every wheel event on
-  // the page through the throttled main-thread path (wheel passive-ness
-  // is per-event, not per-listener — a single non-passive listener on
-  // the page makes the whole event non-passive). That throttle is what
-  // caused the "have to nudge the cursor between swipes" bug. The
-  // preventDefault calls were only there to stop overscroll bounce; we
-  // now contain that via overscroll-behavior-y on .section-description
-  // (see project.css), so the listener doesn't need preventDefault.
-  // AT_TOP_THRESHOLD tolerates sub-pixel scrollTop values macOS browsers
-  // sometimes leave after smooth scrolls.
   const BURST_GAP_MS = 150;
   const AT_TOP_THRESHOLD = 1;
   let lastWheelAt = 0;
 
   window.addEventListener('wheel', (e) => {
-    if (!snapState.showDescription) return;
     if (snapState.isAnimating) return;
 
-    // Not at the top — native scroll handles the wheel when the cursor is
-    // over the description; we just track the burst so the next gesture's
-    // first event isn't mistaken for a continuation of this one.
+    const delta = pickAxis(e.deltaX, e.deltaY);
+    if (delta === 0) return;
+
+    const isFirstOfBurst = (e.timeStamp - lastWheelAt) > BURST_GAP_MS;
+    lastWheelAt = e.timeStamp;
+    if (!isFirstOfBurst) return;
+
+    if (snapState.showDescription) {
+      handleDescriptionWheel(e.deltaY);
+    } else {
+      handleGalleryWheel(delta);
+    }
+  }, { passive: true });
+
+  function handleGalleryWheel(delta) {
+    const result = galleryAPI.step(delta);
+    if (result === 'at-end' && delta > 0) {
+      snapToDescription();
+    }
+  }
+
+  function handleDescriptionWheel(deltaY) {
     if (descriptionSection.scrollTop >= AT_TOP_THRESHOLD) {
       armedForSnapBack = false;
-      lastWheelAt = e.timeStamp;
       return;
     }
-
-    // At the top, but scrolling sideways or downward — not a snap-back
-    // attempt. Disarm.
-    if (e.deltaY >= 0) {
+    if (deltaY >= 0) {
       armedForSnapBack = false;
-      lastWheelAt = e.timeStamp;
       return;
     }
-
-    // At the top, wheel-up.
-    const isNewBurst = (e.timeStamp - lastWheelAt) > BURST_GAP_MS;
-    lastWheelAt = e.timeStamp;
-
-    if (armedForSnapBack && isNewBurst) {
-      // Second, separate scroll-up gesture at the top → snap back.
+    // At the top, wheel-up: arm on the first burst, snap on the next.
+    if (armedForSnapBack) {
       armedForSnapBack = false;
       snapToGallery();
-      return;
+    } else {
+      armedForSnapBack = true;
     }
-
-    // Either we just arrived at the top in this gesture, or we're still
-    // inside the same gesture (continued wheel events / inertia). Arm and
-    // wait for the next gesture.
-    armedForSnapBack = true;
-  }, { passive: true });
+  }
 
   // Mobile vertical swipe — listen on document so a swipe that starts
   // over a static element (info row, back arrow, header logo) still
