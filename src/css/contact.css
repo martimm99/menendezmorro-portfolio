@@ -17,9 +17,41 @@
 .contact-page {
   --page-pad-x: 40px;
   --page-pad-y: 20px;
+  --chrome-mask-top: 80px;
+  --chrome-mask-bottom: 80px;
   background-color: var(--color-bg-light);
   color: var(--color-fg-light);
   overflow: hidden;
+}
+
+/* Chrome masks. Same pattern as project.css §Chrome masks. Two
+ * pseudo-element overlays at the top and bottom of the viewport that
+ * hide any contact-text that would otherwise overlap with the static
+ * elements (Get in touch + X back button at the top; INSTAGRAM info
+ * row at the bottom). The mask sits at z-index 50, between content
+ * sections and static elements (z-info: 70), so static elements stay
+ * visible on top while text behind the mask disappears. Background
+ * matches the page so the mask itself is invisible — only its masking
+ * effect on overlapping content is visible. */
+.contact-page::before,
+.contact-page::after {
+  content: '';
+  position: fixed;
+  left: 0;
+  right: 0;
+  background-color: var(--color-bg-light);
+  z-index: 50;
+  pointer-events: none;
+}
+
+.contact-page::before {
+  top: 0;
+  height: var(--chrome-mask-top);
+}
+
+.contact-page::after {
+  bottom: 0;
+  height: var(--chrome-mask-bottom);
 }
 
 /* ---------- Header ---------- */
@@ -55,7 +87,13 @@
   inset: 0;
   display: grid;
   grid-template-rows: auto 1fr auto;
-  padding: calc(var(--page-pad-y) * 2 + 40px) var(--page-pad-x) calc(var(--page-pad-y) * 2 + 60px);
+  /* Pad in by chrome-mask-* + small buffer so the contact-text never
+   * starts hidden behind the mask. The 20px buffer keeps text from
+   * sitting right up against the mask boundary. */
+  padding:
+    calc(var(--chrome-mask-top) + 20px)
+    var(--page-pad-x)
+    calc(var(--chrome-mask-bottom) + 20px);
   gap: var(--space-5);
 }
 
@@ -210,13 +248,10 @@
 
 @media (max-width: 600px) {
   /* Legacy mobile layout: Get in touch top-left, X back-button top-right,
-   * info row bottom, contact copy fills the middle. */
+   * info row bottom, contact copy fills the middle. The desktop
+   * .contact-content padding (chrome-mask-based) carries over —
+   * no mobile-specific override needed any more. */
   .site-header { display: none; }
-
-  .contact-content {
-    padding-top: calc(var(--page-pad-y) * 2 + 40px);
-    padding-bottom: calc(var(--page-pad-y) * 2 + 60px);
-  }
 
   .contact-page .static-get-in-touch {
     top: var(--page-pad-y);

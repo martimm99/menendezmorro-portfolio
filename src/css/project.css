@@ -288,24 +288,32 @@
   cursor: zoom-in;
 }
 
-/* Image height is the smaller of 70vh and 50vw. On a typical
- * desktop viewport (e.g. 1280x800) the vh wins and the gallery
- * sits at 70vh; on a narrower-but-still-desktop viewport (e.g.
- * a 1024-wide window on a tall display) the vw cap kicks in and
- * shrinks the gallery so each image's auto-computed width (height
- * × aspect ratio) stays inside the visible area. 50vw fits images
- * up to a 16:9 aspect with the page's horizontal padding. */
+/* Each image is sized to its own aspect, capped by BOTH a height
+ * limit and a width limit. With width: auto and height: auto on the
+ * img, the browser preserves the image's intrinsic aspect ratio
+ * while scaling it down to fit inside the smaller of the two caps.
+ *
+ *   max-height = min(70vh, 50vw)  — fits the gallery in tall windows
+ *                                   and shrinks for narrow viewports
+ *   max-width  = 100vw − 2 × page padding — guarantees the right edge
+ *                                           of even a wide-aspect
+ *                                           image never runs past the
+ *                                           visible area
+ *
+ * A 3:2 photo hits the height cap and the width auto-resolves; a
+ * panoramic 3:1 hits the width cap and the height auto-shrinks. Both
+ * end up fully visible on every desktop viewport. */
 .gallery-item picture {
   display: block;
-  height: min(70vh, 50vw);
 }
 
 .gallery-item img,
 .gallery-item video {
   display: block;
-  height: min(70vh, 50vw);
+  max-height: min(70vh, 50vw);
+  max-width: calc(100vw - 2 * var(--page-pad-x));
+  height: auto;
   width: auto;
-  object-fit: cover;
   -webkit-user-drag: none;
   user-select: none;
 }
