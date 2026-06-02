@@ -228,10 +228,18 @@ function setupWheel({ gallery, track, mqlMobile, onForwardAtEnd, isActive }) {
     animationTimer = setTimeout(() => { isAnimating = false; }, SCROLL_TRANSITION_MS + 20);
   }
 
-  window.addEventListener('wheel', handler, { passive: false });
+  // Capture phase, not bubble: on Chrome, after a cross-document view
+  // transition the browser sometimes doesn't fire bubble-phase wheel
+  // listeners on window until the cursor moves — events get stuck
+  // routed to a stale target-resolution cache that only refreshes on
+  // pointer motion. Capture phase flows window -> target before any
+  // element-level handling, which bypasses that cache and makes
+  // touchpad scroll responsive from page load without the user
+  // having to nudge the cursor first.
+  window.addEventListener('wheel', handler, { passive: false, capture: true });
   return () => {
     clearTimeout(animationTimer);
-    window.removeEventListener('wheel', handler);
+    window.removeEventListener('wheel', handler, { capture: true });
   };
 }
 
