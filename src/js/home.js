@@ -32,6 +32,7 @@ export function initHome(data) {
   state.data = data;
   state.layers = Array.from(document.querySelectorAll('.cover-layer'));
   state.activeLayerIdx = 0;
+  state.index = resumeIndex(data);
 
   initVideoObserver();
   renderInitial();
@@ -40,6 +41,21 @@ export function initHome(data) {
   setupWheel();
   setupKeyboard();
   setupDrag();
+}
+
+/**
+ * Pick which project the Home cover should land on. If the user is
+ * arriving from a project page (or any nav that left a project slug
+ * in sessionStorage), resume on that project; otherwise default to
+ * the first one. sessionStorage is per-tab and cleared on close, so a
+ * fresh tab always starts on project 0.
+ */
+function resumeIndex(data) {
+  let slug;
+  try { slug = sessionStorage.getItem('lastProjectSlug'); } catch { return 0; }
+  if (!slug) return 0;
+  const idx = data.projects.findIndex((p) => p.slug === slug);
+  return idx >= 0 ? idx : 0;
 }
 
 function renderInitial() {

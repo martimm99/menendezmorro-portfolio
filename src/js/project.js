@@ -51,6 +51,12 @@ export function initProject(data, slug) {
     return;
   }
 
+  // Remember this project so the Home cover lands on it when the user
+  // navigates back (and not on the first project every time). Stored
+  // per-tab via sessionStorage; cleared automatically when the tab is
+  // closed.
+  try { sessionStorage.setItem('lastProjectSlug', slug); } catch {}
+
   updateHead(data.site, project);
   renderInfoRow(project);
   renderDescription(project);
