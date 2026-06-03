@@ -39,14 +39,21 @@
 
     <main class="contact-content">
       <div class="contact-text" data-contact-copy></div>
-
-      <a class="static-get-in-touch" href="#" data-action-copy-email aria-label="Copy email address to clipboard">
-        <span class="dot" aria-hidden="true"></span>
-        <span class="label">Get in touch</span>
-      </a>
-
-      <dl class="static-info-row contact-info" data-contact-socials></dl>
     </main>
+
+    <!-- Static chrome (CTA + INSTAGRAM info row) lives at body level
+         like the project page's chrome does. They sit above the
+         chrome-mask pseudo-elements (z 50) because their own
+         z-index: var(--z-info) (70) is in the same stacking
+         context as the masks. Inside <main> they wouldn't be — the
+         main's stacking context would have buried them under the
+         masks. -->
+    <a class="static-get-in-touch" href="#" data-action-copy-email aria-label="Copy email address to clipboard">
+      <span class="dot" aria-hidden="true"></span>
+      <span class="label">Get in touch</span>
+    </a>
+
+    <dl class="static-info-row contact-info" data-contact-socials></dl>
 
     <a class="static-back-arrow" href="/" data-nav-home aria-label="Back to home">
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">

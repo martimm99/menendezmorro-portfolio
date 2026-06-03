@@ -85,8 +85,6 @@
 .contact-content {
   position: fixed;
   inset: 0;
-  display: grid;
-  grid-template-rows: auto 1fr auto;
   /* Pad in by chrome-mask-* + small buffer so the contact-text never
    * starts hidden behind the mask. The 20px buffer keeps text from
    * sitting right up against the mask boundary. */
@@ -94,7 +92,6 @@
     calc(var(--chrome-mask-top) + 20px)
     var(--page-pad-x)
     calc(var(--chrome-mask-bottom) + 20px);
-  gap: var(--space-5);
 }
 
 /* ---------- Contact text + Get in touch ---------- */
@@ -118,11 +115,12 @@
   margin-top: 0.9em;
 }
 
-/* Get in touch CTA — same shape as on the Project page, but here it
- * isn't position: fixed; it sits in the top row of the grid next to
- * the contact text on desktop. */
+/* Get in touch CTA — same shape as on the Project page. Lives at
+ * body level (not inside .contact-content) so it shares the body's
+ * stacking context with the chrome-mask pseudo-elements, and its
+ * z-index: var(--z-info) (70) wins against the mask's z 50. */
 .contact-page .static-get-in-touch {
-  position: absolute;
+  position: fixed;
   top: var(--page-pad-y);
   right: var(--page-pad-x);
   z-index: var(--z-info);

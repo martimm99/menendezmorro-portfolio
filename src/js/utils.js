@@ -153,3 +153,33 @@ export function forceRevealAndNavigate(url) {
   void document.body.offsetHeight;
   window.location.assign(url);
 }
+
+/**
+ * Observe each element and add .reveal-in to it the first time it
+ * crosses into the viewport. One-shot per element (unobserved after
+ * firing). Used for per-paragraph line-reveal animations so each
+ * paragraph plays the animation when the user actually scrolls it
+ * into view — not all at once on init (which left below-the-fold
+ * text already statically revealed by the time the user scrolled
+ * to it). Mirrors the published menendezmorro.com behavior.
+ *
+ * threshold defaults to 0.1 — 10% of the element visible is enough
+ * to trigger; tweak per caller if needed.
+ */
+export function setupScrollReveal(elements, { threshold = 0.1 } = {}) {
+  if (!('IntersectionObserver' in window) || !elements?.length) {
+    // Older browsers — just reveal everything immediately. No fancy
+    // staggering, but still legible.
+    elements?.forEach?.((el) => el.classList.add('reveal-in'));
+    return null;
+  }
+  const observer = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      entry.target.classList.add('reveal-in');
+      observer.unobserve(entry.target);
+    }
+  }, { threshold });
+  for (const el of elements) observer.observe(el);
+  return observer;
+}

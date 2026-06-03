@@ -34,7 +34,8 @@ import {
   wrapTextInRevealLines,
   assignRevealLineDelays,
   arrivedViaViewTransition,
-  forceRevealAndNavigate
+  forceRevealAndNavigate,
+  setupScrollReveal
 } from './utils.js';
 
 const SNAP_DURATION_MS = 1000;
@@ -231,20 +232,31 @@ function placeholderLongDescription(project) {
 }
 
 /* The description is the landing section (v1.8 reversed the section
- * order). Its per-word line reveal fires once, on initial entrance,
- * timed against the cross-document VT sweep (if any). After that the
- * description text stays revealed for the rest of the visit — going
- * to the gallery overlay and coming back doesn't replay the reveal,
- * per owner decision. */
+ * order). Per-paragraph reveal: each <p class="description-paragraph">
+ * is observed and the line-reveal animation fires the moment that
+ * paragraph crosses into the viewport. So paragraphs below the fold
+ * don't burn their animation while invisible — the user actually
+ * sees the lines slide up as they scroll the description text.
+ * Matches the published menendezmorro.com pattern.
+ *
+ * Initial trigger is delayed until the cross-document VT sweep (if
+ * any) finishes, so the on-screen paragraphs don't start animating
+ * before the page is in place. After the delay we start observing;
+ * paragraphs already in view fire immediately, paragraphs below the
+ * fold wait for scroll. */
 function triggerDescriptionReveal() {
   const container = document.querySelector('[data-description-content]');
   if (!container) return;
-  const delay = prefersReducedMotion()
-    ? 0
-    : (arrivedViaViewTransition()
-        ? DESCRIPTION_REVEAL_DELAY_AFTER_SWEEP_MS
-        : DESCRIPTION_REVEAL_DELAY_DIRECT_MS);
-  setTimeout(() => container.classList.add('reveal-in'), delay);
+  const paragraphs = Array.from(container.querySelectorAll('.description-paragraph'));
+  if (paragraphs.length === 0) return;
+  if (prefersReducedMotion()) {
+    paragraphs.forEach((p) => p.classList.add('reveal-in'));
+    return;
+  }
+  const delay = arrivedViaViewTransition()
+    ? DESCRIPTION_REVEAL_DELAY_AFTER_SWEEP_MS
+    : DESCRIPTION_REVEAL_DELAY_DIRECT_MS;
+  setTimeout(() => setupScrollReveal(paragraphs), delay);
 }
 
 /* ---------- Navigation + chrome wiring ---------- */
@@ -323,6 +335,11 @@ function setupWheelAndSnap(galleryAPI) {
   const GESTURE_END_GAP_MS = 80;
   const MOUSE_BUFFER_MS = 30;
   const AT_EDGE_THRESHOLD = 1;
+  // Touchpad inertia tail filter — events below this delta magnitude
+  // don't refresh the gesture window. Without it a strong fling's
+  // long-lasting weak inertia kept the window open indefinitely and
+  // a second snap stayed blocked (matching the home.js fix).
+  const INERTIA_DELTA_THRESHOLD = 4;
 
   let lastEventAt = 0;
   let gestureActed = false;
@@ -346,12 +363,20 @@ function setupWheelAndSnap(galleryAPI) {
   }
 
   window.addEventListener('wheel', (e) => {
-    const gap = e.timeStamp - lastEventAt;
-    if (gap > GESTURE_END_GAP_MS) {
-      gestureActed = false;
-      galleryGestureReset();
+    const delta = pickAxis(e.deltaX, e.deltaY);
+
+    // Only "real input" events (above the inertia threshold) refresh
+    // the gesture window. Weak inertia tail events still get passed
+    // through to the handlers below (so free-scroll feels smooth as
+    // the burst decays) but don't extend the gestureActed gate.
+    if (Math.abs(delta) >= INERTIA_DELTA_THRESHOLD) {
+      const gap = e.timeStamp - lastEventAt;
+      if (gap > GESTURE_END_GAP_MS) {
+        gestureActed = false;
+        galleryGestureReset();
+      }
+      lastEventAt = e.timeStamp;
     }
-    lastEventAt = e.timeStamp;
 
     if (snapState.isAnimating) return;
     if (gestureActed) return;

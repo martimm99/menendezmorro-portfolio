@@ -27,6 +27,7 @@ import {
   assignRevealLineDelays,
   arrivedViaViewTransition,
   forceRevealAndNavigate,
+  setupScrollReveal,
   prefersReducedMotion
 } from './utils.js';
 
@@ -106,10 +107,19 @@ function setupNavigation(site) {
 function triggerReveal() {
   const container = document.querySelector('[data-contact-copy]');
   if (!container) return;
-  const delay = prefersReducedMotion()
-    ? 0
-    : (arrivedViaViewTransition()
-        ? REVEAL_TRIGGER_DELAY_AFTER_SWEEP_MS
-        : REVEAL_TRIGGER_DELAY_DIRECT_MS);
-  setTimeout(() => container.classList.add('reveal-in'), delay);
+  const paragraphs = Array.from(container.querySelectorAll('.contact-paragraph'));
+  if (paragraphs.length === 0) return;
+  if (prefersReducedMotion()) {
+    paragraphs.forEach((p) => p.classList.add('reveal-in'));
+    return;
+  }
+  // Per-paragraph reveal: each paragraph plays its line-reveal when
+  // it crosses into the viewport, not all at once on init. Mirrors
+  // the project page (and the published menendezmorro.com behavior).
+  // Trigger is delayed until the cross-document VT sweep ends so the
+  // initially-visible paragraphs don't start animating mid-sweep.
+  const delay = arrivedViaViewTransition()
+    ? REVEAL_TRIGGER_DELAY_AFTER_SWEEP_MS
+    : REVEAL_TRIGGER_DELAY_DIRECT_MS;
+  setTimeout(() => setupScrollReveal(paragraphs), delay);
 }
