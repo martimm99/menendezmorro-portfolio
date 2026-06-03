@@ -201,9 +201,10 @@
   padding-bottom: 1px;
 }
 
-.static-info-row dd a + a {
-  margin-left: var(--space-2);
-}
+/* No more `a + a { margin-left }` here — multi-link cells render
+ * the separator as a literal ", " between the <a> elements in
+ * project.js's renderInfoRow, so the comma + space already gives
+ * the visual gap. */
 
 /* ---------- Back arrow (bottom-right) ---------- */
 

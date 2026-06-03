@@ -168,7 +168,7 @@ function renderInfoRow(project) {
       linksCell.hidden = false;
       linksSlot.innerHTML = project.links
         .map((l) => `<a href="${encodeURI(l.url)}" target="_blank" rel="noopener">${escapeHtml(l.text)}</a>`)
-        .join('');
+        .join(', ');
     } else {
       linksCell.hidden = true;
     }
