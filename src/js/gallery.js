@@ -83,6 +83,42 @@ export function initGallery({
     snapToIndex(track, allItems, 0, /* instant */ true);
   }
 
+  // Free-scroll: add delta to the current live scroll position,
+  // clamped to [0, maxScroll], and apply the transform instantly
+  // (no transition). Used by project.js's wheel handler while a
+  // touchpad burst is in progress so the gallery tracks the
+  // gesture in real time. Mobile is no-op (it has its own native
+  // scroll-snap).
+  function freeScrollDelta(delta) {
+    if (mqlMobile.matches) return;
+    const current = readLiveScroll(track);
+    const max = trackMaxScroll(track, gallery);
+    const next = clamp(current + delta, 0, max);
+    applyScroll(track, next, /* instant */ true);
+  }
+
+  // Animate to the image whose left edge is closest to the current
+  // live scroll position. Used to settle the gallery after a touchpad
+  // burst ends.
+  function snapToNearest() {
+    if (mqlMobile.matches) return;
+    const allItems = track.querySelectorAll('.gallery-item');
+    if (allItems.length === 0) return;
+    const current = readLiveScroll(track);
+    const baseOffset = allItems[0].offsetLeft;
+    let nearestIdx = 0;
+    let nearestDist = Infinity;
+    for (let i = 0; i < allItems.length; i++) {
+      const itemPos = allItems[i].offsetLeft - baseOffset;
+      const dist = Math.abs(itemPos - current);
+      if (dist < nearestDist) {
+        nearestDist = dist;
+        nearestIdx = i;
+      }
+    }
+    snapToIndex(track, allItems, nearestIdx);
+  }
+
   return {
     destroy() {
       videoObserver?.disconnect();
@@ -91,7 +127,9 @@ export function initGallery({
     },
     step,
     resetToStart,
-    isAtStart: () => getCurrentIndex(track, track.querySelectorAll('.gallery-item')) === 0,
+    freeScrollDelta,
+    snapToNearest,
+    isAtStart: () => readLiveScroll(track) <= 1,
     isMobile: () => mqlMobile.matches
   };
 }
@@ -351,6 +389,28 @@ function currentScroll(track) {
   const transform = track.style.transform;
   const match = transform.match(/translate3d\(-?([\d.]+)px,/);
   return match ? Number(match[1]) : 0;
+}
+
+// Live scroll position — reads the *currently rendered* transform via
+// getComputedStyle so a free-scroll handoff mid-snap-animation picks up
+// the actual on-screen position, not the snap target. currentScroll
+// (above) returns the target since it reads inline style.transform.
+function readLiveScroll(track) {
+  const cs = getComputedStyle(track).transform;
+  if (cs === 'none' || !cs) return 0;
+  // matrix(a, b, c, d, tx, ty) — 2D form
+  const m2 = cs.match(/^matrix\(([^)]+)\)$/);
+  if (m2) {
+    const parts = m2[1].split(',').map((p) => Number(p.trim()));
+    return -parts[4];
+  }
+  // matrix3d(... 12 zeros ..., tx, ty, tz, w) — 3D form
+  const m3 = cs.match(/^matrix3d\(([^)]+)\)$/);
+  if (m3) {
+    const parts = m3[1].split(',').map((p) => Number(p.trim()));
+    return -parts[12];
+  }
+  return 0;
 }
 
 function applyScroll(track, value, instant = false) {

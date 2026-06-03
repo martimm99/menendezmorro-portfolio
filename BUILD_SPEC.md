@@ -1,8 +1,12 @@
 # MENÉNDEZ MORRO — Portfolio Rebuild Build Spec
 
-**Version:** 1.9 (Approved)
+**Version:** 1.10 (Approved)
 **Date:** June 3, 2026
 **Status:** Approved — build authorized
+
+**Changes from v1.9:**
+- **Home wheel: one navigation per gesture.** Replaces the action-cooldown gate. The previous 700ms cooldown could still let an unusually strong inertia event slip through and trigger a second navigation; the new gate is "no more navigations until wheel events go silent for 100ms," which absorbs any inertia tail no matter how long. Captured in §5.1 (Home — Interactions).
+- **Project gallery: real-time free-scroll on touchpad, single-image step on mouse wheel.** Touchpad bursts drag the gallery's transform under the finger (clamped at both ends — a long backward swipe that reaches the first image stops there, it doesn't continue into the description snap on the same gesture). When the burst ends the gallery snaps to the nearest image. A single mouse-wheel click is still detected as a discrete event (via a ~30ms first-event buffer) and snaps exactly one image, same as before. Description-snap-back fires only on the FIRST event of a NEW gesture at the first image with a backward delta. Captured in §5.2 (Project page — Gallery section — Desktop).
 
 **Changes from v1.8:**
 - **Project page section order reversed.** The Description section is now the landing view; the Gallery section sits below it and is reached by scrolling down past the bottom of the description text. Snap transition direction inverts accordingly: forward (down) goes description → gallery; backward (up) at the first image goes gallery → description. The Line reveal animation on the description fires once on initial entry (no longer replays on each gallery↔description snap, per owner decision). Description scroll position is preserved across snaps; gallery resets to the first image when leaving. References updated in §2 (Animations → Snap transition) and §5.2 (Project page sections, entry, gallery section, description section).
@@ -246,7 +250,10 @@ DESCRIPTION text never truncates with ellipsis — information is preserved. Lon
   - **Scroll always controls the gallery regardless of cursor position.**
   - **Drag** anywhere in the gallery also moves it horizontally.
   - **No arrow buttons on desktop.** Arrow keys on the keyboard also do NOT navigate the gallery in the regular view — they only function in Image fullscreen.
-- **Scroll distance per event:** approximately 30% of the gallery's visible width, scaled to screen size. Not snap-to-image, not pixel-by-pixel. Tunable post-build.
+- **Scroll behavior:**
+  - **Touchpad swipes** drive the gallery transform in real time (free scroll). When the burst ends, the gallery snaps to the nearest image with a smooth animation. Clamped at both ends: a long swipe from the last image back to the first stops at the first image — it does not continue into the Description snap on the same gesture.
+  - **Mouse-wheel clicks** are detected as discrete events and snap exactly one image per click.
+  - The two are distinguished automatically (a ~30ms buffer on the first event of a gesture decides between them based on whether a follow-up arrives).
 - **Click an image** → opens Image fullscreen.
 - **At the first image, scrolling backward** → triggers the **Snap transition** back to the Description section, which lands at whatever scroll position the user was at before entering the gallery. The forward direction (scrolling down at the bottom of the Description section) → Snap transition into the Gallery section, landing on the first image. The gallery resets to the first image when the user snaps back, so re-entering the gallery always starts fresh.
 - **Videos in gallery:** play muted, loop, **no controls visible**. Each video **autoplays when at least 90% of the video is visible in the viewport** (intersection observer with `threshold: 0.9`); pauses when less than 90% is visible. Click to open in Image fullscreen (where full HTML5 controls become available).

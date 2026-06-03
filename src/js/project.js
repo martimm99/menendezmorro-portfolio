@@ -266,73 +266,153 @@ function setupNavigation(site) {
 
 /* ---------- Wheel + touch + snap ----------
  *
- * v1.8 reversed the section order: description is the landing
- * section, gallery is the overlay that slides up from below to
- * cover it. So the navigation reads:
+ * Section order (v1.9 reversed):
+ *   description (landing) ──forward (down)──▶ gallery (overlay)
+ *                       ◀───backward (up)──
  *
- *   forward (wheel-down / swipe-up at bottom of description):
- *     description → gallery (snapToGallery)
- *   backward (wheel-up / swipe-down at first image of gallery):
- *     gallery → description (snapToDescription)
+ * Gallery wheel handling (v1.10): touchpad swipes drive the
+ * gallery in real time (free scroll, clamped at both edges),
+ * mouse wheel clicks still snap exactly one image per click.
+ * The two are distinguished by buffering the first event of a
+ * gesture for ~30ms — a follow-up event arriving inside that
+ * window means it's a touchpad burst; nothing arriving means
+ * it was a one-shot mouse click. The 30ms delay on mouse-wheel
+ * response is below the threshold most people notice.
  *
- * One window-level wheel listener owns both the gallery's per-
- * image stepping and the section snap, with an action-cooldown
- * throttle (mirrors home.js's wheel handler). Inertia events
- * landing inside the cooldown window are dropped without
- * extending it, so a follow-up swipe inside the inertia tail
- * isn't treated as continuation. The snapState.isAnimating gate
- * handles the in-flight 1s snap on top of that.
+ * Description-snap-back from the gallery only fires on the FIRST
+ * event of a NEW gesture at the first image with a backward
+ * delta. A long swipe sweeping the gallery from the last image
+ * to the first hits the start edge and stops there — the same
+ * gesture cannot continue into the description snap. The user
+ * has to release, then start a new swipe.
+ *
+ * One window-level listener owns both modes (gallery + description).
+ * A gestureActed flag prevents a second cross-section snap inside
+ * the same gesture; it resets after GESTURE_END_GAP_MS of wheel
+ * silence. snapState.isAnimating blocks everything during the
+ * actual section-snap animation.
  *
  * passive: true: gallery scrolls via CSS transform (no native
- * scroll container to preventDefault on), and the description's
+ * scroll container to preventDefault on); the description's
  * edge bounce is contained by overscroll-behavior-y: contain in
- * project.css. AT_BOTTOM_THRESHOLD tolerates sub-pixel
- * scrollTop values macOS browsers sometimes leave after smooth
- * scrolls.
+ * project.css. AT_EDGE_THRESHOLD tolerates sub-pixel scrollTop
+ * values macOS browsers sometimes leave after smooth scrolls.
  */
 function setupWheelAndSnap(galleryAPI) {
   const descriptionSection = document.querySelector('[data-section-description]');
   if (!descriptionSection) return;
 
-  // 700ms outlasts a typical touchpad inertia tail so one swipe
-  // = one image step. Matches home.js and the previous project
-  // gallery setup.
-  const STEP_COOLDOWN_MS = 700;
+  const GESTURE_END_GAP_MS = 80;
+  const MOUSE_BUFFER_MS = 30;
   const AT_EDGE_THRESHOLD = 1;
-  let lastActionAt = 0;
+
+  let lastEventAt = 0;
+  let gestureActed = false;
+
+  // Gallery-specific gesture state. mode flips to 'continuous' as
+  // soon as a second wheel event arrives inside the buffer window
+  // for the current gesture; resets on gesture end.
+  let mode = null;                  // null = unknown / first event; 'continuous' = touchpad
+  let bufferedEvent = null;
+  let bufferTimer = null;
+  let snapTimer = null;
 
   function descriptionAtBottom() {
     return descriptionSection.scrollTop + descriptionSection.clientHeight
       >= descriptionSection.scrollHeight - AT_EDGE_THRESHOLD;
   }
 
-  window.addEventListener('wheel', (e) => {
-    if (snapState.isAnimating) return;
-    if (e.timeStamp - lastActionAt < STEP_COOLDOWN_MS) return;
+  function galleryGestureReset() {
+    mode = null;
+    bufferedEvent = null;
+    if (bufferTimer) { clearTimeout(bufferTimer); bufferTimer = null; }
+  }
 
+  function scheduleGallerySnap() {
+    if (snapTimer) clearTimeout(snapTimer);
+    snapTimer = setTimeout(() => {
+      galleryAPI.snapToNearest();
+      mode = null;
+      snapTimer = null;
+    }, GESTURE_END_GAP_MS);
+  }
+
+  window.addEventListener('wheel', (e) => {
+    const gap = e.timeStamp - lastEventAt;
+    if (gap > GESTURE_END_GAP_MS) {
+      gestureActed = false;
+      galleryGestureReset();
+    }
+    lastEventAt = e.timeStamp;
+
+    if (snapState.isAnimating) return;
+    if (gestureActed) return;
+
+    if (snapState.showGallery) {
+      handleGalleryWheel(e);
+    } else {
+      handleDescriptionWheel(e);
+    }
+  }, { passive: true });
+
+  function handleDescriptionWheel(e) {
+    // Native scroll handles wheel events anywhere inside the
+    // description that isn't at the very bottom. A forward wheel
+    // landing while already at the bottom snaps up to the gallery.
+    if (!descriptionAtBottom()) return;
+    if (e.deltaY <= 0) return;
+    snapToGallery();
+    gestureActed = true;
+  }
+
+  function handleGalleryWheel(e) {
     const delta = pickAxis(e.deltaX, e.deltaY);
     if (delta === 0) return;
 
-    if (snapState.showGallery) {
-      // Gallery overlay is on top. Step images on each gesture;
-      // a backward swipe at the first image snaps back down to
-      // the description.
-      const result = galleryAPI.step(delta);
-      if (result === 'stepped') {
-        lastActionAt = e.timeStamp;
-      } else if (result === 'at-start' && delta < 0) {
-        snapToDescription();
-      }
-    } else {
-      // Description is showing. Native scroll handles wheel
-      // events anywhere inside the description that isn't at
-      // the very bottom. A forward (down) wheel landing while
-      // already at the bottom snaps up to the gallery.
-      if (!descriptionAtBottom()) return;
-      if (e.deltaY <= 0) return;
-      snapToGallery();
+    // Description-snap-back: only on a NEW gesture (mode null AND
+    // no buffer pending) at the first image with a backward delta.
+    // A long swipe that *passes through* the first image mid-burst
+    // is already in 'continuous' mode and skips this branch — it
+    // just clamps at scroll position 0.
+    if (mode === null && !bufferedEvent && galleryAPI.isAtStart() && delta < 0) {
+      snapToDescription();
+      gestureActed = true;
+      galleryGestureReset();
+      return;
     }
-  }, { passive: true });
+
+    if (mode === 'continuous') {
+      galleryAPI.freeScrollDelta(delta);
+      scheduleGallerySnap();
+      return;
+    }
+
+    if (bufferedEvent) {
+      // Second wheel event inside the buffer window — it's a
+      // touchpad burst. Apply both events as free-scroll and
+      // switch to continuous mode for the rest of the gesture.
+      clearTimeout(bufferTimer);
+      bufferTimer = null;
+      mode = 'continuous';
+      const buffDelta = pickAxis(bufferedEvent.deltaX, bufferedEvent.deltaY);
+      bufferedEvent = null;
+      galleryAPI.freeScrollDelta(buffDelta);
+      galleryAPI.freeScrollDelta(delta);
+      scheduleGallerySnap();
+      return;
+    }
+
+    // First event of a new gesture. Buffer it and wait for a
+    // follow-up; if none arrives within MOUSE_BUFFER_MS, it was
+    // a single mouse-wheel click — discrete one-image step.
+    bufferedEvent = e;
+    bufferTimer = setTimeout(() => {
+      const buffDelta = pickAxis(bufferedEvent.deltaX, bufferedEvent.deltaY);
+      bufferedEvent = null;
+      bufferTimer = null;
+      galleryAPI.step(buffDelta);
+    }, MOUSE_BUFFER_MS);
+  }
 
   // Mobile vertical swipe — listen on document so a swipe that starts
   // over a static element (info row, back arrow, header logo) still
@@ -349,14 +429,11 @@ function setupWheelAndSnap(galleryAPI) {
     const dx = end.clientX - touchStart.x;
     const dy = end.clientY - touchStart.y;
     touchStart = null;
-    // Vertical swipe must dominate, and clear the small-gesture floor.
     if (Math.abs(dy) < Math.abs(dx) * 1.2) return;
     if (Math.abs(dy) < 50) return;
     if (dy < 0 && !snapState.showGallery && descriptionAtBottom()) {
-      // Swipe up while in description at bottom → snap to gallery.
       snapToGallery();
     } else if (dy > 0 && snapState.showGallery && galleryAPI.isAtStart()) {
-      // Swipe down while in gallery at first image → back to description.
       snapToDescription();
     }
   }, { passive: true });

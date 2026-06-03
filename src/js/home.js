@@ -210,37 +210,39 @@ function goToCurrentProject(e) {
 
 function setupWheel() {
   // Spec §5.1: wheel/trackpad scroll maps to horizontal navigation.
-  // One input gesture = one navigation.
+  // One input gesture = one navigation, regardless of how long the
+  // swipe is.
   //
-  // Action-cooldown pattern (same as the project gallery's wheel
-  // handler in project.js): a single timestamp tracks when we last
-  // *acted*. While we're inside the cooldown window, every wheel
-  // event — real input or trackpad inertia — is dropped. This is
-  // safer than the older burst-gap approach (gap from the last
-  // wheel event), which extended its window with each inertia
-  // event and ended up swallowing the user's next real swipe as
-  // continuation — until the cursor moved and Chrome cancelled
-  // inertia delivery. Anchoring the gate on the action time
-  // instead of the last-event time means inertia events never
-  // extend the cooldown.
+  // Gesture-acted pattern: after a navigate fires we set a flag and
+  // ignore every subsequent wheel event until events stop arriving
+  // for GESTURE_END_GAP_MS, at which point we consider the gesture
+  // truly over and reset. This correctly absorbs the full inertia
+  // tail of a long fling no matter how strong it is — the previous
+  // 700ms cooldown could still let a really aggressive inertia
+  // event slip through and trigger a second navigate.
   //
-  // 700ms outlasts a typical trackpad inertia tail (~300-500ms)
-  // and is also short enough that a deliberate two-step swipe
-  // (left then right, or vice-versa) responds promptly. The
-  // state.isAnimating gate handles the rest of the in-flight
-  // horizontal-sweep duration (1s) on top of the cooldown.
-  const STEP_COOLDOWN_MS = 700;
-  let lastActionAt = 0;
+  // 100ms is large enough that any genuine touchpad gesture's
+  // inertia stays inside one "session," and small enough that a
+  // user starting a deliberate new swipe shortly after the last
+  // animation isn't perceptibly throttled.
+  const GESTURE_END_GAP_MS = 100;
+  let lastEventAt = 0;
+  let gestureActed = false;
 
   window.addEventListener('wheel', (e) => {
+    if (e.timeStamp - lastEventAt > GESTURE_END_GAP_MS) {
+      gestureActed = false;
+    }
+    lastEventAt = e.timeStamp;
+
     if (state.isAnimating) return;
-    if (e.timeStamp - lastActionAt < STEP_COOLDOWN_MS) return;
+    if (gestureActed) return;
 
     const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
     if (delta === 0) return;
 
     navigate(delta > 0 ? 'next' : 'prev');
-    lastActionAt = e.timeStamp;
+    gestureActed = true;
   }, { passive: true });
 }
 
