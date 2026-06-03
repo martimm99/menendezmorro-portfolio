@@ -155,31 +155,42 @@ export function forceRevealAndNavigate(url) {
 }
 
 /**
- * Observe each element and add .reveal-in to it the first time it
- * crosses into the viewport. One-shot per element (unobserved after
- * firing). Used for per-paragraph line-reveal animations so each
- * paragraph plays the animation when the user actually scrolls it
- * into view — not all at once on init (which left below-the-fold
- * text already statically revealed by the time the user scrolled
- * to it). Mirrors the published menendezmorro.com behavior.
+ * Observe each .reveal-line-clip and reveal it the first time any
+ * pixel of it crosses into the (shrunken) viewport. One-shot per clip.
  *
- * threshold defaults to 0.1 — 10% of the element visible is enough
- * to trigger; tweak per caller if needed.
+ * Two-phase reveal pattern used by the Project description and
+ * Contact copy: the caller fires the on-screen clips directly so the
+ * cascade waterfall (per-line --reveal-delay set by
+ * assignRevealLineDelays) plays on first paint; off-screen clips are
+ * passed here so each visual line animates as the user scrolls it
+ * into view. The cascade delay is overridden to 0ms on intersection
+ * so a scrolled-in line doesn't pause after entering view.
+ *
+ * rootMargin defaults to `0px 0px -20% 0px`: the bottom of the
+ * intersection root is pulled up 20% of the viewport height, so a
+ * line has to scroll ~20% past the actual viewport bottom before its
+ * animation fires. Without that delay the animation runs while the
+ * line is still in peripheral vision and only the tail is visible by
+ * the time the line reaches the reading area.
+ *
+ * Older browsers without IntersectionObserver get an immediate
+ * reveal of everything as a fallback.
  */
-export function setupScrollReveal(elements, { threshold = 0.1 } = {}) {
-  if (!('IntersectionObserver' in window) || !elements?.length) {
-    // Older browsers — just reveal everything immediately. No fancy
-    // staggering, but still legible.
-    elements?.forEach?.((el) => el.classList.add('reveal-in'));
+export function setupScrollReveal(clips, { threshold = 0, rootMargin = '0px 0px -20% 0px' } = {}) {
+  if (!('IntersectionObserver' in window) || !clips?.length) {
+    clips?.forEach?.((c) => c.classList.add('reveal-in'));
     return null;
   }
   const observer = new IntersectionObserver((entries) => {
     for (const entry of entries) {
       if (!entry.isIntersecting) continue;
-      entry.target.classList.add('reveal-in');
-      observer.unobserve(entry.target);
+      const clip = entry.target;
+      const line = clip.querySelector('.reveal-line');
+      if (line) line.style.transitionDelay = '0ms';
+      clip.classList.add('reveal-in');
+      observer.unobserve(clip);
     }
-  }, { threshold });
-  for (const el of elements) observer.observe(el);
+  }, { threshold, rootMargin });
+  for (const c of clips) observer.observe(c);
   return observer;
 }

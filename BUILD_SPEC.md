@@ -1,8 +1,14 @@
 # MENÉNDEZ MORRO — Portfolio Rebuild Build Spec
 
-**Version:** 1.11 (Approved)
+**Version:** 1.12 (Approved)
 **Date:** June 3, 2026
 **Status:** Approved — build authorized
+
+**Changes from v1.11:**
+- **Line reveal: two-phase scroll-triggered behavior.** Previously the per-line reveal animation fired once on entry for the whole text block, which left below-the-fold lines already statically revealed by the time the user scrolled to them. The new behavior splits at trigger time: clips that are on-screen when the post-sweep delay elapses fire as the existing cascade waterfall (per-line `--reveal-delay`); clips that are below the fold are observed individually and each visual line animates the moment it scrolls into the reading area. Each observed clip's cascade delay is overridden to 0ms on intersection so a scrolled-in line doesn't pause after entering view. The observer's `rootMargin` is `0px 0px -20% 0px` so the animation plays squarely in the reading area rather than at the viewport bottom (where only the tail would be visible). Applies to the Project page description and the Contact page text. Captured in §2 (Animations → Line reveal), §5.2 (Project page — Description section), and §5.3 (Contact page).
+- **Project page wheel: inertia-tail filter.** Same pattern the Home wheel got in v1.11 — events with `|delta| < 4` no longer refresh the gesture-end timer, so a long fling's weak inertia tail decays out of the gate and the next genuine swipe goes through immediately (no cursor nudge required between snap actions). Captured in §5.2.
+- **Contact page static elements moved to body level.** `Get in touch` CTA and the social info row used to sit inside `<main class="contact-content">`, which had `position: fixed` with no explicit z-index — its stacking context buried its children below the body-level chrome-mask pseudos (z 50) regardless of their own z-index. Both elements now live as siblings of the chrome masks at body level, restoring visibility. No visual change to spec; implementation detail only.
+- **Mobile gallery: image centering fix.** A desktop-side `max-width: calc(100vw - 2 * --page-pad-x)` rule on `.gallery-item img/video` was cascading into the `≤768px` block, pinning images to the left edge of their (96vw) item. Mobile rule now overrides with `max-width: 100%`. No spec change; implementation detail only.
 
 **Changes from v1.10:**
 - **Home wheel: inertia-tail filter added.** A very long fling could keep firing wheel events with sizeable deltas for over a second, refreshing the gesture-end timer indefinitely and making swipes feel like they "stopped working" until the cursor moved. Events with |delta| < 4 no longer refresh the timer (or trigger a navigate), so an inertia tail decays out of the gate and the next genuine swipe goes through. Captured in §5.1.
@@ -114,7 +120,7 @@ A state opened by clicking/tapping an image or video in the gallery. The clicked
   - Project page → Home: reverse (Project slides **up**, off the top).
   - Home → Contact: Contact slides **down from top**.
   - Contact → Home: reverse (Contact slides **up**, off the top).
-- **Line reveal** — text-mask reveal animation. Each text line is wrapped in a clipped container; line starts translated 100% below its container, then slides up into view. Staggered delay between lines. Easing `cubic-bezier(.33, 1, .55, 1)`, duration ~0.55s per line. Used for entry of Project page (description text, Get in touch CTA) and Contact page text — identical to current live site.
+- **Line reveal** — text-mask reveal animation. Each text line is wrapped in a clipped container; line starts translated 100% below its container, then slides up into view. Staggered delay between lines. Easing `cubic-bezier(.33, 1, .55, 1)`, duration ~0.55s per line. Used for entry of Project page (description text, Get in touch CTA) and Contact page text — identical to current live site for the initial paint, with one v1.12 enhancement: lines below the fold animate as the user scrolls them into the reading area (per-line scroll trigger via IntersectionObserver), instead of all firing on init. The trigger zone is shrunk by 20% of the viewport height on the bottom so the animation plays in the reading area rather than at the viewport edge.
 - **Snap transition (Project page)** — when scrolling between the Description section (landing) and the Gallery section, the page snaps with a smooth animation. Both directions (description → gallery on a scroll-down past the bottom of the text; gallery → description on a scroll-up at the first image). Tunable post-build.
 - **No crossfade, no auto-rotation, no timers anywhere on the site.**
 
@@ -234,7 +240,7 @@ DESCRIPTION text never truncates with ellipsis — information is preserved. Lon
 **Entry:**
 - User clicks a project's title or role label on Home → vertical sweep (Project slides **down from top**). Page lands in the **Description section** at scroll position 0.
 - Direct URL access (`/gestion-reaviva`) → page loads in the Description section, scroll position 0 (no sweep animation, but the Line reveal still applies to description text).
-- On Project page entry, the description's per-word **Line reveal** animation runs once. It does not replay on subsequent gallery↔description snaps.
+- On Project page entry, the description's **Line reveal** animation runs in two phases: lines on-screen at trigger time fire as a cascade waterfall (per-line staggered delay); lines below the fold are observed individually and each animates the moment it scrolls into the reading area. Neither phase replays on subsequent gallery↔description snaps.
 
 **Static elements (do NOT move when scrolling):**
 - Get in touch link — top-right.
@@ -290,7 +296,7 @@ DESCRIPTION text never truncates with ellipsis — information is preserved. Lon
 
 ### 5.3 Contact page
 
-**Behavior:** Identical to the current live site. No structural changes — only the same code quality and performance improvements applied to the rest of the site. Text elements use the Line reveal animation on entry, identical to current site.
+**Behavior:** Identical to the current live site. No structural changes — only the same code quality and performance improvements applied to the rest of the site. Text elements use the Line reveal animation: visible lines fire as the cascade waterfall on entry (same as current site), and any lines that overflow off-screen on small viewports are scroll-triggered per-line as the user brings them into view.
 
 **Get in touch link:** copies email to clipboard + shows "Email copied" toast (same behavior as on Project pages).
 

@@ -232,31 +232,44 @@ function placeholderLongDescription(project) {
 }
 
 /* The description is the landing section (v1.8 reversed the section
- * order). Per-paragraph reveal: each <p class="description-paragraph">
- * is observed and the line-reveal animation fires the moment that
- * paragraph crosses into the viewport. So paragraphs below the fold
- * don't burn their animation while invisible — the user actually
- * sees the lines slide up as they scroll the description text.
- * Matches the published menendezmorro.com pattern.
+ * order). Two-phase reveal:
+ *   1. Clips on-screen at trigger time fire as a cascade waterfall —
+ *      each visual line stages LINE_REVEAL_DELAY_PER_LINE_MS after the
+ *      one above it via the --reveal-delay variable assigned by
+ *      assignRevealLineDelays.
+ *   2. Clips below the fold are observed individually. When a clip's
+ *      top edge crosses the viewport bottom, its line-reveal fires
+ *      immediately (cascade delay reset to 0ms). Words on the same
+ *      visual line share a y-position, so they fire together and the
+ *      line animates as one unit as the user scrolls into it.
  *
  * Initial trigger is delayed until the cross-document VT sweep (if
- * any) finishes, so the on-screen paragraphs don't start animating
- * before the page is in place. After the delay we start observing;
- * paragraphs already in view fire immediately, paragraphs below the
- * fold wait for scroll. */
+ * any) finishes, so the on-screen lines don't start animating before
+ * the page is in place. */
 function triggerDescriptionReveal() {
   const container = document.querySelector('[data-description-content]');
   if (!container) return;
-  const paragraphs = Array.from(container.querySelectorAll('.description-paragraph'));
-  if (paragraphs.length === 0) return;
+  const clips = Array.from(container.querySelectorAll('.reveal-line-clip'));
+  if (clips.length === 0) return;
   if (prefersReducedMotion()) {
-    paragraphs.forEach((p) => p.classList.add('reveal-in'));
+    clips.forEach((c) => c.classList.add('reveal-in'));
     return;
   }
   const delay = arrivedViaViewTransition()
     ? DESCRIPTION_REVEAL_DELAY_AFTER_SWEEP_MS
     : DESCRIPTION_REVEAL_DELAY_DIRECT_MS;
-  setTimeout(() => setupScrollReveal(paragraphs), delay);
+  setTimeout(() => {
+    const vh = window.innerHeight;
+    const inView = [];
+    const offView = [];
+    for (const clip of clips) {
+      const rect = clip.getBoundingClientRect();
+      if (rect.bottom > 0 && rect.top < vh) inView.push(clip);
+      else offView.push(clip);
+    }
+    for (const c of inView) c.classList.add('reveal-in');
+    setupScrollReveal(offView);
+  }, delay);
 }
 
 /* ---------- Navigation + chrome wiring ---------- */

@@ -107,19 +107,31 @@ function setupNavigation(site) {
 function triggerReveal() {
   const container = document.querySelector('[data-contact-copy]');
   if (!container) return;
-  const paragraphs = Array.from(container.querySelectorAll('.contact-paragraph'));
-  if (paragraphs.length === 0) return;
+  const clips = Array.from(container.querySelectorAll('.reveal-line-clip'));
+  if (clips.length === 0) return;
   if (prefersReducedMotion()) {
-    paragraphs.forEach((p) => p.classList.add('reveal-in'));
+    clips.forEach((c) => c.classList.add('reveal-in'));
     return;
   }
-  // Per-paragraph reveal: each paragraph plays its line-reveal when
-  // it crosses into the viewport, not all at once on init. Mirrors
-  // the project page (and the published menendezmorro.com behavior).
+  // Two-phase reveal (same pattern as project.js triggerDescriptionReveal):
+  // on-screen clips fire as a cascade waterfall via the per-line
+  // --reveal-delay; off-screen clips are observed and fire individually
+  // when they scroll into view, with the cascade delay reset to 0ms.
   // Trigger is delayed until the cross-document VT sweep ends so the
-  // initially-visible paragraphs don't start animating mid-sweep.
+  // initially-visible lines don't start animating mid-sweep.
   const delay = arrivedViaViewTransition()
     ? REVEAL_TRIGGER_DELAY_AFTER_SWEEP_MS
     : REVEAL_TRIGGER_DELAY_DIRECT_MS;
-  setTimeout(() => setupScrollReveal(paragraphs), delay);
+  setTimeout(() => {
+    const vh = window.innerHeight;
+    const inView = [];
+    const offView = [];
+    for (const clip of clips) {
+      const rect = clip.getBoundingClientRect();
+      if (rect.bottom > 0 && rect.top < vh) inView.push(clip);
+      else offView.push(clip);
+    }
+    for (const c of inView) c.classList.add('reveal-in');
+    setupScrollReveal(offView);
+  }, delay);
 }
