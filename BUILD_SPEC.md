@@ -36,7 +36,7 @@
 - §5.4 Image fullscreen redefined: a single shared expand/collapse animation that grows the clicked media from its gallery position to a centered ~90vw position with side margins, then shrinks it back on close. No image-to-image navigation while open; no separate desktop/mobile cover-vs-contain behavior. Only the X button (top-right) and Esc close.
 
 **Changes from v1.3:**
-- Appendix C location fields normalized to a single city (no compound "City A — City B" values). Three projects affected: Morro (Mallorca — Berlin → Mallorca), Titles (Girona — Mallorca → Girona), Concerts (Madrid — Berlin → Madrid). The first city in each former pair is retained. Lets the Home Info row's LOCATION column shrink, with consistent column positions across projects.
+- Appendix C location fields normalized to a single city (no compound "City A — City B" values). Three projects affected: MORRO (Mallorca — Berlin → Mallorca), TITLES (Girona — Mallorca → Girona), CONCERTS (Madrid — Berlin → Madrid). The first city in each former pair is retained. Lets the Home Info row's LOCATION column shrink, with consistent column positions across projects.
 
 **Changes from v1.2:**
 - Appendix C year fields normalized to a single (latest) year. Ranges like "2025–2026" become "2026" so the Info row's middle column has a consistent width and the description column doesn't shift between projects.
@@ -108,7 +108,7 @@ These terms are used consistently in code, documentation, and conversation.
 - **Gallery section** — below the description, shows project media. Reached by scrolling past the bottom of the description.
 
 ### Captions
-Small text shown directly below each image or video, **left-aligned** with **lower opacity** (~0.6) so it reads as a secondary label rather than a heading. Visible in both the Gallery section and the Image fullscreen state (where the caption sits below the centered, expanded media). Captions are per-media-item (each entry in `media[]` can have its own `caption` text). Optional and gracefully absent when empty — no placeholder, no blank space. Primarily used by category projects (Titles, Architecture, Concerts) to label individual pieces (e.g., artist name + venue for a concert photo).
+Small text shown directly below each image or video, **left-aligned** with **lower opacity** (~0.6) so it reads as a secondary label rather than a heading. Visible in both the Gallery section and the Image fullscreen state (where the caption sits below the centered, expanded media). Captions are per-media-item (each entry in `media[]` can have its own `caption` text). Optional and gracefully absent when empty — no placeholder, no blank space. Primarily used by category projects (TITLES, ARCHITECTURE, CONCERTS) to label individual pieces (e.g., artist name + venue for a concert photo).
 
 ### Image fullscreen
 A state opened by clicking/tapping an image or video in the gallery. The clicked media animates from its gallery position to a centered, ~90vw expanded position; closing reverses the animation back to the gallery item.
@@ -166,14 +166,14 @@ Eight projects in the new portfolio. The new slugs are canonical; legacy hash UR
 
 | New project | New URL | Redirected from |
 |-------------|---------|-----------------|
-| Morro | `/morro` | `/#morro` |
-| Lufthansa Innovation Hub | `/lufthansa-innovation-hub` | (new project, no legacy URL) |
-| Build A Rocket | `/build-a-rocket` | (new project, no legacy URL) |
-| Gestión Reaviva | `/reaviva` | `/#gestion_reaviva` |
-| Festival Z | `/festival-z` | `/#festivalz` |
-| Titles | `/titles` | `/#me_olvido`, `/#un_altre_peto` |
-| Architecture | `/architecture` | `/#binifaldo` |
-| Concerts | `/concerts` | `/#gloosito`, `/#madison_beer`, `/#alequi`, `/#delaossa`, `/#maylaya`, `/#mda`, `/#coaatmca` |
+| MORRO | `/morro` | `/#morro` |
+| LUFTHANSA INNOVATION HUB | `/lufthansa-innovation-hub` | (new project, no legacy URL) |
+| BUILD A ROCKET | `/build-a-rocket` | (new project, no legacy URL) |
+| GESTIÓN REAVIVA | `/reaviva` | `/#gestion_reaviva` |
+| FESTIVAL Z | `/festival-z` | `/#festivalz` |
+| TITLES | `/titles` | `/#me_olvido`, `/#un_altre_peto` |
+| ARCHITECTURE | `/architecture` | `/#binifaldo` |
+| CONCERTS | `/concerts` | `/#gloosito`, `/#madison_beer`, `/#alequi`, `/#delaossa`, `/#maylaya`, `/#mda`, `/#coaatmca` |
 
 The map is retained for historical reference only. **Legacy hash URLs are not redirected by the rebuild.** Browsers don't send a URL fragment (the `#…` part) to the server, so Netlify only ever sees `/` for any `/#x` request — there's no point of interception where a server-side 301 could fire. Every legacy hash link, mapped or not, lands the user on Home; from there they navigate to the right project the same way any first-time visitor would.
 
@@ -343,22 +343,22 @@ Triggered by clicking/tapping an image or video in the Project page Gallery. Beh
   "projects": [
     {
       "slug": "morro",
-      "title": "Morro",
+      "title": "MORRO",
       "role": "Branding and Art Direction",
       "year": "2026",
       "location": "Mallorca — Berlin",
       "type": "design",
       "subcategory": [],
       "description": "Digital design studio.",
-      "longDescription": "Branding and art direction for Morro...\n\nThe goal was...",
+      "longDescription": "Branding and art direction for MORRO...\n\nThe goal was...",
       "links": [
         { "url": "https://www.instagram.com/uepmorro/", "text": "@uepmorro" }
       ],
       "duration": "1 month",
       "cost": "Collaboration",
       "media": [
-        { "type": "image", "src": "assets/media/morro/morro-1.jpg", "alt": "Morro image 1", "caption": "" },
-        { "type": "image", "src": "assets/media/morro/morro-2.jpg", "alt": "Morro image 2", "caption": "" },
+        { "type": "image", "src": "assets/media/morro/morro-1.jpg", "alt": "MORRO image 1", "caption": "" },
+        { "type": "image", "src": "assets/media/morro/morro-2.jpg", "alt": "MORRO image 2", "caption": "" },
         { "type": "video", "src": "assets/media/morro/morro-3.mp4", "poster": "assets/media/morro/morro-3.jpg", "caption": "" }
       ]
     }
@@ -370,7 +370,7 @@ Triggered by clicking/tapping an image or video in the Project page Gallery. Beh
 - `slug` is the URL path and the project's identifier in the data model.
 - `type`: either `"design"` or `"photo"`. Unused in UI but preserved for future filtering.
 - `subcategory`: always an array. Currently unused in UI; preserved for future filtering. Empty arrays are valid.
-- `links`: array of `{url, text}` objects. Can be empty (`[]`) for projects with no external links — the UI hides the LINKS section in that case. Can have multiple entries for projects with several relevant links (e.g., Titles, Concerts).
+- `links`: array of `{url, text}` objects. Can be empty (`[]`) for projects with no external links — the UI hides the LINKS section in that case. Can have multiple entries for projects with several relevant links (e.g., TITLES, CONCERTS).
 - `media[0]` is the cover image shown on Home AND the first image of the project gallery.
 - `media[].alt` text: required for accessibility. Auto-generated as `<Project title> image N` if not provided in CMS.
 - `media[].caption`: optional. Per-image overlay text shown at bottom-left in Gallery and Image fullscreen. Empty/absent → no overlay rendered.
@@ -695,7 +695,7 @@ Eight projects, in Home display order (first to last as the user scrolls forward
 
 For each project, all metadata fields are listed. Long descriptions are deliberately omitted in this spec — they will be authored directly via the Decap CMS once the site is live. Media files are placeholder (programmatically generated in Phase 2) until owner provides finals via CMS.
 
-### 1. Morro
+### 1. MORRO
 - **Slug:** `morro`
 - **Type:** `design`
 - **Role:** Branding and Art Direction
@@ -706,7 +706,7 @@ For each project, all metadata fields are listed. Long descriptions are delibera
 - **Duration:** 1 month
 - **Cost:** Collaboration
 
-### 2. Lufthansa Innovation Hub
+### 2. LUFTHANSA INNOVATION HUB
 - **Slug:** `lufthansa-innovation-hub`
 - **Type:** `design`
 - **Role:** Graphic Design & Motion Graphics
@@ -717,7 +717,7 @@ For each project, all metadata fields are listed. Long descriptions are delibera
 - **Duration:** 9 months
 - **Cost:** Employee
 
-### 3. Build A Rocket
+### 3. BUILD A ROCKET
 - **Slug:** `build-a-rocket`
 - **Type:** `design`
 - **Role:** Web Design
@@ -728,7 +728,7 @@ For each project, all metadata fields are listed. Long descriptions are delibera
 - **Duration:** 3.5 months
 - **Cost:** 4.000€
 
-### 4. Gestión Reaviva
+### 4. GESTIÓN REAVIVA
 - **Slug:** `reaviva`
 - **Type:** `design`
 - **Role:** Branding and Web Design & Development
@@ -739,7 +739,7 @@ For each project, all metadata fields are listed. Long descriptions are delibera
 - **Duration:** 3 months
 - **Cost:** 4.000€
 
-### 5. Festival Z
+### 5. FESTIVAL Z
 - **Slug:** `festival-z`
 - **Type:** `design`
 - **Role:** Creative Direction
@@ -750,7 +750,7 @@ For each project, all metadata fields are listed. Long descriptions are delibera
 - **Duration:** 5 months
 - **Cost:** 4.500€
 
-### 6. Titles
+### 6. TITLES
 - **Slug:** `titles`
 - **Type:** `design`
 - **Role:** Graphic Design
@@ -762,7 +762,7 @@ For each project, all metadata fields are listed. Long descriptions are delibera
 - **Cost:** Collaboration
 - **Notes:** Category project — per-media captions expected (e.g., title sequence names).
 
-### 7. Architecture
+### 7. ARCHITECTURE
 - **Slug:** `architecture`
 - **Type:** `photo`
 - **Role:** Photography and Postproduction
@@ -774,7 +774,7 @@ For each project, all metadata fields are listed. Long descriptions are delibera
 - **Cost:** 250–800€
 - **Notes:** Category project — per-media captions expected (e.g., property names, locations).
 
-### 8. Concerts
+### 8. CONCERTS
 - **Slug:** `concerts`
 - **Type:** `photo`
 - **Role:** Photography and Postproduction

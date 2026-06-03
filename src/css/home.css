@@ -96,7 +96,7 @@
 .site-logo {
   font-size: var(--fs-logo);
   font-weight: var(--fw-regular);
-  letter-spacing: 0.02em;
+  letter-spacing: -0.02em;
   color: inherit;
   text-decoration: none;
 }
@@ -151,7 +151,7 @@
   font-size: var(--fs-title);
   font-weight: var(--fw-regular);
   line-height: var(--lh-tight);
-  letter-spacing: var(--ls-display);
+  letter-spacing: -0.03em;
   max-width: min(58vw, 70ch);
 }
 
