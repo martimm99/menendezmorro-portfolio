@@ -64,27 +64,34 @@
   color: var(--color-fg-light);
 }
 
-.section-gallery   { z-index: var(--z-content); }
-.section-description {
+/* Default landing: description is the base layer (z-content, no
+ * transform). Gallery is the overlay (z 2) parked off-screen below
+ * via translateY(100%) and slides up to cover the description when
+ * the user snaps forward.
+ *
+ * v1.8 reversed the section order: the description used to be the
+ * overlay and the gallery the base. The snap class moved with it
+ * (.show-description -> .show-gallery). */
+.section-description { z-index: var(--z-content); }
+.section-gallery {
   z-index: 2;
   transform: translateY(100%);
   transition: transform var(--dur-sweep) var(--ease-sweep);
 }
 
-.project-shell.show-description .section-description {
+.project-shell.show-gallery .section-gallery {
   transform: translateY(0);
 }
 
-/* When the description is showing, take the gallery out of the pointer-
- * event hit-test. Chrome (and Safari in some versions) doesn't refresh
- * its hover-state cache when an element slides under a stationary cursor
- * via CSS transform — the cursor visibly stays as the gallery's zoom-in,
- * and wheel events can keep routing to .gallery-item in spite of the
- * description sitting visually on top. pointer-events: none forces the
- * hit-test to skip the gallery entirely, so the description (and the
- * window-level wheel listener that drives the snap-back) receive events
- * the way they should from the moment the snap begins. */
-.project-shell.show-description .section-gallery {
+/* When the gallery overlay is showing, take the description out of
+ * the pointer-event hit-test. Chrome (and Safari in some versions)
+ * doesn't refresh its hover-state cache when an element slides under
+ * a stationary cursor via CSS transform — text underneath can keep
+ * receiving events even when visually covered. pointer-events: none
+ * skips the description in hit-testing so wheel events and clicks
+ * route to the gallery (and the window-level wheel listener) the way
+ * they should from the moment the snap begins. */
+.project-shell.show-gallery .section-description {
   pointer-events: none;
 }
 

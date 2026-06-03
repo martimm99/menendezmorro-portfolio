@@ -33,14 +33,20 @@ import {
   prefersReducedMotion,
   wrapTextInRevealLines,
   assignRevealLineDelays,
+  arrivedViaViewTransition,
   forceRevealAndNavigate
 } from './utils.js';
 
 const SNAP_DURATION_MS = 1000;
 const LINE_REVEAL_DELAY_PER_LINE_MS = 80;
+const DESCRIPTION_REVEAL_DELAY_DIRECT_MS = 60;
+const DESCRIPTION_REVEAL_DELAY_AFTER_SWEEP_MS = 1100;
 
 let teardown = null;
-let snapState = { showDescription: false, isAnimating: false };
+// v1.8: section order is description-then-gallery. showGallery tracks
+// whether the gallery overlay is currently on top of the description.
+// Initial false = description is what the user sees on landing.
+let snapState = { showGallery: false, isAnimating: false };
 let touchStart = null;
 
 export function initProject(data, slug) {
@@ -62,6 +68,7 @@ export function initProject(data, slug) {
   renderDescription(project);
   setupNavigation(data.site);
   initFullscreen();
+  triggerDescriptionReveal();
 
   const galleryAPI = initGallery({
     items: project.media,
@@ -198,12 +205,28 @@ function renderDescription(project) {
 
   // Two rAFs: the first ensures the new innerHTML is committed, the second
   // ensures layout has settled so getBoundingClientRect reflects the final
-  // wrapping. Measurement runs while the section is offscreen (no transform
-  // dependency — all reveal-lines share the same transform here, so their
-  // relative tops still cluster correctly per visual line).
+  // wrapping. All reveal-lines share the same transform here, so their
+  // relative tops still cluster correctly per visual line.
   requestAnimationFrame(() => {
     requestAnimationFrame(() => assignRevealLineDelays(container, LINE_REVEAL_DELAY_PER_LINE_MS));
   });
+}
+
+/* The description is the landing section (v1.8 reversed the section
+ * order). Its per-word line reveal fires once, on initial entrance,
+ * timed against the cross-document VT sweep (if any). After that the
+ * description text stays revealed for the rest of the visit — going
+ * to the gallery overlay and coming back doesn't replay the reveal,
+ * per owner decision. */
+function triggerDescriptionReveal() {
+  const container = document.querySelector('[data-description-content]');
+  if (!container) return;
+  const delay = prefersReducedMotion()
+    ? 0
+    : (arrivedViaViewTransition()
+        ? DESCRIPTION_REVEAL_DELAY_AFTER_SWEEP_MS
+        : DESCRIPTION_REVEAL_DELAY_DIRECT_MS);
+  setTimeout(() => container.classList.add('reveal-in'), delay);
 }
 
 /* ---------- Navigation + chrome wiring ---------- */
@@ -243,44 +266,45 @@ function setupNavigation(site) {
 
 /* ---------- Wheel + touch + snap ----------
  *
- * One window-level wheel listener owns the gallery's per-image
- * stepping and the gallery <-> description snap. Throttling is a
- * straight "no actions for STEP_COOLDOWN_MS after the last action"
- * rule on the listener side. Earlier attempts used burst-gap
- * detection (the home.js pattern) but that updated lastWheelAt on
- * every event, so touchpad inertia kept extending the burst
- * window — a user's next swipe arriving inside the inertia tail
- * was treated as continuation and dropped, and only a cursor
- * nudge (which cancels Chrome's inertia delivery) brought the
- * listener back. An action-cooldown is anchored to "time since
- * we last did something" instead, so inertia events simply land
- * during the cooldown window and are ignored without extending
- * it.
+ * v1.8 reversed the section order: description is the landing
+ * section, gallery is the overlay that slides up from below to
+ * cover it. So the navigation reads:
  *
- * For the gallery <-> description snap, snapState.isAnimating
- * already blocks the listener for the full snap duration (1s),
- * so the cooldown only needs to cover the gallery's per-image
- * scroll (SCROLL_TRANSITION_MS = 350ms in gallery.js) plus a
- * small buffer to outlast typical touchpad inertia.
+ *   forward (wheel-down / swipe-up at bottom of description):
+ *     description → gallery (snapToGallery)
+ *   backward (wheel-up / swipe-down at first image of gallery):
+ *     gallery → description (snapToDescription)
+ *
+ * One window-level wheel listener owns both the gallery's per-
+ * image stepping and the section snap, with an action-cooldown
+ * throttle (mirrors home.js's wheel handler). Inertia events
+ * landing inside the cooldown window are dropped without
+ * extending it, so a follow-up swipe inside the inertia tail
+ * isn't treated as continuation. The snapState.isAnimating gate
+ * handles the in-flight 1s snap on top of that.
  *
  * passive: true: gallery scrolls via CSS transform (no native
  * scroll container to preventDefault on), and the description's
  * edge bounce is contained by overscroll-behavior-y: contain in
- * project.css. AT_TOP_THRESHOLD tolerates sub-pixel scrollTop
- * values macOS browsers sometimes leave after smooth scrolls.
+ * project.css. AT_BOTTOM_THRESHOLD tolerates sub-pixel
+ * scrollTop values macOS browsers sometimes leave after smooth
+ * scrolls.
  */
 function setupWheelAndSnap(galleryAPI) {
   const descriptionSection = document.querySelector('[data-section-description]');
   if (!descriptionSection) return;
 
-  // Cooldown was 400ms (SCROLL_TRANSITION_MS + a 50ms buffer) but a
-  // strong touchpad fling can keep firing wheel events with enough
-  // delta to look like real input past 400ms, triggering an extra
-  // step or two. 700ms outlasts a typical inertia tail so one swipe
-  // = one image.
+  // 700ms outlasts a typical touchpad inertia tail so one swipe
+  // = one image step. Matches home.js and the previous project
+  // gallery setup.
   const STEP_COOLDOWN_MS = 700;
-  const AT_TOP_THRESHOLD = 1;
+  const AT_EDGE_THRESHOLD = 1;
   let lastActionAt = 0;
+
+  function descriptionAtBottom() {
+    return descriptionSection.scrollTop + descriptionSection.clientHeight
+      >= descriptionSection.scrollHeight - AT_EDGE_THRESHOLD;
+  }
 
   window.addEventListener('wheel', (e) => {
     if (snapState.isAnimating) return;
@@ -289,31 +313,30 @@ function setupWheelAndSnap(galleryAPI) {
     const delta = pickAxis(e.deltaX, e.deltaY);
     if (delta === 0) return;
 
-    if (snapState.showDescription) {
-      // Native scroll handles wheel events anywhere inside the
-      // description that isn't at the very top. A wheel-up landing
-      // while already at the top snaps back to gallery.
-      if (descriptionSection.scrollTop >= AT_TOP_THRESHOLD) return;
-      if (e.deltaY >= 0) return;
-      snapToGallery();
-      // snapState.isAnimating gates everything for SNAP_DURATION_MS
-      // so we don't need to update lastActionAt here.
-    } else {
+    if (snapState.showGallery) {
+      // Gallery overlay is on top. Step images on each gesture;
+      // a backward swipe at the first image snaps back down to
+      // the description.
       const result = galleryAPI.step(delta);
       if (result === 'stepped') {
         lastActionAt = e.timeStamp;
-      } else if (result === 'at-end' && delta > 0) {
+      } else if (result === 'at-start' && delta < 0) {
         snapToDescription();
-        // snapState.isAnimating gates the next events; no lastActionAt
-        // update needed.
       }
+    } else {
+      // Description is showing. Native scroll handles wheel
+      // events anywhere inside the description that isn't at
+      // the very bottom. A forward (down) wheel landing while
+      // already at the bottom snaps up to the gallery.
+      if (!descriptionAtBottom()) return;
+      if (e.deltaY <= 0) return;
+      snapToGallery();
     }
   }, { passive: true });
 
   // Mobile vertical swipe — listen on document so a swipe that starts
   // over a static element (info row, back arrow, header logo) still
-  // triggers the snap. Those static elements are siblings of .project-
-  // shell in the DOM, so a shell-scoped listener would miss them.
+  // triggers the snap.
   document.addEventListener('touchstart', (e) => {
     if (e.touches.length !== 1) return;
     touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -329,55 +352,61 @@ function setupWheelAndSnap(galleryAPI) {
     // Vertical swipe must dominate, and clear the small-gesture floor.
     if (Math.abs(dy) < Math.abs(dx) * 1.2) return;
     if (Math.abs(dy) < 50) return;
-    if (dy < 0 && !snapState.showDescription) {
-      snapToDescription();
-    } else if (dy > 0 && snapState.showDescription && descriptionSection.scrollTop < 1) {
+    if (dy < 0 && !snapState.showGallery && descriptionAtBottom()) {
+      // Swipe up while in description at bottom → snap to gallery.
       snapToGallery();
+    } else if (dy > 0 && snapState.showGallery && galleryAPI.isAtStart()) {
+      // Swipe down while in gallery at first image → back to description.
+      snapToDescription();
     }
   }, { passive: true });
 
   document.addEventListener('touchcancel', () => { touchStart = null; }, { passive: true });
 }
 
-function snapToDescription() {
-  if (snapState.showDescription || snapState.isAnimating) return;
+/* Forward snap: description → gallery. Brings the gallery overlay up
+ * from below; the description stays at whatever scroll position the
+ * user was at so they come back to where they were. The description
+ * text reveal animation runs only on initial entry (see
+ * triggerDescriptionReveal), so nothing toggles here on it. */
+function snapToGallery(_galleryAPI) {
+  if (snapState.showGallery || snapState.isAnimating) return;
   const shell = document.querySelector('[data-project-shell]');
-  const descriptionSection = document.querySelector('[data-section-description]');
-  const descriptionContent = document.querySelector('[data-description-content]');
-  if (!shell || !descriptionSection) return;
+  const gallerySection = document.querySelector('[data-section-gallery]');
+  if (!shell || !gallerySection) return;
 
-  snapState.showDescription = true;
+  snapState.showGallery = true;
   snapState.isAnimating = true;
-  shell.classList.add('show-description');
-  descriptionSection.setAttribute('aria-hidden', 'false');
+  shell.classList.add('show-gallery');
+  gallerySection.setAttribute('aria-hidden', 'false');
 
   const reduced = prefersReducedMotion();
-  const animDelay = reduced ? 0 : Math.round(SNAP_DURATION_MS * 0.6);
-  setTimeout(() => {
-    descriptionContent?.classList.add('reveal-in');
-  }, animDelay);
-
   setTimeout(() => {
     snapState.isAnimating = false;
   }, reduced ? 0 : SNAP_DURATION_MS);
 }
 
-function snapToGallery() {
-  if (!snapState.showDescription || snapState.isAnimating) return;
+/* Backward snap: gallery → description. Lowers the gallery overlay
+ * and resets it to the first image so the next entry starts fresh
+ * (overlay-resets-on-exit convention). The description preserves its
+ * scroll position. */
+function snapToDescription() {
+  if (!snapState.showGallery || snapState.isAnimating) return;
   const shell = document.querySelector('[data-project-shell]');
-  const descriptionSection = document.querySelector('[data-section-description]');
-  const descriptionContent = document.querySelector('[data-description-content]');
-  if (!shell || !descriptionSection) return;
+  const gallerySection = document.querySelector('[data-section-gallery]');
+  if (!shell || !gallerySection) return;
 
-  snapState.showDescription = false;
+  snapState.showGallery = false;
   snapState.isAnimating = true;
-  shell.classList.remove('show-description');
-  descriptionSection.setAttribute('aria-hidden', 'true');
-  if (descriptionSection.scrollTop) descriptionSection.scrollTop = 0;
+  shell.classList.remove('show-gallery');
+  gallerySection.setAttribute('aria-hidden', 'true');
 
   const reduced = prefersReducedMotion();
+  // Reset gallery to its first image after the slide-down completes
+  // so the user doesn't see the reset, only the clean state on the
+  // next entry. teardown is the galleryAPI returned from initGallery.
   setTimeout(() => {
-    descriptionContent?.classList.remove('reveal-in');
+    teardown?.resetToStart?.();
     snapState.isAnimating = false;
   }, reduced ? 0 : SNAP_DURATION_MS);
 }

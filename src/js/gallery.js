@@ -75,6 +75,14 @@ export function initGallery({
     }
   }
 
+  // Reset the gallery to its first item without animation. Used when
+  // closing the gallery overlay so the next entry starts on image 1.
+  function resetToStart() {
+    const allItems = track.querySelectorAll('.gallery-item');
+    if (allItems.length === 0) return;
+    snapToIndex(track, allItems, 0, /* instant */ true);
+  }
+
   return {
     destroy() {
       videoObserver?.disconnect();
@@ -82,6 +90,8 @@ export function initGallery({
       arrowCleanup?.();
     },
     step,
+    resetToStart,
+    isAtStart: () => getCurrentIndex(track, track.querySelectorAll('.gallery-item')) === 0,
     isMobile: () => mqlMobile.matches
   };
 }
@@ -185,11 +195,11 @@ function buildVideo(media, projectTitle, index) {
  * mode, and handles the snap-back path itself when in description
  * mode. */
 
-function snapToIndex(track, items, index) {
+function snapToIndex(track, items, index, instant = false) {
   // items[0].offsetLeft accounts for the track's left padding; subtracting
   // it makes the target a pure scroll-distance value (image 0 → 0).
   const target = items[index].offsetLeft - items[0].offsetLeft;
-  applyScroll(track, target);
+  applyScroll(track, target, instant);
 }
 
 function getCurrentIndex(track, items) {

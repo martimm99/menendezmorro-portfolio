@@ -1,8 +1,11 @@
 # MENÉNDEZ MORRO — Portfolio Rebuild Build Spec
 
-**Version:** 1.8 (Approved)
-**Date:** June 2, 2026
+**Version:** 1.9 (Approved)
+**Date:** June 3, 2026
 **Status:** Approved — build authorized
+
+**Changes from v1.8:**
+- **Project page section order reversed.** The Description section is now the landing view; the Gallery section sits below it and is reached by scrolling down past the bottom of the description text. Snap transition direction inverts accordingly: forward (down) goes description → gallery; backward (up) at the first image goes gallery → description. The Line reveal animation on the description fires once on initial entry (no longer replays on each gallery↔description snap, per owner decision). Description scroll position is preserved across snaps; gallery resets to the first image when leaving. References updated in §2 (Animations → Snap transition) and §5.2 (Project page sections, entry, gallery section, description section).
 
 **Changes from v1.7:**
 - §4 slug migration: legacy hash URL redirects dropped from scope. Browsers don't send the URL fragment to the server, so a Netlify-side 301 can't intercept `/#morro` (only `/` ever arrives). Shared legacy links land on Home as-is. The slug migration map is retained as historical reference. `public/_redirects` no longer carries a Phase 12 TODO for hash redirects.
@@ -87,8 +90,8 @@ These terms are used consistently in code, documentation, and conversation.
 - **Back button** (bottom-right corner, X icon) — returns to Home via vertical sweep animation.
 
 **Scrolling content** — changes as user scrolls vertically:
-- **Gallery section** — top portion of the page, shows project media.
-- **Description section** — below the gallery, white background, long-form text.
+- **Description section** — top portion of the page, white background, long-form text. Lands first on entry.
+- **Gallery section** — below the description, shows project media. Reached by scrolling past the bottom of the description.
 
 ### Captions
 Small text shown directly below each image or video, **left-aligned** with **lower opacity** (~0.6) so it reads as a secondary label rather than a heading. Visible in both the Gallery section and the Image fullscreen state (where the caption sits below the centered, expanded media). Captions are per-media-item (each entry in `media[]` can have its own `caption` text). Optional and gracefully absent when empty — no placeholder, no blank space. Primarily used by category projects (Titles, Architecture, Concerts) to label individual pieces (e.g., artist name + venue for a concert photo).
@@ -104,7 +107,7 @@ A state opened by clicking/tapping an image or video in the gallery. The clicked
   - Home → Contact: Contact slides **down from top**.
   - Contact → Home: reverse (Contact slides **up**, off the top).
 - **Line reveal** — text-mask reveal animation. Each text line is wrapped in a clipped container; line starts translated 100% below its container, then slides up into view. Staggered delay between lines. Easing `cubic-bezier(.33, 1, .55, 1)`, duration ~0.55s per line. Used for entry of Project page (description text, Get in touch CTA) and Contact page text — identical to current live site.
-- **Snap transition (Project page)** — when scrolling between Gallery section and Description section, the page snaps with a smooth animation. Both directions (gallery → description, description → gallery). Tunable post-build.
+- **Snap transition (Project page)** — when scrolling between the Description section (landing) and the Gallery section, the page snaps with a smooth animation. Both directions (description → gallery on a scroll-down past the bottom of the text; gallery → description on a scroll-up at the first image). Tunable post-build.
 - **No crossfade, no auto-rotation, no timers anywhere on the site.**
 
 ---
@@ -221,9 +224,9 @@ DESCRIPTION text never truncates with ellipsis — information is preserved. Lon
 ```
 
 **Entry:**
-- User clicks a project's title or role label on Home → vertical sweep (Project slides **down from top**). Page lands in Gallery section, scroll position at the start (first image).
-- Direct URL access (`/gestion-reaviva`) → page loads in Gallery section, first image visible (no sweep animation, but the same Line reveal applies to text elements on the Project page).
-- On Project page entry, text elements (description, Get in touch CTA) animate in with the **Line reveal** animation, identical to the current live site.
+- User clicks a project's title or role label on Home → vertical sweep (Project slides **down from top**). Page lands in the **Description section** at scroll position 0.
+- Direct URL access (`/gestion-reaviva`) → page loads in the Description section, scroll position 0 (no sweep animation, but the Line reveal still applies to description text).
+- On Project page entry, the description's per-word **Line reveal** animation runs once. It does not replay on subsequent gallery↔description snaps.
 
 **Static elements (do NOT move when scrolling):**
 - Get in touch link — top-right.
@@ -240,12 +243,12 @@ DESCRIPTION text never truncates with ellipsis — information is preserved. Lon
 - **Small consistent gap** between images: ~20px (final value tuned during build).
 - Row extends off-screen to the right. The number of images visible at any moment depends on their individual widths — vertical/portrait images can result in more images visible initially than wider/landscape ones. There is no fixed cap on visible image count.
 - **Navigation (desktop):**
-  - **Scroll always controls the gallery regardless of cursor position.** The user must scroll through the entire gallery (advancing horizontally through all images) before vertical scroll begins to reveal the Description section.
+  - **Scroll always controls the gallery regardless of cursor position.**
   - **Drag** anywhere in the gallery also moves it horizontally.
   - **No arrow buttons on desktop.** Arrow keys on the keyboard also do NOT navigate the gallery in the regular view — they only function in Image fullscreen.
 - **Scroll distance per event:** approximately 30% of the gallery's visible width, scaled to screen size. Not snap-to-image, not pixel-by-pixel. Tunable post-build.
 - **Click an image** → opens Image fullscreen.
-- **Past the last image:** continuing to scroll forward → triggers the **Snap transition** to the Description section, which lands snapped to the top of the viewport. The reverse (scroll up while at the top of the Description section) → Snap transition back to the Gallery section at the last image position.
+- **At the first image, scrolling backward** → triggers the **Snap transition** back to the Description section, which lands at whatever scroll position the user was at before entering the gallery. The forward direction (scrolling down at the bottom of the Description section) → Snap transition into the Gallery section, landing on the first image. The gallery resets to the first image when the user snaps back, so re-entering the gallery always starts fresh.
 - **Videos in gallery:** play muted, loop, **no controls visible**. Each video **autoplays when at least 90% of the video is visible in the viewport** (intersection observer with `threshold: 0.9`); pauses when less than 90% is visible. Click to open in Image fullscreen (where full HTML5 controls become available).
 
 - **Captions:** each media item in the gallery (image or video) can have an optional caption. When present, the caption appears as small overlay text positioned at the **bottom-left** of the media item, white text with a subtle backdrop for legibility. When the caption is empty or absent, nothing renders (no placeholder, no blank space).
@@ -256,17 +259,17 @@ DESCRIPTION text never truncates with ellipsis — information is preserved. Lon
 - All images at the **same fixed height**, with natural widths (different per image).
 - Breathing room above and below the row.
 - **Horizontal swipe** = navigate between images.
-- **Vertical swipe** = triggers the **Snap transition** to the Description section.
+- **Vertical swipe down at the first image** = triggers the **Snap transition** back to the Description section.
 - **Arrow buttons** visible on mobile (small, tappable, positioned for thumb reach) — navigate previous/next image.
 - **Tap an image** → opens Image fullscreen.
 
 **Description section:**
 
-- Identical look, feel, and behavior to the current live site's project page description.
-- Layout: long-form `longDescription` text on the upper portion.
+- Long-form `longDescription` text laid out as the landing view of the Project page.
 - Static elements (Get in touch, Info row, Back button) remain visible.
-- Vertical scroll reveals more text as currently (Line reveal animation applies as text comes into view, identical to current site).
-- Scrolling back up at the top → **Snap transition** back to the Gallery section, landing at the position of the last image.
+- Vertical scroll moves through the text natively.
+- Scrolling down at the bottom of the text → **Snap transition** forward into the Gallery section, landing on the first image.
+- The description's scroll position is preserved across snaps — if the user scrolled to the bottom, went to the gallery, and came back, they return to the bottom (not the top).
 
 **Exit:**
 - Click back button → vertical sweep back to Home (Project slides **up**, off the top — reverse of entry).
