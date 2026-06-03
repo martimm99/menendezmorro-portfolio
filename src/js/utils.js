@@ -166,17 +166,20 @@ export function forceRevealAndNavigate(url) {
  * into view. The cascade delay is overridden to 0ms on intersection
  * so a scrolled-in line doesn't pause after entering view.
  *
- * rootMargin defaults to `0px 0px -20% 0px`: the bottom of the
- * intersection root is pulled up 20% of the viewport height, so a
- * line has to scroll ~20% past the actual viewport bottom before its
- * animation fires. Without that delay the animation runs while the
- * line is still in peripheral vision and only the tail is visible by
- * the time the line reaches the reading area.
+ * rootMargin defaults to `0px 0px -80px 0px`: the bottom of the
+ * intersection root is pulled up by the height of the chrome-mask
+ * area (the static-element band at the bottom of the page) so a line
+ * has to scroll past that band before its animation fires. Pixel
+ * value matches `--chrome-mask-bottom` (80px on contact, 100px on
+ * project) — using a percentage instead would leave the last line of
+ * a description trapped behind the chrome-mask + bottom-padding
+ * buffer (~120px on project), since native scroll bottoms out before
+ * the last line can clear a percentage-based dead zone.
  *
  * Older browsers without IntersectionObserver get an immediate
  * reveal of everything as a fallback.
  */
-export function setupScrollReveal(clips, { threshold = 0, rootMargin = '0px 0px -20% 0px' } = {}) {
+export function setupScrollReveal(clips, { threshold = 0, rootMargin = '0px 0px -80px 0px' } = {}) {
   if (!('IntersectionObserver' in window) || !clips?.length) {
     clips?.forEach?.((c) => c.classList.add('reveal-in'));
     return null;
