@@ -186,10 +186,12 @@ function renderDescription(project) {
   if (!container) return;
 
   // Spec Appendix C: long descriptions are CMS-authored and currently
-  // empty in projects.json. Until the CMS lands, fall back to a clearly-
-  // labeled placeholder so the section is visible.
-  const text = project.longDescription
-    || `${project.description}\n\nLong description coming soon — to be authored via the Decap CMS.`;
+  // empty in projects.json. Until the CMS lands, fall back to a
+  // multi-paragraph placeholder long enough to require scrolling so
+  // the snap-to-gallery edge can be exercised in QA. CMS-authored
+  // content (when project.longDescription is non-empty) replaces
+  // this fallback entirely.
+  const text = project.longDescription || placeholderLongDescription(project);
 
   // Spec §2 Line reveal: each text line is wrapped in a clipped container
   // whose contents start translated 100% below and slide up. To get the
@@ -210,6 +212,22 @@ function renderDescription(project) {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => assignRevealLineDelays(container, LINE_REVEAL_DELAY_PER_LINE_MS));
   });
+}
+
+// Multi-paragraph placeholder. Long enough to overflow the
+// description section on every reasonable viewport so the scroll
+// + snap-to-gallery edge can be tested. Replaced wholesale when
+// project.longDescription is non-empty (via the CMS).
+function placeholderLongDescription(project) {
+  return [
+    project.description,
+    `${project.title} — placeholder long-form description. Real content will replace this once it's authored through the Decap CMS, at which point this fallback function is no longer hit.`,
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+    'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+    'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.',
+    'Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet.',
+    'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.'
+  ].filter(Boolean).join('\n\n');
 }
 
 /* The description is the landing section (v1.8 reversed the section
