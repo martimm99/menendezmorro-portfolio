@@ -1,8 +1,12 @@
 # MENÉNDEZ MORRO — Portfolio Rebuild Build Spec
 
-**Version:** 1.10 (Approved)
+**Version:** 1.11 (Approved)
 **Date:** June 3, 2026
 **Status:** Approved — build authorized
+
+**Changes from v1.10:**
+- **Home wheel: inertia-tail filter added.** A very long fling could keep firing wheel events with sizeable deltas for over a second, refreshing the gesture-end timer indefinitely and making swipes feel like they "stopped working" until the cursor moved. Events with |delta| < 4 no longer refresh the timer (or trigger a navigate), so an inertia tail decays out of the gate and the next genuine swipe goes through. Captured in §5.1.
+- **Project gallery: no snap on touchpad release.** Touchpad swipes still free-scroll the gallery in real time and clamp at both edges, but when the user releases the gallery now stays at whatever scroll position they left it — the previous snap-to-nearest is gone. Mouse-wheel single-image step is unchanged; the step now uses the live scroll position so a wheel click after a free-scrolled touchpad swipe still lands on the actual next/previous image, even when the gallery is between two image positions. Captured in §5.2.
 
 **Changes from v1.9:**
 - **Home wheel: one navigation per gesture.** Replaces the action-cooldown gate. The previous 700ms cooldown could still let an unusually strong inertia event slip through and trigger a second navigation; the new gate is "no more navigations until wheel events go silent for 100ms," which absorbs any inertia tail no matter how long. Captured in §5.1 (Home — Interactions).
@@ -251,8 +255,8 @@ DESCRIPTION text never truncates with ellipsis — information is preserved. Lon
   - **Drag** anywhere in the gallery also moves it horizontally.
   - **No arrow buttons on desktop.** Arrow keys on the keyboard also do NOT navigate the gallery in the regular view — they only function in Image fullscreen.
 - **Scroll behavior:**
-  - **Touchpad swipes** drive the gallery transform in real time (free scroll). When the burst ends, the gallery snaps to the nearest image with a smooth animation. Clamped at both ends: a long swipe from the last image back to the first stops at the first image — it does not continue into the Description snap on the same gesture.
-  - **Mouse-wheel clicks** are detected as discrete events and snap exactly one image per click.
+  - **Touchpad swipes** drive the gallery transform in real time (free scroll). When the user releases, the gallery stays wherever they left it — no snap to the nearest image. Clamped at both ends: a long swipe from the last image back to the first stops at the first image, and does not continue into the Description snap on the same gesture.
+  - **Mouse-wheel clicks** are detected as discrete events and snap exactly one image per click. After a free-scrolled touchpad swipe, a mouse click steps to the actual next/previous image relative to the current scroll position, not the last snapped image.
   - The two are distinguished automatically (a ~30ms buffer on the first event of a gesture decides between them based on whether a follow-up arrives).
 - **Click an image** → opens Image fullscreen.
 - **At the first image, scrolling backward** → triggers the **Snap transition** back to the Description section, which lands at whatever scroll position the user was at before entering the gallery. The forward direction (scrolling down at the bottom of the Description section) → Snap transition into the Gallery section, landing on the first image. The gallery resets to the first image when the user snaps back, so re-entering the gallery always starts fresh.

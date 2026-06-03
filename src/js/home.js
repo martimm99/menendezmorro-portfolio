@@ -213,33 +213,40 @@ function setupWheel() {
   // One input gesture = one navigation, regardless of how long the
   // swipe is.
   //
-  // Gesture-acted pattern: after a navigate fires we set a flag and
+  // Pattern: after a navigate fires, set a gestureActed flag and
   // ignore every subsequent wheel event until events stop arriving
-  // for GESTURE_END_GAP_MS, at which point we consider the gesture
-  // truly over and reset. This correctly absorbs the full inertia
-  // tail of a long fling no matter how strong it is — the previous
-  // 700ms cooldown could still let a really aggressive inertia
-  // event slip through and trigger a second navigate.
+  // for GESTURE_END_GAP_MS — at which point the gesture is over and
+  // the flag resets so the next swipe navigates.
   //
-  // 100ms is large enough that any genuine touchpad gesture's
-  // inertia stays inside one "session," and small enough that a
-  // user starting a deliberate new swipe shortly after the last
-  // animation isn't perceptibly throttled.
+  // Inertia filter: a very strong fling can keep firing wheel events
+  // with sizeable deltas for well over a second, which would refresh
+  // the gap timer indefinitely and make the user feel like swipes
+  // "stop working" until they nudge the cursor (cursor motion is what
+  // cancels Chrome's inertia delivery). Events with |delta| below
+  // INERTIA_DELTA_THRESHOLD don't refresh the timer, so when inertia
+  // decays into the tail it stops extending the window and the next
+  // genuine swipe goes through.
   const GESTURE_END_GAP_MS = 100;
+  const INERTIA_DELTA_THRESHOLD = 4;
   let lastEventAt = 0;
   let gestureActed = false;
 
   window.addEventListener('wheel', (e) => {
+    if (state.isAnimating) return;
+
+    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    if (delta === 0) return;
+
+    // Inertia tail filter — don't refresh the gap timer with weak
+    // events, and don't trigger a navigate from them either.
+    if (Math.abs(delta) < INERTIA_DELTA_THRESHOLD) return;
+
     if (e.timeStamp - lastEventAt > GESTURE_END_GAP_MS) {
       gestureActed = false;
     }
     lastEventAt = e.timeStamp;
 
-    if (state.isAnimating) return;
     if (gestureActed) return;
-
-    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-    if (delta === 0) return;
 
     navigate(delta > 0 ? 'next' : 'prev');
     gestureActed = true;

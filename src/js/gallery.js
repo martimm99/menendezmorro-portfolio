@@ -52,24 +52,37 @@ export function initGallery({
   const dragCleanup  = setupDrag({ gallery, track, mqlMobile, onItemActivate });
   const arrowCleanup = setupArrows({ prevBtn, nextBtn, gallery, track, mqlMobile });
 
-  // Step API. Returns a status string so the caller knows whether
-  // the gallery moved or sat at an edge — at-end-forward is the
-  // signal that project.js should snap to description instead.
+  // Step API. Snaps to the next image past the current LIVE scroll
+  // position (not the last snapped target), so a mouse-wheel click
+  // after a free-scrolled touchpad swipe still lands the user on
+  // the real next/previous image even if the scroll position is
+  // between two image positions. Returns a status string so the
+  // caller knows whether the gallery moved or sat at an edge.
   function step(direction) {
     if (mqlMobile.matches) return 'mobile';
     const allItems = track.querySelectorAll('.gallery-item');
     if (allItems.length === 0) return 'empty';
-    const index = getCurrentIndex(track, allItems);
+
+    const currentPos = readLiveScroll(track);
+    const baseOffset = allItems[0].offsetLeft;
+    const epsilon = 0.5;             // sub-pixel tolerance
+
     if (direction > 0) {
-      if (index < allItems.length - 1) {
-        snapToIndex(track, allItems, index + 1);
-        return 'stepped';
+      for (let i = 0; i < allItems.length; i++) {
+        const itemPos = allItems[i].offsetLeft - baseOffset;
+        if (itemPos > currentPos + epsilon) {
+          snapToIndex(track, allItems, i);
+          return 'stepped';
+        }
       }
       return 'at-end';
     } else {
-      if (index > 0) {
-        snapToIndex(track, allItems, index - 1);
-        return 'stepped';
+      for (let i = allItems.length - 1; i >= 0; i--) {
+        const itemPos = allItems[i].offsetLeft - baseOffset;
+        if (itemPos < currentPos - epsilon) {
+          snapToIndex(track, allItems, i);
+          return 'stepped';
+        }
       }
       return 'at-start';
     }
@@ -97,28 +110,6 @@ export function initGallery({
     applyScroll(track, next, /* instant */ true);
   }
 
-  // Animate to the image whose left edge is closest to the current
-  // live scroll position. Used to settle the gallery after a touchpad
-  // burst ends.
-  function snapToNearest() {
-    if (mqlMobile.matches) return;
-    const allItems = track.querySelectorAll('.gallery-item');
-    if (allItems.length === 0) return;
-    const current = readLiveScroll(track);
-    const baseOffset = allItems[0].offsetLeft;
-    let nearestIdx = 0;
-    let nearestDist = Infinity;
-    for (let i = 0; i < allItems.length; i++) {
-      const itemPos = allItems[i].offsetLeft - baseOffset;
-      const dist = Math.abs(itemPos - current);
-      if (dist < nearestDist) {
-        nearestDist = dist;
-        nearestIdx = i;
-      }
-    }
-    snapToIndex(track, allItems, nearestIdx);
-  }
-
   return {
     destroy() {
       videoObserver?.disconnect();
@@ -128,7 +119,6 @@ export function initGallery({
     step,
     resetToStart,
     freeScrollDelta,
-    snapToNearest,
     isAtStart: () => readLiveScroll(track) <= 1,
     isMobile: () => mqlMobile.matches
   };
@@ -238,23 +228,6 @@ function snapToIndex(track, items, index, instant = false) {
   // it makes the target a pure scroll-distance value (image 0 → 0).
   const target = items[index].offsetLeft - items[0].offsetLeft;
   applyScroll(track, target, instant);
-}
-
-function getCurrentIndex(track, items) {
-  if (items.length === 0) return 0;
-  const current = currentScroll(track);
-  const baseOffset = items[0].offsetLeft;
-  let closest = 0;
-  let closestDist = Infinity;
-  for (let i = 0; i < items.length; i++) {
-    const itemPos = items[i].offsetLeft - baseOffset;
-    const dist = Math.abs(itemPos - current);
-    if (dist < closestDist) {
-      closestDist = dist;
-      closest = i;
-    }
-  }
-  return closest;
 }
 
 export function pickAxis(dx, dy) {

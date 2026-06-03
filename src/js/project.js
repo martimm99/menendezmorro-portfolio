@@ -270,21 +270,21 @@ function setupNavigation(site) {
  *   description (landing) ──forward (down)──▶ gallery (overlay)
  *                       ◀───backward (up)──
  *
- * Gallery wheel handling (v1.10): touchpad swipes drive the
- * gallery in real time (free scroll, clamped at both edges),
- * mouse wheel clicks still snap exactly one image per click.
- * The two are distinguished by buffering the first event of a
- * gesture for ~30ms — a follow-up event arriving inside that
- * window means it's a touchpad burst; nothing arriving means
- * it was a one-shot mouse click. The 30ms delay on mouse-wheel
- * response is below the threshold most people notice.
+ * Gallery wheel handling (v1.11): touchpad swipes drive the
+ * gallery in real time (free scroll, clamped at both edges) and
+ * stay wherever the user releases — no snap to the nearest image
+ * once the swipe ends. Mouse-wheel clicks still snap exactly one
+ * image per click. The two are distinguished by buffering the
+ * first event of a gesture for ~30ms — a follow-up event arriving
+ * inside that window means it's a touchpad burst; nothing arriving
+ * means it was a one-shot mouse click.
  *
  * Description-snap-back from the gallery only fires on the FIRST
- * event of a NEW gesture at the first image with a backward
- * delta. A long swipe sweeping the gallery from the last image
- * to the first hits the start edge and stops there — the same
- * gesture cannot continue into the description snap. The user
- * has to release, then start a new swipe.
+ * event of a NEW gesture at the first image with a backward delta.
+ * A long swipe sweeping the gallery from the last image to the
+ * first hits the start edge and stops there — the same gesture
+ * cannot continue into the description snap. The user has to
+ * release, then start a new swipe.
  *
  * One window-level listener owns both modes (gallery + description).
  * A gestureActed flag prevents a second cross-section snap inside
@@ -315,7 +315,6 @@ function setupWheelAndSnap(galleryAPI) {
   let mode = null;                  // null = unknown / first event; 'continuous' = touchpad
   let bufferedEvent = null;
   let bufferTimer = null;
-  let snapTimer = null;
 
   function descriptionAtBottom() {
     return descriptionSection.scrollTop + descriptionSection.clientHeight
@@ -326,15 +325,6 @@ function setupWheelAndSnap(galleryAPI) {
     mode = null;
     bufferedEvent = null;
     if (bufferTimer) { clearTimeout(bufferTimer); bufferTimer = null; }
-  }
-
-  function scheduleGallerySnap() {
-    if (snapTimer) clearTimeout(snapTimer);
-    snapTimer = setTimeout(() => {
-      galleryAPI.snapToNearest();
-      mode = null;
-      snapTimer = null;
-    }, GESTURE_END_GAP_MS);
   }
 
   window.addEventListener('wheel', (e) => {
@@ -382,8 +372,10 @@ function setupWheelAndSnap(galleryAPI) {
     }
 
     if (mode === 'continuous') {
+      // Touchpad burst — free-scroll the gallery in real time. The
+      // gallery stays wherever the user releases; no snap-to-nearest
+      // when the burst ends.
       galleryAPI.freeScrollDelta(delta);
-      scheduleGallerySnap();
       return;
     }
 
@@ -398,7 +390,6 @@ function setupWheelAndSnap(galleryAPI) {
       bufferedEvent = null;
       galleryAPI.freeScrollDelta(buffDelta);
       galleryAPI.freeScrollDelta(delta);
-      scheduleGallerySnap();
       return;
     }
 
