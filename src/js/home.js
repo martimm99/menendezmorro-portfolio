@@ -209,35 +209,38 @@ function goToCurrentProject(e) {
 }
 
 function setupWheel() {
-  // Spec §5.1: wheel/trackpad scroll maps to horizontal navigation. One
-  // wheel input gesture should produce exactly one navigation.
+  // Spec §5.1: wheel/trackpad scroll maps to horizontal navigation.
+  // One input gesture = one navigation.
   //
-  // Two reasons a naive "wheel → navigate" gates badly:
-  //   1. macOS scroll gestures emit a 0-delta phase marker as the first
-  //      wheel event of a gesture. A < 5 magnitude threshold filtered
-  //      that marker, but it also filtered the small first event of
-  //      slow mouse-wheel clicks, making the first click feel dead.
-  //   2. Trackpad inertia keeps firing events for ~300ms after the user
-  //      lifts; without rate-limiting, a long flick could chain multiple
-  //      navigations as inertia events outlast the 1s isAnimating gate.
+  // Action-cooldown pattern (same as the project gallery's wheel
+  // handler in project.js): a single timestamp tracks when we last
+  // *acted*. While we're inside the cooldown window, every wheel
+  // event — real input or trackpad inertia — is dropped. This is
+  // safer than the older burst-gap approach (gap from the last
+  // wheel event), which extended its window with each inertia
+  // event and ended up swallowing the user's next real swipe as
+  // continuation — until the cursor moved and Chrome cancelled
+  // inertia delivery. Anchoring the gate on the action time
+  // instead of the last-event time means inertia events never
+  // extend the cooldown.
   //
-  // Burst detection handles both: the first wheel event whose timestamp
-  // is more than 150ms after the previous wheel event navigates; the
-  // rest of the burst (including inertia) updates the last-wheel
-  // timestamp without triggering. A new gesture (gap > 150ms) navigates
-  // again. delta === 0 is always ignored.
-  const BURST_GAP_MS = 150;
-  let lastWheelAt = 0;
+  // 700ms outlasts a typical trackpad inertia tail (~300-500ms)
+  // and is also short enough that a deliberate two-step swipe
+  // (left then right, or vice-versa) responds promptly. The
+  // state.isAnimating gate handles the rest of the in-flight
+  // horizontal-sweep duration (1s) on top of the cooldown.
+  const STEP_COOLDOWN_MS = 700;
+  let lastActionAt = 0;
 
   window.addEventListener('wheel', (e) => {
+    if (state.isAnimating) return;
+    if (e.timeStamp - lastActionAt < STEP_COOLDOWN_MS) return;
+
     const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
     if (delta === 0) return;
-    const now = e.timeStamp || Date.now();
-    const isFirstOfBurst = (now - lastWheelAt) > BURST_GAP_MS;
-    lastWheelAt = now;
-    if (state.isAnimating) return;
-    if (!isFirstOfBurst) return;
+
     navigate(delta > 0 ? 'next' : 'prev');
+    lastActionAt = e.timeStamp;
   }, { passive: true });
 }
 
