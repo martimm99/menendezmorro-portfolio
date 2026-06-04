@@ -37,9 +37,9 @@
   --fs-body:                clamp(15px, 1.1vw, 17px);
   --fs-logo:                20px;
   --fs-cta:                 clamp(18px, 1.6vw, 24px);
-  --fs-role:                clamp(22px, 2vw, 25px);
-  --fs-title:               clamp(32px, 5.5vw, 50px);
-  --fs-title-mobile:        60px;
+  --fs-role:                clamp(20px, 1.8vw, 22px);
+  --fs-title:               clamp(28px, 4.7vw, 42px);
+  --fs-title-mobile:        50px;
   --fs-project-info-value:  clamp(20px, 1.8vw, 40px);
 
   --lh-tight: 1.0;
