@@ -167,8 +167,12 @@ function renderInfoRow(project) {
   if (linksCell && linksSlot) {
     if (project.links && project.links.length > 0) {
       linksCell.hidden = false;
+      // NE diagonal arrow markup — slides in on hover (see project.css
+      // hover styles for .info-link). External-link semantic: each
+      // link opens in a new tab.
+      const arrowSvg = '<span class="info-arrow-clip" aria-hidden="true"><svg class="info-arrow" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><line x1="7" y1="17" x2="17" y2="7" vector-effect="non-scaling-stroke"></line><polyline points="9 7 17 7 17 15" vector-effect="non-scaling-stroke"></polyline></svg></span>';
       linksSlot.innerHTML = project.links
-        .map((l) => `<a href="${encodeURI(l.url)}" target="_blank" rel="noopener">${escapeHtml(l.text)}</a>`)
+        .map((l) => `<a href="${encodeURI(l.url)}" target="_blank" rel="noopener" class="info-link">${arrowSvg}${escapeHtml(l.text)}</a>`)
         .join(', ');
     } else {
       linksCell.hidden = true;
@@ -176,8 +180,22 @@ function renderInfoRow(project) {
   }
   const durationSlot = document.querySelector('[data-info-duration]');
   if (durationSlot) durationSlot.textContent = project.duration || '';
-  const costSlot = document.querySelector('[data-info-cost]');
-  if (costSlot) costSlot.textContent = project.cost || '';
+
+  // RESULTS cell: hide if the project has no gallery media (the
+  // "Gallery" link would have nothing to navigate to). Otherwise show
+  // it and wire the click to the same snap action used by scroll-
+  // down at the description bottom. snapToGallery is a no-op when
+  // already in the gallery section, so the button being a no-op
+  // there is handled automatically.
+  const resultsCell = document.querySelector('[data-info-cell="results"]');
+  if (resultsCell) {
+    const hasGallery = Array.isArray(project.media) && project.media.length > 0;
+    resultsCell.hidden = !hasGallery;
+    if (hasGallery) {
+      const snapBtn = resultsCell.querySelector('[data-action-snap-gallery]');
+      snapBtn?.addEventListener('click', () => snapToGallery());
+    }
+  }
 }
 
 /* ---------- Description content ---------- */

@@ -305,12 +305,26 @@ function setupDrag({ gallery, track, mqlMobile, onItemActivate }) {
 function setupArrows({ prevBtn, nextBtn, gallery, track, mqlMobile }) {
   if (!prevBtn || !nextBtn) return null;
 
+  // Arrow visibility is driven by both viewport (desktop hides both)
+  // and current scroll position (mobile hides "prev" at the start
+  // and "next" at the end — the corresponding direction is a no-op
+  // there, so the arrow is misleading). The handler is called on
+  // breakpoint change AND on every scroll event, so the visibility
+  // stays in sync as the user scrolls through the gallery.
   const apply = () => {
-    prevBtn.hidden = !mqlMobile.matches;
-    nextBtn.hidden = !mqlMobile.matches;
+    if (!mqlMobile.matches) {
+      prevBtn.hidden = true;
+      nextBtn.hidden = true;
+      return;
+    }
+    const atStart = track.scrollLeft <= 1;
+    const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 1;
+    prevBtn.hidden = atStart;
+    nextBtn.hidden = atEnd;
   };
   apply();
   mqlMobile.addEventListener?.('change', apply);
+  track.addEventListener('scroll', apply, { passive: true });
 
   const prev = () => stepMobileArrow(track, -1);
   const next = () => stepMobileArrow(track, +1);
@@ -319,6 +333,7 @@ function setupArrows({ prevBtn, nextBtn, gallery, track, mqlMobile }) {
 
   return () => {
     mqlMobile.removeEventListener?.('change', apply);
+    track.removeEventListener('scroll', apply);
     prevBtn.removeEventListener('click', prev);
     nextBtn.removeEventListener('click', next);
   };

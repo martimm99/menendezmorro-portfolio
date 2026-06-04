@@ -27,6 +27,7 @@ import { getCurrentRoute, getCurrentSlug } from './router.js';
 import { initHome } from './home.js';
 import { initProject } from './project.js';
 import { initContact } from './contact.js';
+import { initCursor } from './cursor.js';
 
 let homeInitialized = false;
 let data = null;
@@ -40,6 +41,11 @@ function init() {
     showError('Could not load site content. Try reloading the page.');
     return;
   }
+
+  // Custom cursor (experimental). Self-disables on touch / coarse-
+  // pointer devices and for reduced-motion users; no harm to call it
+  // unconditionally.
+  initCursor();
 
   window.addEventListener('popstate', applyRoute);
   window.addEventListener('route-change', applyRoute);

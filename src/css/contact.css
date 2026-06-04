@@ -70,11 +70,29 @@
   pointer-events: none;
 }
 
+/* SVG logomark — see home.css for the rationale (including the
+ * align-self: flex-start that keeps the logo's vertical position
+ * identical across all three pages). Background-color here is the
+ * accent blue rather than currentColor because the contact page's
+ * white surface needs the logo to read as a deliberate branded
+ * mark, not as plain black text. The mask shape itself is
+ * unchanged. */
 .site-logo {
   pointer-events: auto;
-  font-size: var(--fs-logo);
-  font-weight: var(--fw-regular);
-  letter-spacing: -0.02em;
+  display: inline-block;
+  align-self: flex-start;
+  margin-top: 6px;
+  height: 32px;
+  aspect-ratio: 1651.25 / 597.98;
+  background-color: var(--color-accent);
+  mask-image: url('/assets/morro-logo.svg');
+  -webkit-mask-image: url('/assets/morro-logo.svg');
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: left center;
+  -webkit-mask-position: left center;
   color: inherit;
   text-decoration: none;
   cursor: pointer;
@@ -192,9 +210,9 @@
 
 .contact-info dd a {
   color: inherit;
-  text-decoration: none;
-  border-bottom: 1px solid currentColor;
-  padding-bottom: 1px;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
 }
 
 /* ---------- Back button (X icon) ---------- */

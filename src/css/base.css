@@ -225,3 +225,158 @@ html.home-page::view-transition-new(root) {
     animation: none !important;
   }
 }
+
+/* ===========================================================
+ * Custom cursor (experimental — see js/cursor.js)
+ * ===========================================================
+ * Small dot follows the mouse with a slight lerp delay (in JS); the
+ * dot grows on hover over interactive elements. The native cursor is
+ * hidden site-wide so this is the only pointer shown.
+ *
+ * Guarded by `(hover: hover) and (pointer: fine) and (prefers-
+ * reduced-motion: no-preference)`: on touch / coarse-pointer devices
+ * and for reduced-motion users, the native system cursor stays
+ * visible and .custom-cursor stays display: none. The JS module
+ * mirrors the same guard, so neither side runs in fallback contexts.
+ *
+ * Centering: JS sets `transform: translate3d(x, y, 0) translate(
+ * -50%, -50%)`. The first translate moves the box's top-left corner
+ * to the mouse position; the second pulls the box back by half its
+ * own size so the dot's center sits exactly on the mouse. The size
+ * change on hover is transitioned by CSS (width/height), and because
+ * `-50%` is element-relative the centering stays correct throughout.
+ */
+.custom-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  background-color: var(--cursor-color, var(--color-accent));
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition:
+    width 250ms cubic-bezier(.33, 1, .55, 1),
+    height 250ms cubic-bezier(.33, 1, .55, 1),
+    opacity 200ms ease;
+  will-change: transform;
+  display: none;
+}
+
+/* Home is dark-background (project covers fill the viewport), so the
+ * cursor needs to be white to stay visible. Project description and
+ * Contact use white backgrounds, so the blue accent reads cleanly
+ * there — `--cursor-color` falls through to its default. */
+.home-page { --cursor-color: #fff; }
+
+.custom-cursor.is-active { opacity: 1; }
+
+.custom-cursor.is-hover {
+  width: 36px;
+  height: 36px;
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .custom-cursor { display: block; }
+  *, html, body { cursor: none !important; }
+}
+
+/* ===========================================================
+ * Shared hover affordances — info-row links + Get-in-touch CTA
+ * ===========================================================
+ *
+ * Both the Project page (LINKS, Gallery) and the Contact page
+ * (Instagram and other socials, Get-in-touch CTA) use the same
+ * hover pattern: a small arrow slides up from a clipping mask
+ * and the text shifts to make room.
+ *
+ * Two flavors:
+ *
+ * 1. `.info-link / .info-action` — arrow on the LEFT, text shifts
+ *    right. Used for external links (NE diagonal arrow ↗) and
+ *    internal nav like the Gallery button (SE diagonal ↘). The
+ *    SVG is baked into each element's HTML; only the animation is
+ *    shared here.
+ *
+ * 2. `.static-get-in-touch` — arrow on the RIGHT, text shifts
+ *    left. Used only for the email-copy CTA at the top-right.
+ *    Mirror direction because the element is right-anchored
+ *    (position: fixed; right: page-pad-x;), so growing content on
+ *    the right side naturally pushes its left edge further left.
+ *
+ * All three are gated behind (hover: hover) + (pointer: fine) +
+ * (prefers-reduced-motion: no-preference). Coarse-pointer and
+ * reduced-motion users see no arrow and no shift.
+ */
+.info-link,
+.info-action {
+  display: inline-flex;
+  align-items: center;
+}
+
+.info-arrow-clip,
+.cta-arrow-clip {
+  /* Hidden by default; enabled by the fine-pointer media query
+   * below. */
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  /* ----- Left-side arrow (LINKS, socials, Gallery button) ----- */
+  .info-arrow-clip {
+    display: inline-flex;
+    align-items: center;
+    width: 0;
+    height: 0.85em;
+    overflow: hidden;
+    transition: width 280ms cubic-bezier(.33, 1, .55, 1);
+  }
+
+  .info-arrow {
+    display: block;
+    width: 0.7em;
+    height: 0.7em;
+    flex: 0 0 auto;
+    transform: translateY(100%);
+    transition: transform 280ms cubic-bezier(.33, 1, .55, 1);
+  }
+
+  .info-link:hover .info-arrow-clip,
+  .info-action:hover .info-arrow-clip {
+    width: 0.85em;
+  }
+
+  .info-link:hover .info-arrow,
+  .info-action:hover .info-arrow {
+    transform: translateY(0);
+  }
+
+  /* ----- Right-side arrow (Get-in-touch CTA) ----- */
+  .cta-arrow-clip {
+    display: inline-flex;
+    align-items: center;
+    width: 0;
+    height: 0.85em;
+    overflow: hidden;
+    transition: width 280ms cubic-bezier(.33, 1, .55, 1);
+  }
+
+  .cta-arrow {
+    display: block;
+    width: 0.7em;
+    height: 0.7em;
+    flex: 0 0 auto;
+    transform: translateY(100%);
+    transition: transform 280ms cubic-bezier(.33, 1, .55, 1);
+  }
+
+  .static-get-in-touch:hover .cta-arrow-clip {
+    width: 0.85em;
+  }
+
+  .static-get-in-touch:hover .cta-arrow {
+    transform: translateY(0);
+  }
+}

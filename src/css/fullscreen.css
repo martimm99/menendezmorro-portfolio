@@ -55,7 +55,7 @@
   margin: 0;
   font-size: var(--fs-label);
   font-weight: var(--fw-light);
-  letter-spacing: var(--ls-label);
+  letter-spacing: 0.3px;
   line-height: var(--lh-snug);
   text-align: left;
   color: var(--color-fg-light);

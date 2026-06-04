@@ -65,11 +65,15 @@ function renderSocials(socials) {
     container.hidden = true;
     return;
   }
+  // Same hover-affordance markup as the project page LINKS — NE
+  // diagonal arrow that slides in on hover (see base.css). External
+  // link semantic: each social opens in a new tab.
+  const arrowSvg = '<span class="info-arrow-clip" aria-hidden="true"><svg class="info-arrow" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><line x1="7" y1="17" x2="17" y2="7" vector-effect="non-scaling-stroke"></line><polyline points="9 7 17 7 17 15" vector-effect="non-scaling-stroke"></polyline></svg></span>';
   container.innerHTML = socials
     .map((s) => `
       <div class="info-cell">
         <dt>${escapeHtml(s.label)}</dt>
-        <dd><a href="${encodeURI(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.displayText)}</a></dd>
+        <dd><a href="${encodeURI(s.url)}" target="_blank" rel="noopener" class="info-link">${arrowSvg}${escapeHtml(s.displayText)}</a></dd>
       </div>
     `)
     .join('');

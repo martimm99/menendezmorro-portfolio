@@ -117,7 +117,6 @@ collections:
                   - { name: "url",  label: "URL",          widget: "string" }
                   - { name: "text", label: "Display text", widget: "string" }
               - { name: "duration", label: "Duration", widget: "string", required: false }
-              - { name: "cost",     label: "Cost",     widget: "string", required: false }
               - name: "media"
                 label: "Media"
                 label_singular: "Media item"

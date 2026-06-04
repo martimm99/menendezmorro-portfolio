@@ -93,10 +93,37 @@
   pointer-events: auto;
 }
 
+/* SVG logomark — see /assets/morro-logo.svg. The link element is
+ * empty in the HTML (its accessible name comes from aria-label); CSS
+ * draws the mark as a mask filled by currentColor, so the existing
+ * page text-color cascade automatically renders the logo white on
+ * the dark home backgrounds and black on white sub-pages. The
+ * aspect ratio matches the SVG's viewBox so the link auto-widens
+ * proportionally when the height changes.
+ *
+ * align-self: flex-start pins the logo to the TOP of the header's
+ * flex line, regardless of how tall the other flex children are
+ * (e.g., the 36px Contact icon on home). Without this, align-items:
+ * center on the header would push the logo down to the visual
+ * center of the icon-inflated row, making its position differ from
+ * project/contact pages (where the logo is the only flex child).
+ * With flex-start, the logo's top edge always sits at the header
+ * padding-top — same Y on all three pages. */
 .site-logo {
-  font-size: var(--fs-logo);
-  font-weight: var(--fw-regular);
-  letter-spacing: -0.02em;
+  display: inline-block;
+  align-self: flex-start;
+  margin-top: 6px;
+  height: 32px;
+  aspect-ratio: 1651.25 / 597.98;
+  background-color: currentColor;
+  mask-image: url('/assets/morro-logo.svg');
+  -webkit-mask-image: url('/assets/morro-logo.svg');
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: left center;
+  -webkit-mask-position: left center;
   color: inherit;
   text-decoration: none;
 }
@@ -393,5 +420,78 @@
 @media (prefers-reduced-motion: reduce) {
   .cover-layer:not(.is-active) {
     visibility: hidden;
+  }
+}
+
+/* ---------- Project title hover affordance ----------
+ *
+ * On hover of the home project title, a small diagonal arrow slides
+ * up from below a clipping mask at the title's left edge, and the
+ * title text shifts right by enough to make room for it. On hover
+ * out, the arrow slides back down behind the clip and the text
+ * returns. Hint to the user: "this is a link, click to view this
+ * project."
+ *
+ * Performance: all four animated properties (transform on slot-clip,
+ * transform on the arrow svg) are composite-only — no layout or
+ * paint of the document. The arrow's wrapper is absolutely
+ * positioned, so showing/hiding it doesn't shift any sibling. The
+ * title is position: fixed, which already acts as a positioned
+ * ancestor for the absolute arrow wrapper (no extra position:
+ * relative needed).
+ *
+ * Gated behind (hover: hover) and (pointer: fine) — coarse-pointer
+ * devices (touch) see no arrow and no transform, since the visual
+ * presupposes the user can hover before clicking. Also gated behind
+ * (prefers-reduced-motion: no-preference) so the effect doesn't run
+ * for users who've asked the OS to reduce motion.
+ */
+.title-arrow-clip {
+  /* Hidden by default; activated by the media query below. */
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .title-arrow-clip {
+    display: block;
+    position: absolute;
+    left: 0;
+    /* Vertically center against the title's box. The line-height of
+     * the title is tight (--lh-tight), so this lands the arrow at
+     * roughly the visual center of the cap-height area. */
+    top: 50%;
+    width: 0.5em;
+    height: 0.5em;
+    margin-top: -0.25em; /* half the height — centers without conflicting with a transform */
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .title-arrow {
+    display: block;
+    width: 100%;
+    height: 100%;
+    /* Resting state: parked one full height below the clip box, so
+     * the clip masks it completely. */
+    transform: translateY(100%);
+    transition: transform 280ms cubic-bezier(.33, 1, .55, 1);
+  }
+
+  /* Slot-clips wrap the visible and queued project titles. Shift
+   * both on hover so the text moves uniformly out of the arrow's
+   * way. The inner .slot already has its own transform for the
+   * project-switch animation (translateY + clip-path); since our
+   * translateX is on the parent slot-clip, the two transforms apply
+   * to separate elements and don't conflict. */
+  .project-title .slot-clip {
+    transition: transform 280ms cubic-bezier(.33, 1, .55, 1);
+  }
+
+  .project-title:hover .title-arrow {
+    transform: translateY(0);
+  }
+
+  .project-title:hover .slot-clip {
+    transform: translateX(0.7em);
   }
 }

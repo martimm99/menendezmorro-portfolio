@@ -15,7 +15,10 @@
 import { prefersReducedMotion } from './utils.js';
 
 const ANIMATION_MS = 420;
-const SIDE_MARGIN_VW = 5;
+const SIDE_MARGIN_VW_DESKTOP = 5;
+const SIDE_MARGIN_VW_MOBILE = 2;  // matches gallery's 96vw items so wide
+                                  // images don't visually shrink on open
+const MOBILE_BREAKPOINT_PX = 768;
 const TOP_BOTTOM_MARGIN_PX = 80; // leaves room for the X button + caption
 
 const state = {
@@ -165,7 +168,14 @@ function computeTargetRect(clone) {
 
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const availableWidth  = vw * (1 - 2 * SIDE_MARGIN_VW / 100);
+  // Mobile uses tighter side margins so wide images don't shrink
+  // relative to their gallery-view size (gallery items are 96vw on
+  // mobile; matching that here keeps the expand visually "into" the
+  // image, never out of it).
+  const sideMarginVw = vw <= MOBILE_BREAKPOINT_PX
+    ? SIDE_MARGIN_VW_MOBILE
+    : SIDE_MARGIN_VW_DESKTOP;
+  const availableWidth  = vw * (1 - 2 * sideMarginVw / 100);
   const availableHeight = vh - 2 * TOP_BOTTOM_MARGIN_PX;
 
   let width  = availableWidth;

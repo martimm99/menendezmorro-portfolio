@@ -1,8 +1,32 @@
 # MENÉNDEZ MORRO — Portfolio Rebuild Build Spec
 
-**Version:** 1.12 (Approved)
-**Date:** June 3, 2026
+**Version:** 1.17 (Approved)
+**Date:** June 4, 2026
 **Status:** Approved — build authorized
+
+**Changes from v1.16:**
+- **Hover affordance extended to Get-in-touch CTA and Contact socials.** The hover pattern from project page LINKS / Gallery (arrow slides up from a clipping mask, text shifts) now also applies to:
+  - **Get-in-touch CTA** (top-right on project and contact pages) — straight left arrow (←) appears on the **right** of the label; text shifts left to make room. Mirror direction because the element is right-anchored. 280ms `cubic-bezier(.33, 1, .55, 1)`.
+  - **Contact page socials** (Instagram, etc.) — NE diagonal arrow (↗) on the left of each link, text shifts right. Identical to the project page LINKS hover.
+- The shared hover styles (`.info-link / .info-action / .info-arrow-clip / .cta-arrow-clip`) moved from `project.css` to `base.css` so they apply across both pages without duplication. Gated by `(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)` as with the other hovers.
+- Contact socials anchor switched from `border-bottom` to `text-decoration: underline` (matching the LINKS underline style and avoiding the mobile `overflow: hidden` clipping issue).
+
+**Changes from v1.15:**
+- **Project page logo color follows section.** When the user is in the description section, the logo is the accent blue (`#0055ff`); when the gallery overlay is open, the logo transitions to black (`#000`). 700ms `ease` transition on `background-color`, kept in sync with the section snap animation. Implementation is pure CSS via `:has()` — the existing `.show-gallery` class on `.project-shell` (set by the snap functions) drives a descendant selector that targets the body-level `.site-logo`. No JS changes required. Captured in §5.2.
+
+**Changes from v1.14:**
+- **Site logo replaces the wordmark.** The `MENÉNDEZ MORRO` text in the top-left header is replaced by an SVG logomark (`/assets/morro-logo.svg`) at `36px` height. Implemented as a CSS mask filled by `currentColor`, so the existing page text-color cascade automatically renders the logo white on the home page's dark covers and black on the project description / contact white backgrounds. No JS, no two-version files. Logo accessibility name preserved via `aria-label` on the anchor. Captured in §5.1, §5.2, §5.3.
+- **Project page info row reordered.** Old order `LINKS / DURATION / RESULTS`. New order `RESULTS / LINKS / DURATION` — surfaces the navigation affordance (the Gallery link) as the leading element of the row. Captured in §2, §5.2.
+
+**Changes from v1.13:**
+- **Hover affordance on click-through elements.** A thin arrow slides up from a clipping mask at the element's left edge, and the text shifts right to make room. On hover-out the arrow slides back down and the text returns. Animation: 280ms `cubic-bezier(.33, 1, .55, 1)`; CSS-only, no JavaScript. Three sites in the UI now share this affordance:
+  - **Home project title** — SE diagonal arrow (↘) — clicking the title navigates into the project page. Composite-only implementation (absolute arrow + `transform: translateX` on the title text); zero layout cost. Captured in §5.1.
+  - **Project page LINKS** — NE diagonal arrow (↗) on each individual external link (Website, Instagram, etc.). Per-item hover: only the hovered link shows the arrow. Inline-flex with a `width` transition on the arrow's clip so the comma separator and following links push right naturally — small bounded layout cost (<1ms per frame on a single info-row line). Captured in §5.2.
+  - **Project page RESULTS "Gallery"** — SE diagonal arrow (↘), matching the home title since both lead the user "into" the project content. Same inline-flex pattern as LINKS. Captured in §5.2.
+  - All three are gated behind `(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)`. Touch devices and reduced-motion users see no arrow and no shift. The home project role label is intentionally unaffected.
+
+**Changes from v1.12:**
+- **Info row: COST replaced with RESULTS → Gallery.** The third info-row cell on the Project page now shows `RESULTS` as its label and `Gallery` as a clickable link in place of the prior cost value. Clicking the link runs the same snap-to-gallery animation triggered by scrolling past the description bottom. The `cost` field is removed from the data model (`content/projects.json`), validator schema (`scripts/validate-data.js`), and Decap CMS form (`public/admin/config.yml`). The RESULTS cell auto-hides if a project has no gallery media. Captured in §5.2 (Project page — Static elements, Description section), §6.1 (data schema), and Appendix C (per-project entries lose `Cost:`).
 
 **Changes from v1.11:**
 - **Line reveal: two-phase scroll-triggered behavior.** Previously the per-line reveal animation fired once on entry for the whole text block, which left below-the-fold lines already statically revealed by the time the user scrolled to them. The new behavior splits at trigger time: clips that are on-screen when the post-sweep delay elapses fire as the existing cascade waterfall (per-line `--reveal-delay`); clips that are below the fold are observed individually and each visual line animates the moment it scrolls into the reading area. Each observed clip's cascade delay is overridden to 0ms on intersection so a scrolled-in line doesn't pause after entering view. The observer's `rootMargin` is `0px 0px -80px 0px` so the trigger zone excludes the chrome-mask band at the viewport bottom (the static-element area). A percentage rootMargin would trap the last line of a description behind the bottom padding (chrome-mask + 20px buffer) since native scroll bottoms out before the line can clear a percentage dead zone. Applies to the Project page description and the Contact page text. Captured in §2 (Animations → Line reveal), §5.2 (Project page — Description section), and §5.3 (Contact page).
@@ -100,7 +124,7 @@ These terms are used consistently in code, documentation, and conversation.
 
 **Static elements** — always visible, fixed position, do NOT move when scrolling:
 - **Get in touch** link (top-right corner) — opens email client.
-- **Info row** — bottom-left, showing LINKS / DURATION / COST for the current project.
+- **Info row** — bottom-left, showing RESULTS / LINKS / DURATION for the current project. The RESULTS cell shows the word "Gallery" as an interactive link that triggers the snap-to-gallery animation.
 - **Back button** (bottom-right corner, X icon) — returns to Home via vertical sweep animation.
 
 **Scrolling content** — changes as user scrolls vertically:
@@ -224,7 +248,7 @@ DESCRIPTION text never truncates with ellipsis — information is preserved. Lon
 │            GALLERY SECTION                   │
 │         (horizontal filmstrip)               │
 │                                              │
-│ [LINKS  DURATION  COST]      [× back button] │  ← static, always visible
+│ [RESULTS  LINKS  DURATION]   [× back button] │  ← static, always visible
 └─────────────────────────────────────────────┘
          ↓ scroll past last gallery image
 ┌─────────────────────────────────────────────┐
@@ -233,7 +257,7 @@ DESCRIPTION text never truncates with ellipsis — information is preserved. Lon
 │           DESCRIPTION SECTION                │
 │         (white background, text)             │
 │                                              │
-│ [LINKS  DURATION  COST]      [× back button] │  ← static, always visible
+│ [RESULTS  LINKS  DURATION]   [× back button] │  ← static, always visible
 └─────────────────────────────────────────────┘
 ```
 
@@ -244,7 +268,7 @@ DESCRIPTION text never truncates with ellipsis — information is preserved. Lon
 
 **Static elements (do NOT move when scrolling):**
 - Get in touch link — top-right.
-- Info row (LINKS / DURATION / COST) — bottom-left.
+- Info row (RESULTS / LINKS / DURATION) — bottom-left. The RESULTS cell shows `Gallery` as a clickable link that triggers the snap-to-gallery animation.
 - Back button (X icon) — bottom-right.
 - These are visible throughout both Gallery and Description sections.
 - Visual design and placement match the current live site exactly.
@@ -355,7 +379,6 @@ Triggered by clicking/tapping an image or video in the Project page Gallery. Beh
         { "url": "https://www.instagram.com/uepmorro/", "text": "@uepmorro" }
       ],
       "duration": "1 month",
-      "cost": "Collaboration",
       "media": [
         { "type": "image", "src": "assets/media/morro/morro-1.jpg", "alt": "MORRO image 1", "caption": "" },
         { "type": "image", "src": "assets/media/morro/morro-2.jpg", "alt": "MORRO image 2", "caption": "" },
@@ -704,7 +727,6 @@ For each project, all metadata fields are listed. Long descriptions are delibera
 - **Short description:** Digital design studio.
 - **Links:** `[{ url: "https://www.instagram.com/uepmorro/", text: "@uepmorro" }]`
 - **Duration:** 1 month
-- **Cost:** Collaboration
 
 ### 2. LUFTHANSA INNOVATION HUB
 - **Slug:** `lufthansa-innovation-hub`
@@ -715,7 +737,6 @@ For each project, all metadata fields are listed. Long descriptions are delibera
 - **Short description:** Digital solutions for the next in travel and mobility.
 - **Links:** `[{ url: "https://lh-innovationhub.de/en/", text: "Website" }]`
 - **Duration:** 9 months
-- **Cost:** Employee
 
 ### 3. BUILD A ROCKET
 - **Slug:** `build-a-rocket`
@@ -726,7 +747,6 @@ For each project, all metadata fields are listed. Long descriptions are delibera
 - **Short description:** Full-service gaming agency.
 - **Links:** `[{ url: "https://buildarocket.com/en", text: "Website" }]`
 - **Duration:** 3.5 months
-- **Cost:** 4.000€
 
 ### 4. GESTIÓN REAVIVA
 - **Slug:** `reaviva`
@@ -737,7 +757,6 @@ For each project, all metadata fields are listed. Long descriptions are delibera
 - **Short description:** Technical services for construction projects.
 - **Links:** `[{ url: "https://www.gestionreaviva.com/", text: "Website" }]`
 - **Duration:** 3 months
-- **Cost:** 4.000€
 
 ### 5. FESTIVAL Z
 - **Slug:** `festival-z`
@@ -748,7 +767,6 @@ For each project, all metadata fields are listed. Long descriptions are delibera
 - **Short description:** Performing arts festival.
 - **Links:** `[{ url: "https://www.festivalz.org/en/", text: "Website" }]`
 - **Duration:** 5 months
-- **Cost:** 4.500€
 
 ### 6. TITLES
 - **Slug:** `titles`
@@ -759,7 +777,6 @@ For each project, all metadata fields are listed. Long descriptions are delibera
 - **Short description:** Titles design for audiovisual projects.
 - **Links:** `[{ url: "https://www.youtube.com/watch?v=D46HaA131vU", text: "Un altre petó" }, { url: "https://www.youtube.com/watch?v=SzteXtJIies", text: "Me Olvido" }]`
 - **Duration:** 2 weeks
-- **Cost:** Collaboration
 - **Notes:** Category project — per-media captions expected (e.g., title sequence names).
 
 ### 7. ARCHITECTURE
@@ -771,7 +788,6 @@ For each project, all metadata fields are listed. Long descriptions are delibera
 - **Short description:** Photography service for real estate agencies.
 - **Links:** `[]` (none)
 - **Duration:** 2–5 days
-- **Cost:** 250–800€
 - **Notes:** Category project — per-media captions expected (e.g., property names, locations).
 
 ### 8. CONCERTS
@@ -783,7 +799,6 @@ For each project, all metadata fields are listed. Long descriptions are delibera
 - **Short description:** Concert photography for artists, labels and media.
 - **Links:** `[{ url: "https://fleek.25gramos.com/live_show/live-show-w-gloosito/", text: "25Gramos" }]`
 - **Duration:** 3 days
-- **Cost:** 250–800€
 - **Notes:** Category project — per-media captions expected (e.g., artist + venue + year).
 
 ## Appendix D: Phase 2 placeholder media strategy
