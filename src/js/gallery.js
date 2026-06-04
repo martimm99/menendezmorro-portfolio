@@ -52,35 +52,82 @@ export function initGallery({
   const dragCleanup  = setupDrag({ gallery, track, mqlMobile, onItemActivate });
   const arrowCleanup = setupArrows({ prevBtn, nextBtn, gallery, track, mqlMobile });
 
+  // Desktop snap layout. Image 1 has a "home" position at the left
+  // edge (track's CSS padding-left = --page-pad-x stays untouched);
+  // images 2..N snap centered to the viewport. To make the LAST
+  // image centerable, the track's padding-right is set dynamically
+  // to `galleryHalf − lastImage.half`. Image loads change item
+  // widths, viewport resizes change galleryHalf — both require a
+  // recompute. Mobile uses native scroll-snap with its own padding
+  // (see project.css), so we leave it alone there.
+  function applyCenteringPadding() {
+    if (mqlMobile.matches) {
+      // Clear any desktop-side padding-right when switching to mobile.
+      track.style.paddingRight = '';
+      return;
+    }
+    const allItems = track.querySelectorAll('.gallery-item');
+    if (allItems.length === 0) return;
+    const galleryHalf = gallery.clientWidth / 2;
+    const lastHalf = allItems[allItems.length - 1].offsetWidth / 2;
+    track.style.paddingRight = `${Math.max(0, galleryHalf - lastHalf)}px`;
+  }
+
+  // Apply once after layout settles (two rAFs: first commits DOM
+  // from renderItems, second waits for layout).
+  requestAnimationFrame(() => requestAnimationFrame(applyCenteringPadding));
+  // Image loads can change item widths after rendering, so recompute
+  // when each <img> / <video> reports its intrinsic size.
+  track.querySelectorAll('img, video').forEach((el) => {
+    if (el.tagName === 'IMG' && el.complete) return;
+    el.addEventListener(el.tagName === 'IMG' ? 'load' : 'loadedmetadata',
+      applyCenteringPadding, { once: true });
+  });
+  // Viewport resize: gallery.clientWidth and item widths can both
+  // change, so a full recompute is the safest.
+  window.addEventListener('resize', applyCenteringPadding);
+  // Switching breakpoints (e.g., DevTools toggle): re-apply or clear
+  // depending on the new mode.
+  mqlMobile.addEventListener?.('change', applyCenteringPadding);
+
   // Step API. Snaps to the next image past the current LIVE scroll
   // position (not the last snapped target), so a mouse-wheel click
   // after a free-scrolled touchpad swipe still lands the user on
   // the real next/previous image even if the scroll position is
   // between two image positions. Returns a status string so the
   // caller knows whether the gallery moved or sat at an edge.
+  //
+  // Items are matched by their snap target:
+  //   - Image 0 (first) → target 0 (left home position).
+  //   - Image N>0 → centered position (item.center − gallery.center),
+  //                 clamped at 0 in case a narrow viewport would
+  //                 require a negative scroll.
   function step(direction) {
     if (mqlMobile.matches) return 'mobile';
     const allItems = track.querySelectorAll('.gallery-item');
     if (allItems.length === 0) return 'empty';
 
     const currentPos = readLiveScroll(track);
-    const baseOffset = allItems[0].offsetLeft;
+    const galleryHalf = gallery.clientWidth / 2;
     const epsilon = 0.5;             // sub-pixel tolerance
+
+    const targetForIndex = (i) => {
+      if (i === 0) return 0;
+      return Math.max(0, allItems[i].offsetLeft + allItems[i].offsetWidth / 2 - galleryHalf);
+    };
 
     if (direction > 0) {
       for (let i = 0; i < allItems.length; i++) {
-        const itemPos = allItems[i].offsetLeft - baseOffset;
-        if (itemPos > currentPos + epsilon) {
-          snapToIndex(track, allItems, i);
+        if (targetForIndex(i) > currentPos + epsilon) {
+          snapToIndex(track, allItems, i, /* instant */ false, gallery);
           return 'stepped';
         }
       }
       return 'at-end';
     } else {
       for (let i = allItems.length - 1; i >= 0; i--) {
-        const itemPos = allItems[i].offsetLeft - baseOffset;
-        if (itemPos < currentPos - epsilon) {
-          snapToIndex(track, allItems, i);
+        if (targetForIndex(i) < currentPos - epsilon) {
+          snapToIndex(track, allItems, i, /* instant */ false, gallery);
           return 'stepped';
         }
       }
@@ -93,7 +140,7 @@ export function initGallery({
   function resetToStart() {
     const allItems = track.querySelectorAll('.gallery-item');
     if (allItems.length === 0) return;
-    snapToIndex(track, allItems, 0, /* instant */ true);
+    snapToIndex(track, allItems, 0, /* instant */ true, gallery);
   }
 
   // Free-scroll: add delta to the current live scroll position,
@@ -223,10 +270,21 @@ function buildVideo(media, projectTitle, index) {
  * mode, and handles the snap-back path itself when in description
  * mode. */
 
-function snapToIndex(track, items, index, instant = false) {
-  // items[0].offsetLeft accounts for the track's left padding; subtracting
-  // it makes the target a pure scroll-distance value (image 0 → 0).
-  const target = items[index].offsetLeft - items[0].offsetLeft;
+function snapToIndex(track, items, index, instant = false, gallery = null) {
+  // Image 0 (first) has a left-aligned home position: scroll = 0,
+  // which keeps it sitting at the track's CSS padding-left (the
+  // page's standard left margin). Other images snap centered to the
+  // viewport's horizontal middle. The clamp at 0 protects against
+  // narrow-viewport cases where a centered target would otherwise
+  // require negative scroll.
+  let target;
+  if (index === 0) {
+    target = 0;
+  } else {
+    const container = gallery || track.parentElement;
+    const galleryHalf = container ? container.clientWidth / 2 : 0;
+    target = Math.max(0, items[index].offsetLeft + items[index].offsetWidth / 2 - galleryHalf);
+  }
   applyScroll(track, target, instant);
 }
 

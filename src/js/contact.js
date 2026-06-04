@@ -40,7 +40,21 @@ export function initContact(data) {
   renderCopy(site.contactCopy);
   renderSocials(site.socials);
   setupNavigation(site);
+  setupKeyboard();
   triggerReveal();
+}
+
+/* Window-level Escape handler: closes the contact page back to home
+ * via the cross-document VT sweep (matches the X back button). No
+ * arrow handling on contact — there's no gallery or section to
+ * navigate. */
+function setupKeyboard() {
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      forceRevealAndNavigate('/');
+    }
+  });
 }
 
 function renderCopy(paragraphs) {

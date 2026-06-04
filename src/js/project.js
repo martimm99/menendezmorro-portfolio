@@ -92,6 +92,7 @@ export function initProject(data, slug) {
   // the description snap-back. See setupWheelAndSnap for why this is
   // one handler instead of two.
   setupWheelAndSnap(galleryAPI);
+  setupKeyboard(galleryAPI);
 
   teardown = galleryAPI;
 }
@@ -507,6 +508,104 @@ function setupWheelAndSnap(galleryAPI) {
   }, { passive: true });
 
   document.addEventListener('touchcancel', () => { touchStart = null; }, { passive: true });
+}
+
+/* ---------- Keyboard ----------
+ *
+ * Window-level keydown handler so arrows + Escape work without the
+ * page needing a focused element first. Behavior:
+ *
+ *   Escape       → vertical sweep back to / (home). If a fullscreen
+ *                  image is open, this handler defers — fullscreen.js
+ *                  has its own Escape listener that closes the
+ *                  fullscreen, and we don't want both to fire.
+ *
+ *   In description view:
+ *     ArrowDown  → smooth-scroll the description text down. When the
+ *                  text is already scrolled to the bottom, the same
+ *                  key snaps forward to the gallery overlay. So one
+ *                  ArrowDown reads through the text; the press after
+ *                  the bottom transitions sections.
+ *     ArrowUp    → smooth-scroll the description text up. No section
+ *                  transition when at the top — pressing further just
+ *                  no-ops.
+ *
+ *   In gallery view:
+ *     ArrowUp    → snap back to description, regardless of which
+ *                  image is currently centered. Mirror of the
+ *                  description-arrow-down behavior: one keystroke
+ *                  exits the section.
+ *     ArrowLeft  → gallery prev image.
+ *     ArrowRight → gallery next image.
+ *
+ * Arrow keys are a spec deviation from v1.17 §5.2 which said arrow
+ * keys do NOT navigate the gallery in the regular view. The owner
+ * reversed that decision in v1.18; v1.19 tunes the description
+ * behavior to scroll first / snap at the edge. */
+const KEYBOARD_SCROLL_STEP_PX = 80;
+const KEYBOARD_AT_EDGE_THRESHOLD = 1;
+
+function setupKeyboard(galleryAPI) {
+  const descriptionSection = document.querySelector('[data-section-description]');
+  if (!descriptionSection) return;
+
+  const descriptionAtTop = () =>
+    descriptionSection.scrollTop <= KEYBOARD_AT_EDGE_THRESHOLD;
+  const descriptionAtBottom = () =>
+    descriptionSection.scrollTop + descriptionSection.clientHeight
+      >= descriptionSection.scrollHeight - KEYBOARD_AT_EDGE_THRESHOLD;
+
+  window.addEventListener('keydown', (e) => {
+    // Defer to fullscreen.js's own Escape handler when a fullscreen
+    // image is open — pressing Escape should close the fullscreen,
+    // not jump straight back to home.
+    const stage = document.querySelector('[data-fullscreen-stage]');
+    if (stage && !stage.hidden) return;
+
+    if (snapState.isAnimating) return;
+
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      forceRevealAndNavigate('/');
+      return;
+    }
+
+    if (snapState.showGallery) {
+      if (e.key === 'ArrowLeft') {
+        galleryAPI.step(-1);
+        e.preventDefault();
+        return;
+      }
+      if (e.key === 'ArrowRight') {
+        galleryAPI.step(+1);
+        e.preventDefault();
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        // Always snap back to description, regardless of image position.
+        snapToDescription();
+        e.preventDefault();
+        return;
+      }
+    } else {
+      if (e.key === 'ArrowDown') {
+        if (descriptionAtBottom()) {
+          snapToGallery();
+        } else {
+          descriptionSection.scrollBy({ top: KEYBOARD_SCROLL_STEP_PX, behavior: 'smooth' });
+        }
+        e.preventDefault();
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        if (!descriptionAtTop()) {
+          descriptionSection.scrollBy({ top: -KEYBOARD_SCROLL_STEP_PX, behavior: 'smooth' });
+          e.preventDefault();
+        }
+        return;
+      }
+    }
+  });
 }
 
 /* Forward snap: description → gallery. Brings the gallery overlay up

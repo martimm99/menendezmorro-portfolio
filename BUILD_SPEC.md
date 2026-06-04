@@ -1,8 +1,21 @@
 # MENÉNDEZ MORRO — Portfolio Rebuild Build Spec
 
-**Version:** 1.17 (Approved)
+**Version:** 1.19 (Approved)
 **Date:** June 4, 2026
 **Status:** Approved — build authorized
+
+**Changes from v1.18:**
+- **Keyboard arrows in description scroll, then snap.** `ArrowDown` in description view now smooth-scrolls the description text down by 80px per press; only when the text is already scrolled to its bottom does it snap forward to the gallery. `ArrowUp` symmetrically scrolls the description up, no-op at the top. In gallery view, `ArrowUp` always snaps back to description regardless of which image is currently visible — one keystroke exits the section. Mirrors the wheel-then-snap pattern.
+- **Gallery snaps: image 1 at left, image 2+ centered.** Image 1 has a "home" position at the left of the viewport (track padding-left stays at `--page-pad-x`, matching the project page's standard left margin). Images 2..N snap centered to the viewport's horizontal middle when the user navigates to them (mouse-wheel step, arrow keys, free-scroll). The track's padding-right is computed dynamically (`galleryHalf − lastImage.half`) so the last image can also center without empty edge space. Free-scroll can return all the way back to image 1 at left. `resetToStart` (called on gallery close) parks at scroll = 0, so each entry shows image 1 at left. Mobile is unchanged — native scroll-snap centering with 2vw padding.
+
+**Changes from v1.17:**
+- **Keyboard navigation on project + contact pages.** Window-level `keydown` listener works without a focused element first. Project page:
+  - `Escape` → vertical sweep back to home (deferred to fullscreen.js's own Escape if a fullscreen image is open — closes fullscreen first, then a subsequent Escape returns home).
+  - `ArrowDown` (description view) → snap to gallery overlay.
+  - `ArrowUp` (gallery view, first image) → snap back to description.
+  - `ArrowLeft` / `ArrowRight` (gallery view) → step prev / next image; same step API as the mobile arrow buttons. Reverses the v1.17 §5.2 rule that arrow keys do NOT navigate the gallery in regular view.
+
+  Contact page: `Escape` → home. No arrow handling (no gallery, no sections).
 
 **Changes from v1.16:**
 - **Hover affordance extended to Get-in-touch CTA and Contact socials.** The hover pattern from project page LINKS / Gallery (arrow slides up from a clipping mask, text shifts) now also applies to:
