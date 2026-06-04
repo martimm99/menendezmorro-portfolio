@@ -67,8 +67,10 @@ function renderSocials(socials) {
   }
   // Same hover-affordance markup as the project page LINKS — NE
   // diagonal arrow that slides in on hover (see base.css). External
-  // link semantic: each social opens in a new tab.
-  const arrowSvg = '<span class="info-arrow-clip" aria-hidden="true"><svg class="info-arrow" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><line x1="7" y1="17" x2="17" y2="7" vector-effect="non-scaling-stroke"></line><polyline points="9 7 17 7 17 15" vector-effect="non-scaling-stroke"></polyline></svg></span>';
+  // link semantic: each social opens in a new tab. The arrow path
+  // lives in the shared sprite at /assets/icons/arrows.svg so it
+  // isn't duplicated across every call site.
+  const arrowSvg = '<span class="info-arrow-clip" aria-hidden="true"><svg class="info-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><use href="/assets/icons/arrows.svg#arrow-ne"/></svg></span>';
   container.innerHTML = socials
     .map((s) => `
       <div class="info-cell">

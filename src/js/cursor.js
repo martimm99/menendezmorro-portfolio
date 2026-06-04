@@ -1,10 +1,11 @@
 /**
  * cursor.js — custom dot cursor.
  *
- * A small accent-colored dot follows the mouse with a slight lerp
- * delay; the dot grows on hover over interactive elements (anchors,
- * project titles, the Get-in-touch CTA, etc.). The native system
- * cursor is hidden site-wide (via base.css) while this runs.
+ * A small accent-colored dot follows the mouse with a slight
+ * damped-spring delay (see Movement notes below); the dot grows on
+ * hover over interactive elements (anchors, project titles, the
+ * Get-in-touch CTA, etc.). The native system cursor is hidden
+ * site-wide (via base.css) while this runs.
  *
  * Skipped on touch / coarse-pointer devices and for users with
  * prefers-reduced-motion. In both cases base.css restores the native
@@ -63,7 +64,9 @@ export function initCursor() {
   document.addEventListener('mouseover', onMouseOver, { passive: true });
   document.addEventListener('mouseout', onMouseOut, { passive: true });
   document.addEventListener('mouseleave', onWindowLeave);
-  document.addEventListener('mouseenter', onWindowEnter);
+  // No mouseenter listener needed — the first mousemove after re-entry
+  // already triggers the !isActive branch in onMouseMove, which warps
+  // the dot to the new cursor position without spring slingshot.
 }
 
 function startTick() {
@@ -108,14 +111,7 @@ function onMouseOut(e) {
 
 function onWindowLeave() {
   isActive = false;
-  cursor.classList.remove('is-active');
-  cursor.classList.remove('is-hover');
-}
-
-function onWindowEnter() {
-  // Wait for the next mousemove to position; just makes sure we don't
-  // animate from a stale position when the cursor re-enters.
-  isActive = false;
+  cursor.classList.remove('is-active', 'is-hover');
 }
 
 function tick() {

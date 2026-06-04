@@ -8,8 +8,10 @@
  *                       re-render. Browser back/forward still works (the
  *                       'popstate' listener in main.js handles those).
  *
- * Phase 5 only renders Home end-to-end. Project and Contact routes display
- * a placeholder screen until Phase 6 and Phase 9.
+ * All three routes (home / project / contact) render through dedicated
+ * HTML shells served by Netlify via the _redirects rules. Each shell
+ * loads main.js which dispatches to the matching page module based on
+ * the body class.
  */
 
 export function getCurrentRoute() {

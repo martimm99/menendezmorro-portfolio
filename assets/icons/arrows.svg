@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <!--
+    Arrow icon sprite. Each <symbol> is referenced from elsewhere via
+    <svg><use href="/assets/icons/arrows.svg#arrow-X"/></svg>. The
+    outer <svg> in each call site sets dimensions, fill, stroke
+    color (via currentColor), and stroke widths; the symbol itself
+    only describes the path geometry.
+  -->
+  <symbol id="arrow-ne" viewBox="0 0 24 24">
+    <line x1="7" y1="17" x2="17" y2="7" vector-effect="non-scaling-stroke"/>
+    <polyline points="9 7 17 7 17 15" vector-effect="non-scaling-stroke"/>
+  </symbol>
+  <symbol id="arrow-se" viewBox="0 0 24 24">
+    <line x1="7" y1="7" x2="17" y2="17" vector-effect="non-scaling-stroke"/>
+    <polyline points="9 17 17 17 17 9" vector-effect="non-scaling-stroke"/>
+  </symbol>
+  <symbol id="arrow-left" viewBox="0 0 24 24">
+    <line x1="19" y1="12" x2="5" y2="12" vector-effect="non-scaling-stroke"/>
+    <polyline points="11 6 5 12 11 18" vector-effect="non-scaling-stroke"/>
+  </symbol>
+</svg>

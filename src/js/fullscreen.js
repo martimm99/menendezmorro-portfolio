@@ -102,7 +102,7 @@ export function openFullscreen(galleryItem) {
   document.addEventListener('keydown', escListener);
 }
 
-export function closeFullscreen() {
+function closeFullscreen() {
   if (!stage || !state.isOpen || state.isAnimating) return;
   state.isAnimating = true;
 

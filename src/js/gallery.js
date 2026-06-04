@@ -17,8 +17,8 @@
  *   - When the gallery reaches its right edge and the user keeps scrolling
  *     forward, onForwardAtEnd() fires so project.js can snap to the
  *     description section.
- *   - Click/tap activates onItemActivate(index); Phase 8 will open the
- *     Image fullscreen modal there.
+ *   - Click/tap activates onItemActivate(index); the project page wires
+ *     that callback to openFullscreen() from fullscreen.js.
  *
  * The exported initGallery returns an API ({ destroy }) the caller can use
  * to tear handlers down on navigation.

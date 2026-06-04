@@ -5,11 +5,11 @@
  *   - Render project[index]: cover (image or video), title, role, info row.
  *   - Handle wheel, drag (mouse/touch), and keyboard arrows → horizontal sweep.
  *   - Click on title or role → cross-shell navigation via
- *     window.location.assign('/<slug>'). Phase 10 will replace the reload
- *     with a vertical sweep.
- *   - Click on Contact link → in-shell router.navigateTo('/contact')
- *     (Contact is still the same home shell until Phase 9 ships a
- *     dedicated contact.html).
+ *     window.location.assign('/<slug>'). The cross-document View
+ *     Transitions API (@view-transition in base.css) plays the
+ *     vertical sweep automatically across the page change.
+ *   - Click on Contact link → router.navigateTo('/contact'), which
+ *     reloads the dedicated contact.html shell via the same sweep.
  *   - Preload adjacent covers with fetchpriority="low" via Image() prefetch.
  *
  * Per BUILD_SPEC.md §5.1, Home does not render captions on the cover, even
@@ -202,9 +202,10 @@ function setupClickHandlers() {
 function goToCurrentProject(e) {
   e.preventDefault();
   const project = state.data.projects[state.index];
-  // Cross-shell: a full reload fetches project.html from Netlify, which
-  // initializes the project page. Phase 10 will swap this for a smooth
-  // vertical-sweep transition.
+  // Cross-shell: a full reload fetches project.html from Netlify,
+  // which initializes the project page. The vertical-sweep transition
+  // is handled automatically by the cross-document View Transitions
+  // API (@view-transition rule in base.css) across the page change.
   window.location.assign(`/${project.slug}`);
 }
 

@@ -9,10 +9,11 @@
  * Per BUILD_SPEC.md §5.2:
  *   - Click "Get in touch" copies the contact email to the clipboard and
  *     shows a centered "Email copied" toast that fades after ~2s.
- *   - Back arrow and the page logo both return to / (Phase 10 will swap
- *     the full reload for a vertical sweep).
- *   - Info row shows LINKS / DURATION / COST. The LINKS cell hides when
- *     project.links is empty (per spec §6.1).
+ *   - Back arrow and the page logo both return to / via the cross-
+ *     document View Transitions API (vertical sweep in base.css).
+ *   - Info row shows RESULTS / LINKS / DURATION. The LINKS cell hides
+ *     when project.links is empty (per spec §6.1). RESULTS shows the
+ *     word "Gallery" as a click-to-snap-to-gallery link.
  *   - Long description text appears in the Description section with the
  *     Line reveal animation when the section first becomes visible.
  *   - Snap to Description: wheel forward at the end of the gallery, or
@@ -167,10 +168,12 @@ function renderInfoRow(project) {
   if (linksCell && linksSlot) {
     if (project.links && project.links.length > 0) {
       linksCell.hidden = false;
-      // NE diagonal arrow markup — slides in on hover (see project.css
+      // NE diagonal arrow markup — slides in on hover (see base.css
       // hover styles for .info-link). External-link semantic: each
-      // link opens in a new tab.
-      const arrowSvg = '<span class="info-arrow-clip" aria-hidden="true"><svg class="info-arrow" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><line x1="7" y1="17" x2="17" y2="7" vector-effect="non-scaling-stroke"></line><polyline points="9 7 17 7 17 15" vector-effect="non-scaling-stroke"></polyline></svg></span>';
+      // link opens in a new tab. The arrow path lives in the shared
+      // sprite at /assets/icons/arrows.svg so it isn't duplicated
+      // across every call site.
+      const arrowSvg = '<span class="info-arrow-clip" aria-hidden="true"><svg class="info-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><use href="/assets/icons/arrows.svg#arrow-ne"/></svg></span>';
       linksSlot.innerHTML = project.links
         .map((l) => `<a href="${encodeURI(l.url)}" target="_blank" rel="noopener" class="info-link">${arrowSvg}${escapeHtml(l.text)}</a>`)
         .join(', ');
