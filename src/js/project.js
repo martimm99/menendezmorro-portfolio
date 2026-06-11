@@ -202,17 +202,21 @@ function initProgressBar(galleryAPI) {
   if (!navTrack || !navLabels || !progressFill || !descBtn || !galleryBtn || !descSection) return;
 
   const mqlMobile = window.matchMedia('(max-width: 600px)');
+  // Desktop: cached boundary set by measureGalleryBtnX (position driven by JS
+  // measuring the description content's right edge). Mobile: computed live each
+  // tick from the GALLERY button's rendered position — no timing dependency.
   let galleryBoundary = 0.55;
   // Tracks when an in-progress CSS transition owns the fill's width; the
   // rAF loop pauses until this timestamp passes to avoid overriding it.
   let smoothUntil = 0;
 
+  // Desktop-only: position the GALLERY label and cache the boundary fraction.
   function measureGalleryBtnX() {
     if (mqlMobile.matches || !descContent) return;
-    const contentRect = descContent.getBoundingClientRect();
-    const labelsRect  = navLabels.getBoundingClientRect();
     const trackRect   = navTrack.getBoundingClientRect();
     if (trackRect.width <= 0) return;
+    const contentRect = descContent.getBoundingClientRect();
+    const labelsRect  = navLabels.getBoundingClientRect();
     const rawX = contentRect.right - labelsRect.left;
     // Keep at least 60px from the right edge so the GALLERY label is legible.
     const clampedX = Math.max(0, Math.min(rawX, trackRect.width - 60));
@@ -227,6 +231,17 @@ function initProgressBar(galleryAPI) {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(measureGalleryBtnX, 100);
   }, { passive: true });
+
+  // Returns the current boundary fraction. On mobile reads the GALLERY
+  // button's live rendered position each call so layout shifts never
+  // cause a stale boundary — getBoundingClientRect is cheap inside rAF.
+  function readBoundary() {
+    if (!mqlMobile.matches) return galleryBoundary;
+    const trackRect = navTrack.getBoundingClientRect();
+    if (trackRect.width <= 0) return galleryBoundary;
+    const btnRect = galleryBtn.getBoundingClientRect();
+    return Math.max(0, btnRect.left - trackRect.left) / trackRect.width;
+  }
 
   // Animate the bar to a target value with a CSS transition. The rAF loop
   // pauses for the duration so the two don't fight each other.
@@ -252,12 +267,13 @@ function initProgressBar(galleryAPI) {
   // GALLERY click: snap to gallery first image. Animate bar to boundary.
   galleryBtn.addEventListener('click', () => {
     if (snapState.isAnimating) return;
+    const gb = readBoundary();
     if (!snapState.showGallery) {
-      setProgressSmooth(galleryBoundary, 800);
+      setProgressSmooth(gb, 800);
       snapToGallery();
     } else {
       galleryAPI.resetToStart?.();
-      setProgressSmooth(galleryBoundary, 400);
+      setProgressSmooth(gb, 400);
     }
   });
 
@@ -269,13 +285,14 @@ function initProgressBar(galleryAPI) {
     }
     if (progressFill.style.transition) progressFill.style.transition = '';
 
+    const gb      = readBoundary();
     const descMax = descSection.scrollHeight - descSection.clientHeight;
     const descP   = descMax > 0 ? Math.min(Math.max(descSection.scrollTop / descMax, 0), 1) : 0;
     const gallP   = galleryAPI.getProgress?.() ?? 0;
 
     const p = snapState.showGallery
-      ? galleryBoundary + gallP * (1 - galleryBoundary)
-      : descP * galleryBoundary;
+      ? gb + gallP * (1 - gb)
+      : descP * gb;
 
     progressFill.style.width = `${p * 100}%`;
     requestAnimationFrame(tickProgress);

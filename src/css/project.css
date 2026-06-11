@@ -267,7 +267,7 @@
 /* 4px bar: in-flow below the labels, spaced slightly further than the dt-to-dd
  * gap so the bar reads as a visual element rather than as a tight sub-label. */
 .info-progress-bar {
-  margin-top: var(--space-2);
+  margin-top: var(--space-4);
   height: 4px;
   position: relative;
   background-color: rgba(0, 0, 0, 0.2);
@@ -596,7 +596,7 @@
     width: auto;
     height: auto;
     max-width: 96vw;
-    max-height: 70vh;
+    max-height: 65vh;
   }
 
   /* Mobile gallery: captions back to in-flow. The mobile track has
@@ -640,13 +640,14 @@
   /* Mobile info row: back-arrow is at top-right on mobile, so the bar
    * can extend to the normal right margin. Smaller fonts throughout. */
   .static-info-row {
+    left: 20px;
     right: var(--page-pad-x);
-    gap: clamp(12px, 3vw, 24px);
+    gap: clamp(24px, 5vw, 40px);
   }
   /* Mobile: GALLERY returns to normal flow — just a gap after DESCRIPTION.
    * Absolute positioning is desktop-only (JS measures desc content right edge). */
   .info-nav-labels {
-    gap: clamp(12px, 3vw, 24px);
+    gap: clamp(48px, 10vw, 64px);
   }
   .info-section-btn.is-gallery-btn {
     position: static;
