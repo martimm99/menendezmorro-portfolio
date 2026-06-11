@@ -1,4 +1,4 @@
-# Claude Code Project Instructions — MENÉNDEZ MORRO Portfolio
+# Claude Code Project Instructions — MORRO Portfolio
 
 ## Project context
 

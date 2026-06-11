@@ -14,7 +14,7 @@
  *
  * 2. Open Graph image (referenced by site.json.ogImage):
  *      assets/og-image.jpg                1200×630
- *    Same visual language: "MENÉNDEZ MORRO" on top, smaller subtitle below.
+ *    Same visual language: "MORRO" on top, smaller subtitle below.
  *
  * Both outputs are deterministic and idempotent — safe to re-run any time.
  *
@@ -117,7 +117,7 @@ async function generateOgImage() {
   const svg = Buffer.from(buildOgSvg({
     width,
     height,
-    brand: 'MENÉNDEZ MORRO',
+    brand: 'MORRO',
     tagline: 'Portfolio of design and photography'
   }));
   await sharp({

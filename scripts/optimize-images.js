@@ -4,7 +4,7 @@
  * Produces responsive WebP variants for every source image in
  * assets/media/<slug>/. Two variants per source live alongside it:
  *
- *   <name>-mobile.webp   max 768px wide
+ *   <name>-mobile.webp   max 1536px wide (covers 3× retina phones at the 768px breakpoint)
  *   <name>-desktop.webp  max 1920px wide
  *
  * Source files (.jpg/.jpeg/.png) stay in place — the <picture> element
@@ -13,7 +13,7 @@
  *
  * Behavior:
  *   - WebP quality 80, preserves aspect ratio, never upscales.
- *   - Mobile variant is skipped when source.width <= 768 (it would be
+ *   - Mobile variant is skipped when source.width <= 1536 (it would be
  *     byte-identical to the desktop variant — wasted file).
  *   - Idempotent: a variant is skipped when its mtime is >= the source's.
  *   - --force regenerates every variant, ignoring mtime.
@@ -39,14 +39,22 @@ import sharp from 'sharp';
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const mediaRoot = resolve(projectRoot, 'assets/media');
 
-const VARIANTS = [
-  { name: 'mobile', maxWidth: 768 },
+// Gallery images: quality 80, desktop capped at 1920px.
+// Cover images (*-cover.jpg): quality 85, desktop capped at 2560px
+// (covers fill the full viewport on Home and are the LCP element).
+const GALLERY_VARIANTS = [
+  { name: 'mobile', maxWidth: 1536 },
   { name: 'desktop', maxWidth: 1920 }
 ];
+const COVER_VARIANTS = [
+  { name: 'mobile', maxWidth: 1536 },
+  { name: 'desktop', maxWidth: 2560 }
+];
+const GALLERY_QUALITY = 80;
+const COVER_QUALITY   = 85;
 const SOURCE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png']);
 const VIDEO_EXTENSIONS = new Set(['.mp4', '.mov', '.webm']);
 const BUDGET_BYTES = 300 * 1024;
-const WEBP_QUALITY = 80;
 
 function parseArgs(argv) {
   const args = argv.slice(2);
@@ -106,6 +114,10 @@ function percentDelta(srcBytes, outBytes) {
   return `${sign}${Math.abs(delta).toFixed(0)}%`;
 }
 
+function isCoverFile(name) {
+  return basename(name, extname(name)).endsWith('-cover');
+}
+
 async function processSource(sourcePath, { force }) {
   const sourceRel = relative(projectRoot, sourcePath);
   const sourceStat = statSync(sourcePath);
@@ -117,14 +129,19 @@ async function processSource(sourcePath, { force }) {
     return { ok: false, written: 0, sourceBytes: sourceStat.size, outputBytes: 0, oversize: [] };
   }
 
-  console.log(`  ${sourceRel} (${metadata.width}×${metadata.height}, ${formatKb(sourceStat.size)})`);
+  const cover = isCoverFile(sourcePath);
+  const variants = cover ? COVER_VARIANTS : GALLERY_VARIANTS;
+  const quality  = cover ? COVER_QUALITY  : GALLERY_QUALITY;
+  const label    = cover ? 'cover' : 'gallery';
+
+  console.log(`  ${sourceRel} (${metadata.width}×${metadata.height}, ${formatKb(sourceStat.size)}, ${label})`);
 
   const folder = dirname(sourcePath);
   const stem = basename(sourcePath, extname(sourcePath));
   const result = { ok: true, written: 0, sourceBytes: sourceStat.size, outputBytes: 0, oversize: [] };
 
-  for (const variant of VARIANTS) {
-    if (variant.name === 'mobile' && metadata.width <= 768) {
+  for (const variant of variants) {
+    if (variant.name === 'mobile' && metadata.width <= 1536) {
       console.log(`    → ${stem}-${variant.name}.webp — skipped (source ≤ ${variant.maxWidth}px wide)`);
       continue;
     }
@@ -138,7 +155,7 @@ async function processSource(sourcePath, { force }) {
     try {
       const info = await sharp(sourcePath)
         .resize(variant.maxWidth, null, { withoutEnlargement: true, fit: 'inside' })
-        .webp({ quality: WEBP_QUALITY })
+        .webp({ quality })
         .toFile(outPath);
       const outBytes = info.size ?? statSync(outPath).size;
       result.written += 1;
@@ -210,7 +227,7 @@ async function main() {
   console.log('');
   console.log(`optimize-images: processed ${totalSources} source(s), wrote ${totalWritten} variant(s).`);
   if (totalWritten > 0) {
-    const savedBytes = totalSourceBytes * VARIANTS.length - totalOutputBytes;
+    const savedBytes = totalSourceBytes * GALLERY_VARIANTS.length - totalOutputBytes;
     const savedSign = savedBytes >= 0 ? 'saved' : 'added';
     console.log(`optimize-images: ${savedSign} ${formatKb(Math.abs(savedBytes))} versus encoding sources at every variant size.`);
   }

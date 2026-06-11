@@ -12,8 +12,9 @@
  *     reloads the dedicated contact.html shell via the same sweep.
  *   - Preload adjacent covers with fetchpriority="low" via Image() prefetch.
  *
- * Per BUILD_SPEC.md §5.1, Home does not render captions on the cover, even
- * when the cover media item has one. The first media[0] is the cover.
+ * Per BUILD_SPEC.md §5.1, Home does not render captions on the cover.
+ * The cover image is project.cover (with project.coverAlt); falls back to
+ * media[0] when cover is absent so placeholder projects still render.
  */
 
 import { horizontalSweep, slideTextSlots } from './transitions.js';
@@ -26,6 +27,24 @@ let state = {
   activeLayerIdx: 0,
   isAnimating: false,
   videoObserver: null
+};
+
+// --- Auto-advance timer ---
+const TIMER_DURATION_MS = 7000;
+const DRAIN_DURATION_MS = 500;
+const HOVER_RAMP_MS     = 220;
+const TIMER_BASE_OP     = 0.4;
+const TIMER_FILL_OP     = 0.9;
+
+const timerState = {
+  btn: null,
+  progress:      0,     // 0–1 over TIMER_DURATION_MS
+  hoverStrength: 0,     // 0–1; ramps on mouseenter/leave
+  isHovering:    false,
+  draining:      false, // true while the post-fire drain animation plays
+  drainProgress: 0,     // 1–0 over DRAIN_DURATION_MS
+  rafId:         null,
+  lastTimestamp: null,
 };
 
 export function initHome(data) {
@@ -41,6 +60,7 @@ export function initHome(data) {
   setupWheel();
   setupKeyboard();
   setupDrag();
+  initTimer();
 }
 
 /**
@@ -58,10 +78,20 @@ function resumeIndex(data) {
   return idx >= 0 ? idx : 0;
 }
 
+// Returns a media-item-shaped object for the project's home cover.
+// Uses project.cover + project.coverAlt when present; falls back to
+// media[0] so projects without a dedicated cover still render.
+function getCover(project) {
+  if (project.cover) {
+    return { type: 'image', src: project.cover, alt: project.coverAlt || `${project.title} cover` };
+  }
+  return project.media[0];
+}
+
 function renderInitial() {
   const activeLayer = state.layers[state.activeLayerIdx];
   const project = state.data.projects[state.index];
-  paintCover(activeLayer, project.media[0], project.title, /* high priority */ true);
+  paintCover(activeLayer, getCover(project), project.title, /* high priority */ true);
   activeLayer.classList.add('is-active');
   // Only the "current" slot in each pair gets text. The "next" slot stays
   // empty until a navigation populates it (and promoteSlots clears it again).
@@ -175,7 +205,7 @@ function preloadAdjacent(index) {
   const next = (index + 1) % count;
   for (const i of new Set([prev, next])) {
     if (i === index) continue;
-    const cover = state.data.projects[i].media[0];
+    const cover = getCover(state.data.projects[i]);
     if (cover.type !== 'image') continue;
     const src = '/' + cover.src.replace(/^\//, '');
     const ext = src.match(/\.[^.]+$/)?.[0] ?? '';
@@ -188,7 +218,6 @@ function preloadAdjacent(index) {
 
 function setupClickHandlers() {
   document.querySelector('.project-title').addEventListener('click', goToCurrentProject);
-  document.querySelector('.project-role').addEventListener('click', goToCurrentProject);
   document.querySelector('[data-nav-contact]').addEventListener('click', (e) => {
     e.preventDefault();
     navigateTo('/contact');
@@ -249,7 +278,7 @@ function setupWheel() {
 
     if (gestureActed) return;
 
-    navigate(delta > 0 ? 'next' : 'prev');
+    userNavigate(delta > 0 ? 'next' : 'prev');
     gestureActed = true;
   }, { passive: true });
 }
@@ -257,8 +286,8 @@ function setupWheel() {
 function setupKeyboard() {
   window.addEventListener('keydown', (e) => {
     if (state.isAnimating) return;
-    if (e.key === 'ArrowRight') navigate('next');
-    else if (e.key === 'ArrowLeft') navigate('prev');
+    if (e.key === 'ArrowRight') userNavigate('next');
+    else if (e.key === 'ArrowLeft') userNavigate('prev');
   });
 }
 
@@ -289,13 +318,125 @@ function setupDrag() {
     startX = null;
     pointerId = null;
     if (Math.abs(dx) < THRESHOLD || Math.abs(dx) < Math.abs(dy)) return;
-    navigate(dx < 0 ? 'next' : 'prev');
+    userNavigate(dx < 0 ? 'next' : 'prev');
   });
 
   stage.addEventListener('pointercancel', () => {
     startX = null;
     pointerId = null;
   });
+}
+
+function initTimer() {
+  timerState.btn = document.querySelector('.next-btn');
+  if (!timerState.btn) return;
+
+  timerState.btn.addEventListener('mouseenter', () => {
+    timerState.isHovering = true;
+    if (!timerState.rafId) {
+      timerState.lastTimestamp = null;
+      timerState.rafId = requestAnimationFrame(tickTimer);
+    }
+  });
+  timerState.btn.addEventListener('mouseleave', () => {
+    timerState.isHovering = false;
+  });
+  timerState.btn.addEventListener('click', () => userNavigate('next'));
+
+  timerState.lastTimestamp = null;
+  timerState.rafId = requestAnimationFrame(tickTimer);
+}
+
+// Called only by user-initiated navigation — fully resets timer and interrupts
+// any in-progress drain so the button snaps cleanly to the new project state.
+function resetTimer() {
+  if (!timerState.btn) return;
+  timerState.progress = 0;
+  timerState.draining = false;
+  timerState.drainProgress = 0;
+  timerState.lastTimestamp = null;
+  if (!timerState.rafId) {
+    timerState.rafId = requestAnimationFrame(tickTimer);
+  }
+}
+
+// User-initiated navigation: drains from the current visual position, then
+// navigates. The drain speed is constant — if the button is 30% filled it
+// empties in 30% of DRAIN_DURATION_MS, keeping the visual rate consistent.
+// If the button is already empty there is nothing to drain, so reset is instant.
+function userNavigate(direction) {
+  const currentP = timerState.draining ? timerState.drainProgress : timerState.progress;
+  if (currentP > 0) {
+    timerState.draining = true;
+    timerState.drainProgress = currentP;
+    timerState.progress = 0;
+    timerState.lastTimestamp = null;
+    if (!timerState.rafId) {
+      timerState.rafId = requestAnimationFrame(tickTimer);
+    }
+  } else {
+    resetTimer();
+  }
+  navigate(direction);
+}
+
+function tickTimer(timestamp) {
+  timerState.rafId = null;
+
+  const dt = timerState.lastTimestamp !== null
+    ? Math.min(timestamp - timerState.lastTimestamp, 200)
+    : 0;
+  timerState.lastTimestamp = timestamp;
+
+  // Hover strength ramps smoothly on mouseenter/leave.
+  // Hover also interrupts a drain in progress.
+  const hoverDelta = dt / HOVER_RAMP_MS;
+  if (timerState.isHovering) {
+    timerState.hoverStrength = Math.min(1, timerState.hoverStrength + hoverDelta);
+    if (timerState.draining) {
+      timerState.draining = false;
+      timerState.drainProgress = 0;
+    }
+  } else {
+    timerState.hoverStrength = Math.max(0, timerState.hoverStrength - hoverDelta);
+  }
+
+  if (timerState.draining) {
+    // Drain: gradient boundary retreats right-to-left over DRAIN_DURATION_MS.
+    timerState.drainProgress -= dt / DRAIN_DURATION_MS;
+    if (timerState.drainProgress <= 0) {
+      timerState.drainProgress = 0;
+      timerState.draining = false;
+    }
+  } else if (!state.isAnimating && !timerState.isHovering) {
+    // Normal tick: advance toward 1.
+    timerState.progress += dt / TIMER_DURATION_MS;
+
+    if (timerState.progress >= 1) {
+      timerState.progress = 0;
+      timerState.draining = true;
+      timerState.drainProgress = 1;
+      timerState.lastTimestamp = null;
+      applyTimerStyle();
+      navigate('next');
+      timerState.rafId = requestAnimationFrame(tickTimer);
+      return;
+    }
+  }
+
+  applyTimerStyle();
+  timerState.rafId = requestAnimationFrame(tickTimer);
+}
+
+function applyTimerStyle() {
+  if (!timerState.btn) return;
+  const h = timerState.hoverStrength;
+  const p = timerState.draining ? timerState.drainProgress : timerState.progress;
+  const leftOp  = TIMER_FILL_OP + (1 - TIMER_FILL_OP) * h;
+  const rightOp = TIMER_BASE_OP + (1 - TIMER_BASE_OP) * h;
+  timerState.btn.style.setProperty('--progress', p.toFixed(4));
+  timerState.btn.style.setProperty('--left-op',  leftOp.toFixed(3));
+  timerState.btn.style.setProperty('--right-op', rightOp.toFixed(3));
 }
 
 async function navigate(direction) {
@@ -313,7 +454,7 @@ async function navigate(direction) {
   const nextProject = state.data.projects[nextIndex];
 
   // Paint the destination cover into the hidden layer ahead of the sweep.
-  paintCover(nextLayer, nextProject.media[0], nextProject.title, /* high priority */ true);
+  paintCover(nextLayer, getCover(nextProject), nextProject.title, /* high priority */ true);
   // Stop any video playing on the outgoing layer.
   const outgoingVideo = activeLayer.querySelector('video');
   if (outgoingVideo && state.videoObserver) state.videoObserver.unobserve(outgoingVideo);
