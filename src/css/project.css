@@ -255,15 +255,19 @@
   min-width: 0;
 }
 
-/* Label row: DESCRIPTION in flow, GALLERY absolute. Height matches the
- * LINKS dt so all labels sit on the same baseline with align-items: flex-start. */
+/* Label row: DESCRIPTION in flow, GALLERY absolute. display: flex eliminates
+ * the implicit inline strut that would offset buttons below block-level dt text
+ * in the LINKS cell (with the shared align-items: flex-start on the row). */
 .info-nav-labels {
   position: relative;
+  display: flex;
+  align-items: flex-start;
 }
 
-/* 4px bar: in-flow below the labels, spaced like a dd value. */
+/* 4px bar: in-flow below the labels, spaced slightly further than the dt-to-dd
+ * gap so the bar reads as a visual element rather than as a tight sub-label. */
 .info-progress-bar {
-  margin-top: var(--space-1);
+  margin-top: var(--space-2);
   height: 4px;
   position: relative;
   background-color: rgba(0, 0, 0, 0.2);
@@ -638,6 +642,15 @@
   .static-info-row {
     right: var(--page-pad-x);
     gap: clamp(12px, 3vw, 24px);
+  }
+  /* Mobile: GALLERY returns to normal flow — just a gap after DESCRIPTION.
+   * Absolute positioning is desktop-only (JS measures desc content right edge). */
+  .info-nav-labels {
+    gap: clamp(12px, 3vw, 24px);
+  }
+  .info-section-btn.is-gallery-btn {
+    position: static;
+    left: auto;
   }
   .info-links-cell dt {
     font-size: clamp(11px, 2.8vw, 13px);
