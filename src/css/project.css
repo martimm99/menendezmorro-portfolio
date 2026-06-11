@@ -199,12 +199,13 @@
 .static-info-row {
   position: fixed;
   left: var(--page-pad-x);
-  right: var(--page-pad-x);
+  /* Leave room for the back-arrow (44px wide) + a small gap to the left. */
+  right: calc(var(--page-pad-x) + 44px + var(--space-2));
   bottom: var(--page-pad-y);
   z-index: var(--z-info);
   margin: 0;
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: clamp(20px, 3vw, 48px);
   color: var(--color-fg-light);
 }
@@ -245,24 +246,26 @@
   align-items: center;
 }
 
-/* Nav track: DESCRIPTION + GALLERY labels + 4px continuous progress bar.
- * DESCRIPTION is in normal flow (sets the track height). GALLERY is
- * absolute, positioned by JS at the description content's right edge.
- * The bar is absolute, spanning the full track width at the bottom. */
+/* Nav track: label row (dt-level) followed by the 4px bar (dd-level).
+ * Both share the same left edge as the track, so the bar spans the full
+ * track width. GALLERY label is absolute within .info-nav-labels, set
+ * by JS to the description content's right edge. */
 .info-nav-track {
-  position: relative;
   flex: 1 1 auto;
   min-width: 0;
-  display: flex;
-  align-items: flex-start;
 }
 
+/* Label row: DESCRIPTION in flow, GALLERY absolute. Height matches the
+ * LINKS dt so all labels sit on the same baseline with align-items: flex-start. */
+.info-nav-labels {
+  position: relative;
+}
+
+/* 4px bar: in-flow below the labels, spaced like a dd value. */
 .info-progress-bar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  margin-top: var(--space-1);
   height: 4px;
+  position: relative;
   background-color: rgba(0, 0, 0, 0.2);
   pointer-events: none;
 }
@@ -276,18 +279,15 @@
   background-color: var(--color-accent);
 }
 
-/* DESCRIPTION and GALLERY section labels. The padding-bottom creates a
- * visible gap between the label text and the 4px bar below it. */
+/* DESCRIPTION and GALLERY section labels (dt-equivalent). */
 .info-section-btn {
   background: none;
   border: 0;
-  padding: 0 0 var(--space-2);
+  padding: 0;
   margin: 0;
   font: inherit;
   color: inherit;
   cursor: pointer;
-  position: relative;
-  z-index: 1;
   display: inline-flex;
   align-items: center;
   font-size: var(--fs-label);
@@ -297,17 +297,26 @@
   white-space: nowrap;
 }
 
-/* GALLERY button: absolute within the track; JS sets left: Xpx on
- * desktop to align it with the description content's right edge.
- * The CSS fallback covers mobile and the brief moment before JS runs. */
+/* GALLERY button: absolute within .info-nav-labels; JS sets left: Xpx on
+ * desktop to match the description content's right edge. */
 .info-section-btn.is-gallery-btn {
   position: absolute;
-  bottom: 0;
+  top: 0;
   left: 55%;
 }
 
-/* Hover affordance for section labels (arrow slides up, same pattern as
- * .info-link / .info-action in base.css). */
+/* Hover arrows: slightly larger and thinner than the default info-arrow
+ * size for external links, since the label font-size is the same but the
+ * arrow reads better with a little more weight at this scale. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .info-section-btn .info-arrow-clip { height: 0.9em; }
+  .info-section-btn:hover .info-arrow-clip { width: 0.9em; }
+  .info-section-btn .info-arrow {
+    width: 0.75em;
+    height: 0.75em;
+    stroke-width: 1.2;
+  }
+}
 
 /* ---------- Back arrow (bottom-right) ---------- */
 
@@ -624,8 +633,10 @@
    * arrow already handles "return to Home" on small screens. */
   .site-header { display: none; }
 
-  /* Mobile info row: smaller fonts, GALLERY at fixed CSS position (55%) */
+  /* Mobile info row: back-arrow is at top-right on mobile, so the bar
+   * can extend to the normal right margin. Smaller fonts throughout. */
   .static-info-row {
+    right: var(--page-pad-x);
     gap: clamp(12px, 3vw, 24px);
   }
   .info-links-cell dt {

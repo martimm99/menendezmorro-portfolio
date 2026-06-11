@@ -193,25 +193,29 @@ function renderInfoRow(project) {
 
 function initProgressBar(galleryAPI) {
   const navTrack    = document.querySelector('[data-info-nav-track]');
+  const navLabels   = document.querySelector('.info-nav-labels');
   const progressFill = document.querySelector('[data-progress-fill]');
   const descBtn     = document.querySelector('[data-section-btn="description"]');
   const galleryBtn  = document.querySelector('[data-section-btn="gallery"]');
   const descSection = document.querySelector('[data-section-description]');
   const descContent = document.querySelector('[data-description-content]');
-  if (!navTrack || !progressFill || !descBtn || !galleryBtn || !descSection) return;
+  if (!navTrack || !navLabels || !progressFill || !descBtn || !galleryBtn || !descSection) return;
 
   const mqlMobile = window.matchMedia('(max-width: 600px)');
   let galleryBoundary = 0.55;
+  // Tracks when an in-progress CSS transition owns the fill's width; the
+  // rAF loop pauses until this timestamp passes to avoid overriding it.
+  let smoothUntil = 0;
 
   function measureGalleryBtnX() {
     if (mqlMobile.matches || !descContent) return;
     const contentRect = descContent.getBoundingClientRect();
+    const labelsRect  = navLabels.getBoundingClientRect();
     const trackRect   = navTrack.getBoundingClientRect();
     if (trackRect.width <= 0) return;
-    // Clamp so label stays at least 60px from the track's right edge.
-    const rawX = contentRect.right - trackRect.left;
-    const safeX = Math.min(rawX, trackRect.width - 60);
-    const clampedX = Math.max(0, safeX);
+    const rawX = contentRect.right - labelsRect.left;
+    // Keep at least 60px from the right edge so the GALLERY label is legible.
+    const clampedX = Math.max(0, Math.min(rawX, trackRect.width - 60));
     galleryBtn.style.left = `${clampedX}px`;
     galleryBoundary = clampedX / trackRect.width;
   }
@@ -224,30 +228,47 @@ function initProgressBar(galleryAPI) {
     resizeTimer = setTimeout(measureGalleryBtnX, 100);
   }, { passive: true });
 
-  // DESCRIPTION click: snap back to description + scroll to top.
+  // Animate the bar to a target value with a CSS transition. The rAF loop
+  // pauses for the duration so the two don't fight each other.
+  function setProgressSmooth(targetP, durationMs) {
+    smoothUntil = performance.now() + durationMs;
+    progressFill.style.transition = `width ${durationMs}ms ease`;
+    progressFill.style.width = `${targetP * 100}%`;
+  }
+
+  // DESCRIPTION click: snap to description top. Animate bar back to 0.
   descBtn.addEventListener('click', () => {
     if (snapState.isAnimating) return;
     if (snapState.showGallery) {
       descSection.scrollTop = 0;
+      setProgressSmooth(0, 800);
       snapToDescription();
     } else {
       descSection.scrollTo({ top: 0, behavior: 'smooth' });
+      setProgressSmooth(0, 500);
     }
   });
 
-  // GALLERY click: snap to gallery (first image), or reset if already there.
+  // GALLERY click: snap to gallery first image. Animate bar to boundary.
   galleryBtn.addEventListener('click', () => {
     if (snapState.isAnimating) return;
     if (!snapState.showGallery) {
+      setProgressSmooth(galleryBoundary, 800);
       snapToGallery();
     } else {
       galleryAPI.resetToStart?.();
+      setProgressSmooth(galleryBoundary, 400);
     }
   });
 
-  // Continuous rAF progress tracker. Updates the fill width every frame
-  // based on current description scroll and gallery scroll positions.
-  function tickProgress() {
+  // Continuous rAF loop. Pauses during CSS transitions (see smoothUntil).
+  function tickProgress(timestamp) {
+    if (timestamp < smoothUntil) {
+      requestAnimationFrame(tickProgress);
+      return;
+    }
+    if (progressFill.style.transition) progressFill.style.transition = '';
+
     const descMax = descSection.scrollHeight - descSection.clientHeight;
     const descP   = descMax > 0 ? Math.min(Math.max(descSection.scrollTop / descMax, 0), 1) : 0;
     const gallP   = galleryAPI.getProgress?.() ?? 0;
@@ -259,7 +280,7 @@ function initProgressBar(galleryAPI) {
     progressFill.style.width = `${p * 100}%`;
     requestAnimationFrame(tickProgress);
   }
-  tickProgress();
+  requestAnimationFrame(tickProgress);
 }
 
 /* ---------- Description content ---------- */
