@@ -1,4 +1,4 @@
-# MENÉNDEZ MORRO — Portfolio
+# MORRO — Portfolio
 
 Rebuild of [menendezmorro.com](https://menendezmorro.com), a design and photography portfolio for Martí Menéndez.
 

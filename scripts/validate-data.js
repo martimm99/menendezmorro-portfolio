@@ -66,7 +66,9 @@ const projectsSchema = {
           type: 'array',
           items: { $ref: '#/$defs/link' }
         },
-        duration: { type: 'string' },
+        duration:  { type: 'string' },
+        cover:     { type: 'string' },
+        coverAlt:  { type: 'string' },
         media: {
           type: 'array',
           minItems: 1,

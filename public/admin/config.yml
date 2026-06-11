@@ -117,6 +117,8 @@ collections:
                   - { name: "url",  label: "URL",          widget: "string" }
                   - { name: "text", label: "Display text", widget: "string" }
               - { name: "duration", label: "Duration", widget: "string", required: false }
+              - { name: "cover",    label: "Cover image", widget: "file", required: false, hint: "Home page cover. Separate from the gallery — name it <slug>-cover.jpg." }
+              - { name: "coverAlt", label: "Cover alt text", widget: "string", required: false, hint: "Screen reader description of the cover image." }
               - name: "media"
                 label: "Media"
                 label_singular: "Media item"

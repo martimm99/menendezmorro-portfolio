@@ -30,7 +30,7 @@
  * interactive doesn't toggle off and back on.
  */
 
-const HOVER_SELECTOR = 'a, button, .project-title, .project-role, [data-action-copy-email], [data-nav-home], [data-nav-contact], .gallery-item';
+const HOVER_SELECTOR = 'a, button, .project-title, [data-action-copy-email], [data-nav-home], [data-nav-contact], .gallery-item';
 const SPRING_STIFFNESS = 0.07;
 const SPRING_DAMPING = 0.55;
 // Sub-pixel threshold below which the spring is considered "settled."
@@ -48,6 +48,7 @@ let velocityX = 0;
 let velocityY = 0;
 let isActive = false;
 let rafId = null;
+let lastTimestamp = 0;
 
 export function initCursor() {
   // Bail on touch / coarse-pointer devices and reduced-motion users.
@@ -71,6 +72,7 @@ export function initCursor() {
 
 function startTick() {
   if (rafId === null) {
+    lastTimestamp = 0; // reset so the first tick treats itself as a normal 60fps frame
     rafId = requestAnimationFrame(tick);
   }
 }
@@ -114,16 +116,24 @@ function onWindowLeave() {
   cursor.classList.remove('is-active', 'is-hover');
 }
 
-function tick() {
+function tick(timestamp) {
+  // Normalize elapsed time to 60fps frame units (dt=1 at 60Hz, 0.5 at 120Hz, etc.).
+  // If lastTimestamp is 0 (first frame after resume) or the gap is huge (tab was hidden),
+  // treat it as a single normal frame so the spring doesn't jump.
+  const elapsed = lastTimestamp ? timestamp - lastTimestamp : 1000 / 60;
+  lastTimestamp = timestamp;
+  const dt = elapsed > 200 ? 1 : elapsed / (1000 / 60);
+
   // Spring: force toward target, integrated through velocity.
+  // All three steps are scaled by dt so the curve is identical at any refresh rate.
   const dx = mouseX - cursorX;
   const dy = mouseY - cursorY;
-  velocityX += dx * SPRING_STIFFNESS;
-  velocityY += dy * SPRING_STIFFNESS;
-  velocityX *= 1 - SPRING_DAMPING;
-  velocityY *= 1 - SPRING_DAMPING;
-  cursorX += velocityX;
-  cursorY += velocityY;
+  velocityX += dx * SPRING_STIFFNESS * dt;
+  velocityY += dy * SPRING_STIFFNESS * dt;
+  velocityX *= Math.pow(1 - SPRING_DAMPING, dt);
+  velocityY *= Math.pow(1 - SPRING_DAMPING, dt);
+  cursorX += velocityX * dt;
+  cursorY += velocityY * dt;
   cursor.style.transform = `translate3d(${cursorX}px, ${cursorY}px, 0) translate(-50%, -50%)`;
 
   // Settled? Snap to target to wipe sub-pixel drift, then park the

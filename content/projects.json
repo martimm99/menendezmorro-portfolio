@@ -9,7 +9,7 @@
       "type": "design",
       "subcategory": [],
       "description": "Digital design studio.",
-      "longDescription": "",
+      "longDescription": "MORRO is a self-branding exercise.\n\nFrom the need of talking to the world from my own identity, the idea of defining my own visual identity materialised into this project. Years of postponing it and failed attempts led to collecting some learnings about what would work when visually defining myself, and what wouldn't.\n\nUsing my full name as my personal brand had worked for me in the past, but now it felt informal, personal and too long, so the process started with a naming exercise that resulted in using one of my last names as the name to encompass my work.\n\nAs mentioned before, the previous failed attempts to identify myself with a graphic identity taught me to not only aim for meaning, but also for a style I identified with. After extensive research and plenty of sketching and visual testing, I was able to rule out everything that didn't feel like me and to define what did feel like me: imperfect but clean design, relaxed shapes, warm tones and quotidian imagery.\n\nManual sketches turned into digital vectors that were then mixed with texture, typography, color and images, always keeping in mind the specific art direction that defines me.\n\nMORRO is my personal brand as a designer. It signs all my freelance work as well as this portfolio. Together with its claim, \"MUCHO MORRO\" (a pun that would translate to \"having some nerve\") it aims to represent being bold and believing in what you do.",
       "links": [
         {
           "url": "https://www.instagram.com/uepmorro/",
@@ -17,31 +17,19 @@
         }
       ],
       "duration": "1 month",
+      "cover": "assets/media/morro/morro-cover.jpg",
+      "coverAlt": "MORRO cover",
       "media": [
-        {
-          "type": "image",
-          "src": "assets/media/morro/morro-1.jpg",
-          "alt": "Morro image 1",
-          "caption": "Brand identity"
-        },
-        {
-          "type": "image",
-          "src": "assets/media/morro/morro-2.jpg",
-          "alt": "Morro image 2",
-          "caption": "Wordmark exploration, March 2026"
-        },
-        {
-          "type": "image",
-          "src": "assets/media/morro/morro-3.jpg",
-          "alt": "Morro image 3",
-          "caption": ""
-        },
-        {
-          "type": "image",
-          "src": "assets/media/morro/morro-4.jpg",
-          "alt": "Morro image 4",
-          "caption": "Color palette and typography studies for the brand identity"
-        }
+        { "type": "image", "src": "assets/media/morro/morro-1.jpg",  "alt": "MORRO image 1",  "caption": "Visual introduction to the logotype." },
+        { "type": "image", "src": "assets/media/morro/morro-2.jpg",  "alt": "MORRO image 2",  "caption": "Visual introduction to the style." },
+        { "type": "image", "src": "assets/media/morro/morro-3.jpg",  "alt": "MORRO image 3",  "caption": "Introduction of the word \"Mucho\" (meaning \"a lot\" - \"having a lot of nerve\")" },
+        { "type": "image", "src": "assets/media/morro/morro-4.jpg",  "alt": "MORRO image 4",  "caption": "Introduction to the isotype." },
+        { "type": "image", "src": "assets/media/morro/morro-5.jpg",  "alt": "MORRO image 5",  "caption": "Other statements of the visual style." },
+        { "type": "image", "src": "assets/media/morro/morro-6.jpg",  "alt": "MORRO image 6",  "caption": "Application of the brand tag on physical assets." },
+        { "type": "image", "src": "assets/media/morro/morro-7.jpg",  "alt": "MORRO image 7",  "caption": "Sketch of a previous attempt to define a brand identity. Ruled out because of a style mismatch." },
+        { "type": "image", "src": "assets/media/morro/morro-8.jpg",  "alt": "MORRO image 8",  "caption": "Preview of a previous branding attempt." },
+        { "type": "image", "src": "assets/media/morro/morro-9.jpg",  "alt": "MORRO image 9",  "caption": "Preview of a previous branding attempt." },
+        { "type": "image", "src": "assets/media/morro/morro-10.jpg", "alt": "MORRO image 10", "caption": "Preview of a previous branding attempt." }
       ]
     },
     {
@@ -61,6 +49,8 @@
         }
       ],
       "duration": "9 months",
+      "cover": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-1.jpg",
+      "coverAlt": "Lufthansa Innovation Hub cover",
       "media": [
         {
           "type": "image",
@@ -105,6 +95,8 @@
         }
       ],
       "duration": "3.5 months",
+      "cover": "assets/media/build-a-rocket/build-a-rocket-1.jpg",
+      "coverAlt": "Build A Rocket cover",
       "media": [
         {
           "type": "image",
@@ -149,6 +141,8 @@
         }
       ],
       "duration": "3 months",
+      "cover": "assets/media/reaviva/reaviva-1.jpg",
+      "coverAlt": "Gestión Reaviva cover",
       "media": [
         {
           "type": "image",
@@ -193,6 +187,8 @@
         }
       ],
       "duration": "5 months",
+      "cover": "assets/media/festival-z/festival-z-1.jpg",
+      "coverAlt": "Festival Z cover",
       "media": [
         {
           "type": "image",
@@ -241,6 +237,8 @@
         }
       ],
       "duration": "2 weeks",
+      "cover": "assets/media/titles/titles-1.jpg",
+      "coverAlt": "Titles cover",
       "media": [
         {
           "type": "image",
@@ -280,6 +278,8 @@
       "longDescription": "",
       "links": [],
       "duration": "2–5 days",
+      "cover": "assets/media/architecture/architecture-1.jpg",
+      "coverAlt": "Architecture cover",
       "media": [
         {
           "type": "image",
@@ -324,6 +324,8 @@
         }
       ],
       "duration": "3 days",
+      "cover": "assets/media/concerts/concerts-1.jpg",
+      "coverAlt": "Concerts cover",
       "media": [
         {
           "type": "image",

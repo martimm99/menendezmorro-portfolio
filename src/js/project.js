@@ -11,9 +11,9 @@
  *     shows a centered "Email copied" toast that fades after ~2s.
  *   - Back arrow and the page logo both return to / via the cross-
  *     document View Transitions API (vertical sweep in base.css).
- *   - Info row shows RESULTS / LINKS / DURATION. The LINKS cell hides
- *     when project.links is empty (per spec §6.1). RESULTS shows the
- *     word "Gallery" as a click-to-snap-to-gallery link.
+ *   - Info row: LINKS cell (hidden when empty) + DESCRIPTION and GALLERY
+ *     section labels with a continuous 4px progress bar. GALLERY is
+ *     positioned at the description content's right edge via JS measurement.
  *   - Long description text appears in the Description section with the
  *     Line reveal animation when the section first becomes visible.
  *   - Snap to Description: wheel forward at the end of the gallery, or
@@ -93,6 +93,7 @@ export function initProject(data, slug) {
   // one handler instead of two.
   setupWheelAndSnap(galleryAPI);
   setupKeyboard(galleryAPI);
+  initProgressBar(galleryAPI);
 
   teardown = galleryAPI;
 }
@@ -169,11 +170,6 @@ function renderInfoRow(project) {
   if (linksCell && linksSlot) {
     if (project.links && project.links.length > 0) {
       linksCell.hidden = false;
-      // NE diagonal arrow markup — slides in on hover (see base.css
-      // hover styles for .info-link). External-link semantic: each
-      // link opens in a new tab. The arrow path lives in the shared
-      // sprite at /assets/icons/arrows.svg so it isn't duplicated
-      // across every call site.
       const arrowSvg = '<span class="info-arrow-clip" aria-hidden="true"><svg class="info-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><use href="/assets/icons/arrows.svg#arrow-ne"/></svg></span>';
       linksSlot.innerHTML = project.links
         .map((l) => `<a href="${encodeURI(l.url)}" target="_blank" rel="noopener" class="info-link">${arrowSvg}${escapeHtml(l.text)}</a>`)
@@ -182,24 +178,126 @@ function renderInfoRow(project) {
       linksCell.hidden = true;
     }
   }
-  const durationSlot = document.querySelector('[data-info-duration]');
-  if (durationSlot) durationSlot.textContent = project.duration || '';
+}
 
-  // RESULTS cell: hide if the project has no gallery media (the
-  // "Gallery" link would have nothing to navigate to). Otherwise show
-  // it and wire the click to the same snap action used by scroll-
-  // down at the description bottom. snapToGallery is a no-op when
-  // already in the gallery section, so the button being a no-op
-  // there is handled automatically.
-  const resultsCell = document.querySelector('[data-info-cell="results"]');
-  if (resultsCell) {
-    const hasGallery = Array.isArray(project.media) && project.media.length > 0;
-    resultsCell.hidden = !hasGallery;
-    if (hasGallery) {
-      const snapBtn = resultsCell.querySelector('[data-action-snap-gallery]');
-      snapBtn?.addEventListener('click', () => snapToGallery());
-    }
+/* ---------- Progress bar ----------
+ *
+ * A 4px horizontal line below the DESCRIPTION and GALLERY labels tracks
+ * continuous scroll progress across both sections. DESCRIPTION fills the
+ * bar from 0 to the boundary point (= GALLERY label's x position within
+ * the nav track). The gallery fills from the boundary to the right end.
+ *
+ * GALLERY label position is measured from the description content's right
+ * edge and updated on resize. On mobile the CSS fallback (left: 55%) is
+ * used and JS measurement is skipped. */
+
+function initProgressBar(galleryAPI) {
+  const navTrack    = document.querySelector('[data-info-nav-track]');
+  const navLabels   = document.querySelector('.info-nav-labels');
+  const progressFill = document.querySelector('[data-progress-fill]');
+  const descBtn     = document.querySelector('[data-section-btn="description"]');
+  const galleryBtn  = document.querySelector('[data-section-btn="gallery"]');
+  const descSection = document.querySelector('[data-section-description]');
+  const descContent = document.querySelector('[data-description-content]');
+  if (!navTrack || !navLabels || !progressFill || !descBtn || !galleryBtn || !descSection) return;
+
+  const mqlMobile = window.matchMedia('(max-width: 600px)');
+  // Desktop: cached boundary set by measureGalleryBtnX (position driven by JS
+  // measuring the description content's right edge). Mobile: computed live each
+  // tick from the GALLERY button's rendered position — no timing dependency.
+  let galleryBoundary = 0.55;
+  // Tracks when an in-progress CSS transition owns the fill's width; the
+  // rAF loop pauses until this timestamp passes to avoid overriding it.
+  let smoothUntil = 0;
+
+  // Desktop-only: position the GALLERY label and cache the boundary fraction.
+  function measureGalleryBtnX() {
+    if (mqlMobile.matches || !descContent) return;
+    const trackRect   = navTrack.getBoundingClientRect();
+    if (trackRect.width <= 0) return;
+    const contentRect = descContent.getBoundingClientRect();
+    const labelsRect  = navLabels.getBoundingClientRect();
+    const rawX = contentRect.right - labelsRect.left;
+    // Keep at least 60px from the right edge so the GALLERY label is legible.
+    const clampedX = Math.max(0, Math.min(rawX, trackRect.width - 60));
+    galleryBtn.style.left = `${clampedX}px`;
+    galleryBoundary = clampedX / trackRect.width;
   }
+
+  requestAnimationFrame(() => requestAnimationFrame(measureGalleryBtnX));
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(measureGalleryBtnX, 100);
+  }, { passive: true });
+
+  // Returns the current boundary fraction. On mobile reads the GALLERY
+  // button's live rendered position each call so layout shifts never
+  // cause a stale boundary — getBoundingClientRect is cheap inside rAF.
+  function readBoundary() {
+    if (!mqlMobile.matches) return galleryBoundary;
+    const trackRect = navTrack.getBoundingClientRect();
+    if (trackRect.width <= 0) return galleryBoundary;
+    const btnRect = galleryBtn.getBoundingClientRect();
+    return Math.max(0, btnRect.left - trackRect.left) / trackRect.width;
+  }
+
+  // Animate the bar to a target value with a CSS transition. The rAF loop
+  // pauses for the duration so the two don't fight each other.
+  function setProgressSmooth(targetP, durationMs) {
+    smoothUntil = performance.now() + durationMs;
+    progressFill.style.transition = `width ${durationMs}ms ease`;
+    progressFill.style.width = `${targetP * 100}%`;
+  }
+
+  // DESCRIPTION click: snap to description top. Animate bar back to 0.
+  descBtn.addEventListener('click', () => {
+    if (snapState.isAnimating) return;
+    if (snapState.showGallery) {
+      descSection.scrollTop = 0;
+      setProgressSmooth(0, 800);
+      snapToDescription();
+    } else {
+      descSection.scrollTo({ top: 0, behavior: 'smooth' });
+      setProgressSmooth(0, 500);
+    }
+  });
+
+  // GALLERY click: snap to gallery first image. Animate bar to boundary.
+  galleryBtn.addEventListener('click', () => {
+    if (snapState.isAnimating) return;
+    const gb = readBoundary();
+    if (!snapState.showGallery) {
+      setProgressSmooth(gb, 800);
+      snapToGallery();
+    } else {
+      galleryAPI.resetToStart?.();
+      setProgressSmooth(gb, 400);
+    }
+  });
+
+  // Continuous rAF loop. Pauses during CSS transitions (see smoothUntil).
+  function tickProgress(timestamp) {
+    if (timestamp < smoothUntil) {
+      requestAnimationFrame(tickProgress);
+      return;
+    }
+    if (progressFill.style.transition) progressFill.style.transition = '';
+
+    const gb      = readBoundary();
+    const descMax = descSection.scrollHeight - descSection.clientHeight;
+    const descP   = descMax > 0 ? Math.min(Math.max(descSection.scrollTop / descMax, 0), 1) : 0;
+    const gallP   = galleryAPI.getProgress?.() ?? 0;
+
+    const p = snapState.showGallery
+      ? gb + gallP * (1 - gb)
+      : descP * gb;
+
+    progressFill.style.width = `${p * 100}%`;
+    requestAnimationFrame(tickProgress);
+  }
+  requestAnimationFrame(tickProgress);
 }
 
 /* ---------- Description content ---------- */

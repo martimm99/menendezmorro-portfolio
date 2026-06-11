@@ -1,12 +1,19 @@
-# MENÉNDEZ MORRO — Portfolio Rebuild Build Spec
+# MORRO — Portfolio Rebuild Build Spec
 
-**Version:** 1.19 (Approved)
-**Date:** June 4, 2026
+**Version:** 1.20 (Approved)
+**Date:** June 9, 2026
 **Status:** Approved — build authorized
+
+**Changes from v1.19:**
+- **Site renamed to MORRO.** The display name across all HTML, data, and documentation has been updated from "MENÉNDEZ MORRO" to "MORRO". The domain (`menendezmorro.com`) and repository/folder names are unchanged.
+- **Cover image separated from gallery.** The home page cover is now a dedicated field (`cover`, `coverAlt`) in `projects.json`, independent of `media[]`. `media[0]` is no longer the cover — it is the first gallery image. The renderer falls back to `media[0]` when `cover` is absent. Naming convention: `<slug>-cover.jpg` in the project's media folder. See §6.1.
+- **Gallery: all images fixed height.** All gallery images share the same height (`min(70vh, 50vw)`), width auto. The previous `max-width` cap that caused very wide/panoramic images to shrink below the standard height has been removed. Panoramic images are now the same height as all others and extend further to the right. See §5.2.
+- **Gallery snap: last image right-aligned.** The last image snaps so its right edge sits at `--page-pad-x` from the viewport right — mirroring image 1's left-aligned home position. Images 2..N-1 continue to snap centred. This supersedes the v1.19 rule that images 2..N all snap centred. See §5.2.
+- **Image optimization: mobile WebP raised to 1536px.** The mobile variant is now capped at 1536px wide (was 768px), covering 3× retina phones at the 768px CSS breakpoint. Cover images use quality 85 and a 2560px desktop cap; gallery images use quality 80 and a 1920px desktop cap. Cover files are detected by the `-cover` suffix in the filename. See §9.
 
 **Changes from v1.18:**
 - **Keyboard arrows in description scroll, then snap.** `ArrowDown` in description view now smooth-scrolls the description text down by 80px per press; only when the text is already scrolled to its bottom does it snap forward to the gallery. `ArrowUp` symmetrically scrolls the description up, no-op at the top. In gallery view, `ArrowUp` always snaps back to description regardless of which image is currently visible — one keystroke exits the section. Mirrors the wheel-then-snap pattern.
-- **Gallery snaps: image 1 at left, image 2+ centered.** Image 1 has a "home" position at the left of the viewport (track padding-left stays at `--page-pad-x`, matching the project page's standard left margin). Images 2..N snap centered to the viewport's horizontal middle when the user navigates to them (mouse-wheel step, arrow keys, free-scroll). The track's padding-right is computed dynamically (`galleryHalf − lastImage.half`) so the last image can also center without empty edge space. Free-scroll can return all the way back to image 1 at left. `resetToStart` (called on gallery close) parks at scroll = 0, so each entry shows image 1 at left. Mobile is unchanged — native scroll-snap centering with 2vw padding.
+- **Gallery snaps: image 1 at left, image 2+ centered.** *(Superseded by v1.20 — last image is now right-aligned rather than centred; see §5.2.)* Image 1 has a "home" position at the left of the viewport. Images 2..N-1 snap centred. `resetToStart` parks at scroll = 0. Mobile is unchanged.
 
 **Changes from v1.17:**
 - **Keyboard navigation on project + contact pages.** Window-level `keydown` listener works without a focused element first. Project page:
@@ -28,7 +35,7 @@
 - **Project page logo color follows section.** When the user is in the description section, the logo is the accent blue (`#0055ff`); when the gallery overlay is open, the logo transitions to black (`#000`). 700ms `ease` transition on `background-color`, kept in sync with the section snap animation. Implementation is pure CSS via `:has()` — the existing `.show-gallery` class on `.project-shell` (set by the snap functions) drives a descendant selector that targets the body-level `.site-logo`. No JS changes required. Captured in §5.2.
 
 **Changes from v1.14:**
-- **Site logo replaces the wordmark.** The `MENÉNDEZ MORRO` text in the top-left header is replaced by an SVG logomark (`/assets/morro-logo.svg`) at `36px` height. Implemented as a CSS mask filled by `currentColor`, so the existing page text-color cascade automatically renders the logo white on the home page's dark covers and black on the project description / contact white backgrounds. No JS, no two-version files. Logo accessibility name preserved via `aria-label` on the anchor. Captured in §5.1, §5.2, §5.3.
+- **Site logo replaces the wordmark.** The `MORRO` text in the top-left header is replaced by an SVG logomark (`/assets/morro-logo.svg`) at `36px` height. Implemented as a CSS mask filled by `currentColor`, so the existing page text-color cascade automatically renders the logo white on the home page's dark covers and black on the project description / contact white backgrounds. No JS, no two-version files. Logo accessibility name preserved via `aria-label` on the anchor. Captured in §5.1, §5.2, §5.3.
 - **Project page info row reordered.** Old order `LINKS / DURATION / RESULTS`. New order `RESULTS / LINKS / DURATION` — surfaces the navigation affordance (the Gallery link) as the leading element of the row. Captured in §2, §5.2.
 
 **Changes from v1.13:**
@@ -230,7 +237,7 @@ The map is retained for historical reference only. **Legacy hash URLs are not re
 - **Drag (touchpad / touchscreen)** → horizontal sweep to next/previous project.
 - **Keyboard:** left/right arrows = previous/next project. Esc does nothing on Home.
 - **Click on the Project title or Role label** → navigate to that project's page via vertical sweep (Project slides down from top). The cover image itself and the Info row are NOT clickable for navigation.
-- **Click logo "MENÉNDEZ MORRO"** → no-op on Home (already there).
+- **Click logo "MORRO"** → no-op on Home (already there).
 - **Click "Contact"** → navigate to Contact page via vertical sweep (Contact slides down from top).
 
 **State:**
@@ -290,7 +297,7 @@ DESCRIPTION text never truncates with ellipsis — information is preserved. Lon
 
 **Gallery section — Desktop:**
 
-- Images displayed in a single horizontal row, each at a **fixed height** (with breathing room above and below — does NOT fill viewport vertically). Width is natural based on each image's aspect ratio. Reference: matches the screenshot provided on May 27.
+- Images displayed in a single horizontal row, each at the **same fixed height** (`min(70vh, 50vw)`), width auto based on each image's aspect ratio. Very wide/panoramic images are the same height as all others and extend further to the right — there is no max-width cap. Breathing room above and below; does NOT fill viewport vertically.
 - **Small consistent gap** between images: ~20px (final value tuned during build).
 - Row extends off-screen to the right. The number of images visible at any moment depends on their individual widths — vertical/portrait images can result in more images visible initially than wider/landscape ones. There is no fixed cap on visible image count.
 - **Navigation (desktop):**
@@ -302,6 +309,7 @@ DESCRIPTION text never truncates with ellipsis — information is preserved. Lon
   - **Mouse-wheel clicks** are detected as discrete events and snap exactly one image per click. After a free-scrolled touchpad swipe, a mouse click steps to the actual next/previous image relative to the current scroll position, not the last snapped image.
   - The two are distinguished automatically (a ~30ms buffer on the first event of a gesture decides between them based on whether a follow-up arrives).
 - **Click an image** → opens Image fullscreen.
+- **Snap positions:** image 1 is left-aligned (left edge at `--page-pad-x`); images 2..N-1 snap centred to the viewport's horizontal middle; the last image is right-aligned (right edge at `--page-pad-x` from the viewport right), mirroring image 1.
 - **At the first image, scrolling backward** → triggers the **Snap transition** back to the Description section, which lands at whatever scroll position the user was at before entering the gallery. The forward direction (scrolling down at the bottom of the Description section) → Snap transition into the Gallery section, landing on the first image. The gallery resets to the first image when the user snaps back, so re-entering the gallery always starts fresh.
 - **Videos in gallery:** play muted, loop, **no controls visible**. Each video **autoplays when at least 90% of the video is visible in the viewport** (intersection observer with `threshold: 0.9`); pauses when less than 90% is visible. Click to open in Image fullscreen (where full HTML5 controls become available).
 
@@ -327,7 +335,7 @@ DESCRIPTION text never truncates with ellipsis — information is preserved. Lon
 
 **Exit:**
 - Click back button → vertical sweep back to Home (Project slides **up**, off the top — reverse of entry).
-- Click MENÉNDEZ MORRO logo → same as back button: vertical sweep back to Home (Project slides up).
+- Click MORRO logo → same as back button: vertical sweep back to Home (Project slides up).
 - Click Get in touch → copies the email address to clipboard and shows the "Email copied" toast (no navigation).
 - Browser back button → returns to the previous page in history (Home, in normal flow).
 
@@ -392,6 +400,8 @@ Triggered by clicking/tapping an image or video in the Project page Gallery. Beh
         { "url": "https://www.instagram.com/uepmorro/", "text": "@uepmorro" }
       ],
       "duration": "1 month",
+      "cover": "assets/media/morro/morro-cover.jpg",
+      "coverAlt": "MORRO cover",
       "media": [
         { "type": "image", "src": "assets/media/morro/morro-1.jpg", "alt": "MORRO image 1", "caption": "" },
         { "type": "image", "src": "assets/media/morro/morro-2.jpg", "alt": "MORRO image 2", "caption": "" },
@@ -407,7 +417,9 @@ Triggered by clicking/tapping an image or video in the Project page Gallery. Beh
 - `type`: either `"design"` or `"photo"`. Unused in UI but preserved for future filtering.
 - `subcategory`: always an array. Currently unused in UI; preserved for future filtering. Empty arrays are valid.
 - `links`: array of `{url, text}` objects. Can be empty (`[]`) for projects with no external links — the UI hides the LINKS section in that case. Can have multiple entries for projects with several relevant links (e.g., TITLES, CONCERTS).
-- `media[0]` is the cover image shown on Home AND the first image of the project gallery.
+- `cover`: optional path to the home page cover image (e.g. `assets/media/morro/morro-cover.jpg`). When absent, the renderer falls back to `media[0]`. Naming convention: `<slug>-cover.jpg` — the optimizer detects this suffix and applies cover-specific settings (quality 85, desktop max 2560px).
+- `coverAlt`: optional alt text for the cover image. Falls back to `<Project title> cover` when absent.
+- `media[0]` is the **first gallery image** — it is no longer the home cover.
 - `media[].alt` text: required for accessibility. Auto-generated as `<Project title> image N` if not provided in CMS.
 - `media[].caption`: optional. Per-image overlay text shown at bottom-left in Gallery and Image fullscreen. Empty/absent → no overlay rendered.
 - Videos: `poster` is optional but recommended (used as fallback if video fails to load).
@@ -416,13 +428,13 @@ Triggered by clicking/tapping an image or video in the Project page Gallery. Beh
 
 ```json
 {
-  "siteTitle": "MENÉNDEZ MORRO",
+  "siteTitle": "MORRO",
   "siteDescription": "Portfolio of design and photography projects by Martí Menéndez.",
   "siteUrl": "https://menendezmorro.com",
   "ogImage": "assets/og-image.jpg",
   "contactEmail": "martimm99@gmail.com",
   "contactCopy": [
-    "MENÉNDEZ MORRO is a creative space that gathers Design and Photography projects...",
+    "MORRO is a design portfolio...",
     "Especially interested in music and culture projects...",
     "Web Design & Development by Martí Menéndez."
   ],
@@ -583,12 +595,13 @@ menendezmorro-portfolio/
 | Lighthouse Accessibility score | ≥ 95 | On all three pages |
 | Lighthouse Best Practices score | 100 | On all three pages |
 | Lighthouse SEO score | 100 | On all three pages |
-| Largest single image served | < 300 KB | Via WebP + responsive sizes |
+| Largest single gallery image served | < 300 KB | Via WebP + responsive sizes; high-detail photography may exceed this |
 | Total media folder size (source files) | ≤ current 56MB | Won't fight this; optimization happens at serving, not source |
 
 **Optimization techniques used:**
 - WebP format for all images, with JPEG fallback via `<picture>`.
-- Responsive image sizes: `mobile` (≤768px), `desktop` (>768px), `2x` retina variants where appropriate.
+- Two responsive variants per image: `mobile` (max 1536px — covers 3× retina phones at the 768px breakpoint) and `desktop` (max 1920px for gallery images, max 2560px for cover images). Mobile variant skipped when source width ≤ 1536px.
+- Cover images (`<slug>-cover.jpg`) use WebP quality 85 and a 2560px desktop cap. Gallery images use quality 80 and a 1920px desktop cap. The optimizer detects covers by the `-cover` filename suffix.
 - Lazy loading for off-screen images via `loading="lazy"`.
 - `fetchpriority` hints for above-the-fold images.
 - Subset web fonts to Latin characters only; preloaded with `<link rel="preload">`.
