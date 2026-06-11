@@ -194,74 +194,120 @@
   text-decoration-thickness: 1px;
 }
 
-/* ---------- Info row (bottom-left) ---------- */
+/* ---------- Info row (bottom strip) ---------- */
 
 .static-info-row {
   position: fixed;
   left: var(--page-pad-x);
+  right: var(--page-pad-x);
   bottom: var(--page-pad-y);
   z-index: var(--z-info);
   margin: 0;
   display: flex;
+  align-items: flex-end;
   gap: clamp(20px, 3vw, 48px);
   color: var(--color-fg-light);
 }
 
-.static-info-row .info-cell {
+/* LINKS: dl cell, hidden when project.links is empty */
+.info-links-cell {
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   min-width: 0;
+  margin: 0;
 }
 
-.static-info-row .info-cell[hidden] { display: none; }
+.info-links-cell[hidden] { display: none; }
 
-.static-info-row dt {
+.info-links-cell dt {
   font-size: var(--fs-label);
   font-weight: var(--fw-light);
   letter-spacing: var(--ls-label);
   opacity: 0.7;
 }
 
-.static-info-row dd {
+.info-links-cell dd {
   margin: var(--space-1) 0 0;
   font-size: var(--fs-project-info-value);
   font-weight: var(--fw-light);
   line-height: var(--lh-snug);
 }
 
-.static-info-row dd a,
-.static-info-row dd .info-action {
+/* Links anchors: inline-flex so the hover arrow aligns with the text */
+.info-links-cell dd a {
   color: inherit;
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
+  display: inline-flex;
+  align-items: center;
 }
 
-/* RESULTS → Gallery: a real <button> so the click handler can wire
- * to snapToGallery() without leaking via a fake href. Reset the
- * native button defaults so it visually matches the LINKS anchors
- * in the same row — the text-decoration is inherited from the shared
- * rule above; we just clear the native button background, border,
- * and padding here. */
-.static-info-row dd .info-action {
+/* Nav track: DESCRIPTION + GALLERY labels + 4px continuous progress bar.
+ * DESCRIPTION is in normal flow (sets the track height). GALLERY is
+ * absolute, positioned by JS at the description content's right edge.
+ * The bar is absolute, spanning the full track width at the bottom. */
+.info-nav-track {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+}
+
+.info-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-color: rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+.info-progress-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background-color: var(--color-accent);
+}
+
+/* DESCRIPTION and GALLERY section labels. The padding-bottom creates a
+ * visible gap between the label text and the 4px bar below it. */
+.info-section-btn {
   background: none;
   border: 0;
-  padding: 0;
+  padding: 0 0 var(--space-2);
+  margin: 0;
   font: inherit;
-  line-height: inherit;
-  letter-spacing: inherit;
+  color: inherit;
   cursor: pointer;
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-light);
+  letter-spacing: var(--ls-label);
+  opacity: 0.7;
+  white-space: nowrap;
 }
 
-/* The shared hover affordance for .info-link, .info-action, and
- * the Get-in-touch CTA arrow lives in base.css (same hover pattern
- * is used by the Contact page too). */
+/* GALLERY button: absolute within the track; JS sets left: Xpx on
+ * desktop to align it with the description content's right edge.
+ * The CSS fallback covers mobile and the brief moment before JS runs. */
+.info-section-btn.is-gallery-btn {
+  position: absolute;
+  bottom: 0;
+  left: 55%;
+}
 
-/* No more `a + a { margin-left }` here — multi-link cells render
- * the separator as a literal ", " between the <a> elements in
- * project.js's renderInfoRow, so the comma + space already gives
- * the visual gap. */
+/* Hover affordance for section labels (arrow slides up, same pattern as
+ * .info-link / .info-action in base.css). */
 
 /* ---------- Back arrow (bottom-right) ---------- */
 
@@ -353,21 +399,6 @@
   cursor: zoom-in;
 }
 
-/* Each image is sized to its own aspect, capped by BOTH a height
- * limit and a width limit. With width: auto and height: auto on the
- * img, the browser preserves the image's intrinsic aspect ratio
- * while scaling it down to fit inside the smaller of the two caps.
- *
- *   max-height = min(70vh, 50vw)  — fits the gallery in tall windows
- *                                   and shrinks for narrow viewports
- *   max-width  = 100vw − 2 × page padding — guarantees the right edge
- *                                           of even a wide-aspect
- *                                           image never runs past the
- *                                           visible area
- *
- * A 3:2 photo hits the height cap and the width auto-resolves; a
- * panoramic 3:1 hits the width cap and the height auto-shrinks. Both
- * end up fully visible on every desktop viewport. */
 .gallery-item picture {
   display: block;
 }
@@ -375,9 +406,7 @@
 .gallery-item img,
 .gallery-item video {
   display: block;
-  max-height: min(70vh, 50vw);
-  max-width: calc(100vw - 2 * var(--page-pad-x));
-  height: auto;
+  height: min(70vh, 50vw);
   width: auto;
   -webkit-user-drag: none;
   user-select: none;
@@ -595,31 +624,21 @@
    * arrow already handles "return to Home" on small screens. */
   .site-header { display: none; }
 
-  /* Mobile info row: full width, wrap if needed */
+  /* Mobile info row: smaller fonts, GALLERY at fixed CSS position (55%) */
   .static-info-row {
-    left: var(--page-pad-x);
-    right: var(--page-pad-x);
-    bottom: var(--page-pad-y);
     gap: clamp(12px, 3vw, 24px);
-    flex-wrap: nowrap;
-    overflow: hidden;
   }
-  .static-info-row .info-cell {
-    flex: 1 1 auto;
-    min-width: 0;
-    overflow: hidden;
-  }
-  .static-info-row dt {
+  .info-links-cell dt {
     font-size: clamp(11px, 2.8vw, 13px);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
-  .static-info-row dd {
+  .info-links-cell dd {
     font-size: clamp(15px, 3.5vw, 20px);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  .info-section-btn {
+    font-size: clamp(11px, 2.8vw, 13px);
   }
 
   .description-content {

@@ -56,7 +56,7 @@
     </div>
 
     <header class="site-header">
-      <a class="site-logo" href="/" data-nav-home aria-label="Back to home — MENÉNDEZ MORRO"></a>
+      <a class="site-logo" href="/" data-nav-home aria-label="Back to home — MORRO"></a>
     </header>
 
     <a class="static-get-in-touch" href="#" data-action-copy-email aria-label="Copy email address to clipboard">
@@ -65,20 +65,25 @@
       <span class="cta-arrow-clip" aria-hidden="true"><svg class="cta-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><use href="/assets/icons/arrows.svg#arrow-left"/></svg></span>
     </a>
 
-    <dl class="static-info-row" aria-label="Project info">
-      <div class="info-cell" data-info-cell="results">
-        <dt>RESULTS</dt>
-        <dd><button type="button" class="info-action" data-action-snap-gallery><span class="info-arrow-clip" aria-hidden="true"><svg class="info-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><use href="/assets/icons/arrows.svg#arrow-se"/></svg></span>Gallery</button></dd>
-      </div>
-      <div class="info-cell" data-info-cell="links">
+    <div class="static-info-row" aria-label="Project info">
+      <dl class="info-links-cell" data-info-cell="links" hidden>
         <dt>LINKS</dt>
         <dd data-info-links></dd>
+      </dl>
+      <div class="info-nav-track" data-info-nav-track>
+        <div class="info-progress-bar" data-progress-bar aria-hidden="true">
+          <div class="info-progress-fill" data-progress-fill></div>
+        </div>
+        <button type="button" class="info-section-btn" data-section-btn="description">
+          <span class="info-arrow-clip" aria-hidden="true"><svg class="info-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><use href="/assets/icons/arrows.svg#arrow-se"/></svg></span>
+          DESCRIPTION
+        </button>
+        <button type="button" class="info-section-btn is-gallery-btn" data-section-btn="gallery">
+          <span class="info-arrow-clip" aria-hidden="true"><svg class="info-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><use href="/assets/icons/arrows.svg#arrow-se"/></svg></span>
+          GALLERY
+        </button>
       </div>
-      <div class="info-cell" data-info-cell="duration">
-        <dt>DURATION</dt>
-        <dd data-info-duration></dd>
-      </div>
-    </dl>
+    </div>
 
     <a class="static-back-arrow" href="/" data-nav-home aria-label="Back to home">
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">

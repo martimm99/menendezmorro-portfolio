@@ -344,12 +344,14 @@ html.home-page::view-transition-new(root) {
   }
 
   .info-link:hover .info-arrow-clip,
-  .info-action:hover .info-arrow-clip {
+  .info-action:hover .info-arrow-clip,
+  .info-section-btn:hover .info-arrow-clip {
     width: 0.85em;
   }
 
   .info-link:hover .info-arrow,
-  .info-action:hover .info-arrow {
+  .info-action:hover .info-arrow,
+  .info-section-btn:hover .info-arrow {
     transform: translateY(0);
   }
 
