@@ -39,8 +39,9 @@ const TIMER_FILL_OP     = 0.9;
 const timerState = {
   btn: null,
   progress:      0,     // 0–1 over TIMER_DURATION_MS
-  hoverStrength: 0,     // 0–1; ramps on mouseenter/leave
-  isHovering:    false,
+  hoverStrength: 0,     // 0–1; ramps on mouseenter/leave of the button
+  isHovering:    false, // true only when hovering the next-btn (ramps hoverStrength)
+  isPaused:      false, // true when hovering the title (freezes everything, no ramp)
   draining:      false, // true while the post-fire drain animation plays
   drainProgress: 0,     // 1–0 over DRAIN_DURATION_MS
   rafId:         null,
@@ -343,6 +344,20 @@ function initTimer() {
   });
   timerState.btn.addEventListener('click', () => userNavigate('next'));
 
+  const title = document.querySelector('.project-title');
+  if (title) {
+    title.addEventListener('mouseenter', () => {
+      timerState.isPaused = true;
+    });
+    title.addEventListener('mouseleave', () => {
+      timerState.isPaused = false;
+      timerState.lastTimestamp = null;
+      if (!timerState.rafId) {
+        timerState.rafId = requestAnimationFrame(tickTimer);
+      }
+    });
+  }
+
   timerState.lastTimestamp = null;
   timerState.rafId = requestAnimationFrame(tickTimer);
 }
@@ -382,6 +397,9 @@ function userNavigate(direction) {
 
 function tickTimer(timestamp) {
   timerState.rafId = null;
+
+  // Title hover: freeze everything in place. RAF restarts on mouseleave.
+  if (timerState.isPaused && !timerState.isHovering) return;
 
   const dt = timerState.lastTimestamp !== null
     ? Math.min(timestamp - timerState.lastTimestamp, 200)

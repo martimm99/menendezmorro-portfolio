@@ -13,8 +13,8 @@
  *
  * Behavior:
  *   - WebP quality 80, preserves aspect ratio, never upscales.
- *   - Mobile variant is skipped when source.width <= 1536 (it would be
- *     byte-identical to the desktop variant — wasted file).
+ *   - Both mobile and desktop variants are always generated; for sources
+ *     narrower than 1536px both resolve to native width (no upscaling).
  *   - Idempotent: a variant is skipped when its mtime is >= the source's.
  *   - --force regenerates every variant, ignoring mtime.
  *   - --slug=<slug> restricts work to one project folder.
@@ -46,8 +46,13 @@ const GALLERY_VARIANTS = [
   { name: 'mobile', maxWidth: 1536 },
   { name: 'desktop', maxWidth: 1920 }
 ];
+// Cover mobile uses a wider cap than gallery mobile: covers fill the full
+// viewport with object-fit: cover, and on portrait phones it's the height
+// that determines sharpness. At 1536px wide a landscape source produces
+// only 864px of height, which a retina portrait phone must upscale ~3×.
+// At 1920px it produces 1080px, cutting that factor to ~2.3×.
 const COVER_VARIANTS = [
-  { name: 'mobile', maxWidth: 1536 },
+  { name: 'mobile', maxWidth: 1920 },
   { name: 'desktop', maxWidth: 2560 }
 ];
 const GALLERY_QUALITY = 80;
@@ -141,10 +146,6 @@ async function processSource(sourcePath, { force }) {
   const result = { ok: true, written: 0, sourceBytes: sourceStat.size, outputBytes: 0, oversize: [] };
 
   for (const variant of variants) {
-    if (variant.name === 'mobile' && metadata.width <= 1536) {
-      console.log(`    → ${stem}-${variant.name}.webp — skipped (source ≤ ${variant.maxWidth}px wide)`);
-      continue;
-    }
     const outPath = join(folder, `${stem}-${variant.name}.webp`);
 
     if (!force && existsSync(outPath) && statSync(outPath).mtimeMs >= sourceStat.mtimeMs) {

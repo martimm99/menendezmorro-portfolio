@@ -23,6 +23,8 @@
   --color-bg-light:          #fff;
   --color-fg-light:          #000;
   --color-accent:            #0055ff;
+  --project-highlight:       var(--color-accent); /* per-project override set by project.js */
+  --dur-highlight:           700ms;               /* page-load fade-in: default blue → project highlight color */
   --color-toast-bg:          rgba(0, 0, 0, 0.85);
   --color-toast-fg:          #fff;
 
@@ -88,4 +90,14 @@
   --z-header:    80;
   --z-fullscreen: 200;
   --z-toast:    1000;  /* must outrank fullscreen (toast shows over the modal) */
+}
+
+/* On mobile the full-page bitmap snapshot is expensive to composite, so
+ * the sweep runs shorter and with a gentler ease that hides dropped frames
+ * better than the steep desktop curve. */
+@media (max-width: 768px) {
+  :root {
+    --dur-sweep:  600ms;
+    --ease-sweep: cubic-bezier(0.4, 0, 0.2, 1);
+  }
 }

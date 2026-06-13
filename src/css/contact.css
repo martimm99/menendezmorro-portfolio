@@ -110,6 +110,8 @@
     calc(var(--chrome-mask-top) + 20px)
     var(--page-pad-x)
     calc(var(--chrome-mask-bottom) + 20px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ---------- Contact text + Get in touch ---------- */
@@ -232,8 +234,8 @@
 }
 
 .contact-page .static-back-arrow svg {
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
 }
 
 /* ---------- Toast (Email copied) ---------- */

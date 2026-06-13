@@ -8,6 +8,7 @@
       "location": "Mallorca",
       "type": "design",
       "subcategory": [],
+      "highlightColor": "#0055FF",
       "description": "Digital design studio.",
       "longDescription": "MORRO is a self-branding exercise.\n\nFrom the need of talking to the world from my own identity, the idea of defining my own visual identity materialised into this project. Years of postponing it and failed attempts led to collecting some learnings about what would work when visually defining myself, and what wouldn't.\n\nUsing my full name as my personal brand had worked for me in the past, but now it felt informal, personal and too long, so the process started with a naming exercise that resulted in using one of my last names as the name to encompass my work.\n\nAs mentioned before, the previous failed attempts to identify myself with a graphic identity taught me to not only aim for meaning, but also for a style I identified with. After extensive research and plenty of sketching and visual testing, I was able to rule out everything that didn't feel like me and to define what did feel like me: imperfect but clean design, relaxed shapes, warm tones and quotidian imagery.\n\nManual sketches turned into digital vectors that were then mixed with texture, typography, color and images, always keeping in mind the specific art direction that defines me.\n\nMORRO is my personal brand as a designer. It signs all my freelance work as well as this portfolio. Together with its claim, \"MUCHO MORRO\" (a pun that would translate to \"having some nerve\") it aims to represent being bold and believing in what you do.",
       "links": [
@@ -29,17 +30,21 @@
         { "type": "image", "src": "assets/media/morro/morro-7.jpg",  "alt": "MORRO image 7",  "caption": "Sketch of a previous attempt to define a brand identity. Ruled out because of a style mismatch." },
         { "type": "image", "src": "assets/media/morro/morro-8.jpg",  "alt": "MORRO image 8",  "caption": "Preview of a previous branding attempt." },
         { "type": "image", "src": "assets/media/morro/morro-9.jpg",  "alt": "MORRO image 9",  "caption": "Preview of a previous branding attempt." },
-        { "type": "image", "src": "assets/media/morro/morro-10.jpg", "alt": "MORRO image 10", "caption": "Preview of a previous branding attempt." }
+        { "type": "image", "src": "assets/media/morro/morro-10.jpg", "alt": "MORRO image 10", "caption": "Preview of a previous branding attempt." },
+        { "type": "image", "src": "assets/media/morro/morro-11.jpg", "alt": "MORRO image 11", "caption": "" },
+        { "type": "image", "src": "assets/media/morro/morro-12.jpg", "alt": "MORRO image 12", "caption": "" },
+        { "type": "image", "src": "assets/media/morro/morro-13.jpg", "alt": "MORRO image 13", "caption": "" }
       ]
     },
     {
       "slug": "lufthansa-innovation-hub",
-      "title": "LUFTHANSA INNOVATION HUB",
+      "title": "LIH",
       "role": "Graphic Design & Motion Graphics",
       "year": "2026",
       "location": "Berlin",
       "type": "design",
       "subcategory": [],
+      "highlightColor": "#00FF80",
       "description": "Digital solutions for the next in travel and mobility.",
       "longDescription": "",
       "links": [
@@ -49,33 +54,26 @@
         }
       ],
       "duration": "9 months",
-      "cover": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-1.jpg",
+      "cover": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-cover.jpg",
       "coverAlt": "Lufthansa Innovation Hub cover",
       "media": [
-        {
-          "type": "image",
-          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-1.jpg",
-          "alt": "Lufthansa Innovation Hub image 1",
-          "caption": ""
-        },
-        {
-          "type": "image",
-          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-2.jpg",
-          "alt": "Lufthansa Innovation Hub image 2",
-          "caption": ""
-        },
-        {
-          "type": "image",
-          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-3.jpg",
-          "alt": "Lufthansa Innovation Hub image 3",
-          "caption": ""
-        },
-        {
-          "type": "image",
-          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-4.jpg",
-          "alt": "Lufthansa Innovation Hub image 4",
-          "caption": ""
-        }
+        { "type": "video", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-1.mp4", "alt": "Lufthansa Innovation Hub video 1",  "caption": "" },
+        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-2.jpg", "alt": "Lufthansa Innovation Hub image 2",  "caption": "" },
+        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-3.jpg", "alt": "Lufthansa Innovation Hub image 3",  "caption": "" },
+        { "type": "video", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-4.mp4", "alt": "Lufthansa Innovation Hub video 4",  "caption": "" },
+        { "type": "video", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-5.mp4", "alt": "Lufthansa Innovation Hub video 5",  "caption": "" },
+        { "type": "video", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-6.mp4", "alt": "Lufthansa Innovation Hub video 6",  "caption": "" },
+        { "type": "video", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-7.mp4", "alt": "Lufthansa Innovation Hub video 7",  "caption": "" },
+        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-8.jpg", "alt": "Lufthansa Innovation Hub image 8",  "caption": "" },
+        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-9.jpg", "alt": "Lufthansa Innovation Hub image 9",  "caption": "" },
+        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-10.jpg", "alt": "Lufthansa Innovation Hub image 10", "caption": "" },
+        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-11.jpg", "alt": "Lufthansa Innovation Hub image 11", "caption": "" },
+        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-12.jpg", "alt": "Lufthansa Innovation Hub image 12", "caption": "" },
+        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-13.jpg", "alt": "Lufthansa Innovation Hub image 13", "caption": "" },
+        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-14.jpg", "alt": "Lufthansa Innovation Hub image 14", "caption": "" },
+        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-15.jpg", "alt": "Lufthansa Innovation Hub image 15", "caption": "" },
+        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-16.jpg", "alt": "Lufthansa Innovation Hub image 16", "caption": "" },
+        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-17.jpg", "alt": "Lufthansa Innovation Hub image 17", "caption": "" }
       ]
     },
     {
@@ -86,6 +84,7 @@
       "location": "Berlin",
       "type": "design",
       "subcategory": [],
+      "highlightColor": "#0055FF",
       "description": "Full-service gaming agency.",
       "longDescription": "",
       "links": [
@@ -132,6 +131,7 @@
       "location": "Mallorca",
       "type": "design",
       "subcategory": [],
+      "highlightColor": "#0055FF",
       "description": "Technical services for construction projects.",
       "longDescription": "",
       "links": [
@@ -178,6 +178,7 @@
       "location": "Girona",
       "type": "design",
       "subcategory": [],
+      "highlightColor": "#0055FF",
       "description": "Performing arts festival.",
       "longDescription": "",
       "links": [
@@ -224,6 +225,7 @@
       "location": "Girona",
       "type": "design",
       "subcategory": [],
+      "highlightColor": "#0055FF",
       "description": "Titles design for audiovisual projects.",
       "longDescription": "",
       "links": [
@@ -274,6 +276,7 @@
       "location": "Mallorca",
       "type": "photo",
       "subcategory": [],
+      "highlightColor": "#0055FF",
       "description": "Photography service for real estate agencies.",
       "longDescription": "",
       "links": [],
@@ -315,6 +318,7 @@
       "location": "Madrid",
       "type": "photo",
       "subcategory": [],
+      "highlightColor": "#0055FF",
       "description": "Concert photography for artists, labels and media.",
       "longDescription": "",
       "links": [

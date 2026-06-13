@@ -23,6 +23,31 @@
   display: none;
 }
 
+/* When open, the stage covers the whole viewport and captures clicks so
+ * clicking outside the media closes the fullscreen. The gallery items
+ * below are blocked from receiving events. */
+.fullscreen-stage.is-open {
+  pointer-events: auto;
+}
+
+/* Backdrop: fills the stage behind the media, fades in/out with is-open.
+ * Covers the gallery and page chrome smoothly without hiding them
+ * instantly. Transition duration matches the media box (0.42s) so both
+ * settle at the same time. pointer-events: none so clicks reach the
+ * close button and media box above it. */
+.fullscreen-backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-bg-light);
+  opacity: 0;
+  transition: opacity 0.42s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.fullscreen-stage.is-open .fullscreen-backdrop {
+  opacity: 1;
+}
+
 /* The media box is positioned absolutely inside the stage. JS sets
  * top/left/width/height inline; we transition all four. The cubic
  * curve is "standard" easing — fast start, settled end. */
@@ -72,45 +97,17 @@
   transition: opacity 0.25s ease 0.22s; /* fade in after expand mostly done */
 }
 
-/* Close button: visible the moment the stage opens. */
-.fullscreen-close {
-  position: absolute;
-  top: var(--page-pad-y);
-  right: var(--page-pad-x);
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  color: var(--color-fg-light);
-  pointer-events: auto;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.fullscreen-close svg {
-  width: 28px;
-  height: 28px;
-}
-
-.fullscreen-stage.is-open .fullscreen-close {
-  opacity: 1;
-}
-
-/* While the fullscreen state is open, the rest of the project page UI
- * is hidden. visibility: hidden (not display: none) so the gallery
- * items keep their layout — that lets the close animation snap the
- * media back to the original gallery rect. The chrome-mask pseudos
- * are pure paint, so display: none is fine there. */
+/* While the fullscreen state is open, chrome elements fade out smoothly.
+ * The 0.2s transition here (higher specificity) controls the FADE-OUT speed.
+ * The base transitions in project.css (0.6s, lower specificity) control the
+ * FADE-IN speed when fullscreen closes — giving a slow, gentle restoration. */
 .project-page.fullscreen-active .site-header,
 .project-page.fullscreen-active .static-get-in-touch,
 .project-page.fullscreen-active .static-info-row,
-.project-page.fullscreen-active .static-back-arrow,
-.project-page.fullscreen-active .gallery {
-  visibility: hidden;
+.project-page.fullscreen-active .static-back-arrow {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
 }
 
 .project-page.fullscreen-active::before,
@@ -129,7 +126,7 @@
 @media (prefers-reduced-motion: reduce) {
   .fullscreen-media,
   .fullscreen-caption,
-  .fullscreen-close {
+  .fullscreen-backdrop {
     transition: none;
   }
 }

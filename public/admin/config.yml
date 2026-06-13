@@ -106,6 +106,7 @@ collections:
                   - { label: "Titles",       value: "titles" }
                   - { label: "Architecture", value: "architecture" }
                   - { label: "Live",         value: "live" }
+              - { name: "highlightColor",  label: "Highlight color",   widget: "color", required: false, hint: "Accent color for the gallery section (logo, progress bar, Get in touch dot). Defaults to site blue if empty." }
               - { name: "description",     label: "Short description", widget: "text", hint: "Shown in the Home info row." }
               - { name: "longDescription", label: "Long description",  widget: "markdown", required: false }
               - name: "links"

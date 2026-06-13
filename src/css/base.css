@@ -76,7 +76,7 @@ p {
 }
 
 ::selection {
-  background-color: var(--color-accent);
+  background-color: var(--project-highlight);
   color: var(--color-bg-dark);
 }
 
@@ -260,7 +260,8 @@ html.home-page::view-transition-new(root) {
   transition:
     width 250ms cubic-bezier(.33, 1, .55, 1),
     height 250ms cubic-bezier(.33, 1, .55, 1),
-    opacity 200ms ease;
+    opacity 200ms ease,
+    background-color var(--dur-highlight, 700ms) ease;
   will-change: transform;
   display: none;
 }

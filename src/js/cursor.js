@@ -30,7 +30,7 @@
  * interactive doesn't toggle off and back on.
  */
 
-const HOVER_SELECTOR = 'a, button, .project-title, [data-action-copy-email], [data-nav-home], [data-nav-contact], .gallery-item';
+const HOVER_SELECTOR = 'a, button, .project-title, [data-action-copy-email], [data-nav-home], [data-nav-contact], .gallery-item, [data-fullscreen-stage].is-open';
 const SPRING_STIFFNESS = 0.07;
 const SPRING_DAMPING = 0.55;
 // Sub-pixel threshold below which the spring is considered "settled."
@@ -98,15 +98,31 @@ function onMouseMove(e) {
 }
 
 function onMouseOver(e) {
+  // The fullscreen media is inside the stage (which is a hover target), but
+  // hovering over the media itself should NOT grow the cursor — it's just
+  // a viewing area, not a clickable action.
+  if (e.target.closest?.('[data-fullscreen-media]')) {
+    cursor.classList.remove('is-hover');
+    return;
+  }
   if (e.target.closest?.(HOVER_SELECTOR)) {
     cursor.classList.add('is-hover');
   }
 }
 
 function onMouseOut(e) {
+  // Moving from media back to the stage empty area: the following mouseover
+  // on the stage will re-add is-hover, so no special handling needed here.
+  if (e.target.closest?.('[data-fullscreen-media]')) return;
+
   const from = e.target.closest?.(HOVER_SELECTOR);
-  const to = e.relatedTarget?.closest?.(HOVER_SELECTOR);
-  if (from && from !== to) {
+  const to   = e.relatedTarget?.closest?.(HOVER_SELECTOR);
+  const toMedia = e.relatedTarget?.closest?.('[data-fullscreen-media]');
+
+  // from === to means we're moving within the same hover target (e.g., two
+  // children of the same link). Remove hover only when actually leaving,
+  // or when entering the media (which suppresses hover).
+  if (from && (from !== to || toMedia)) {
     cursor.classList.remove('is-hover');
   }
 }

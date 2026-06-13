@@ -3,10 +3,10 @@
  *
  * Per BUILD_SPEC.md v1.5 §5.4: clicking a gallery item expands the
  * media (via a FLIP-style transition on top/left/width/height) from
- * its in-gallery rect to a centered ~90vw position. The X button or
- * Esc closes by reversing the same transition back to the gallery
- * rect. No image-to-image navigation while open — to view a different
- * media item the user closes the current state and clicks another.
+ * its in-gallery rect to a centered ~90vw position. Pressing Esc or
+ * clicking anywhere outside the media closes by reversing the same
+ * transition back to the gallery rect. No image-to-image navigation
+ * while open — to view a different item close and click another.
  *
  * The module owns no UI on its own — it operates on the .fullscreen-
  * stage scaffold already present in project.html.
@@ -28,17 +28,19 @@ const state = {
   sourceRect: null
 };
 
-let stage, mediaWrap, captionEl, closeBtn;
+let stage, mediaWrap, captionEl;
 let escListener = null;
 
 export function initFullscreen() {
-  stage      = document.querySelector('[data-fullscreen-stage]');
-  mediaWrap  = document.querySelector('[data-fullscreen-media]');
-  captionEl  = document.querySelector('[data-fullscreen-caption]');
-  closeBtn   = document.querySelector('[data-fullscreen-close]');
-  if (!stage || !mediaWrap || !closeBtn) return;
+  stage     = document.querySelector('[data-fullscreen-stage]');
+  mediaWrap = document.querySelector('[data-fullscreen-media]');
+  captionEl = document.querySelector('[data-fullscreen-caption]');
+  if (!stage || !mediaWrap) return;
 
-  closeBtn.addEventListener('click', () => closeFullscreen());
+  // Click outside the media to close.
+  stage.addEventListener('click', (e) => {
+    if (state.isOpen && !e.target.closest('[data-fullscreen-media]')) closeFullscreen();
+  });
 }
 
 export function openFullscreen(galleryItem) {
@@ -79,9 +81,9 @@ export function openFullscreen(galleryItem) {
   // eslint-disable-next-line no-unused-expressions
   mediaWrap.offsetWidth;
 
-  // Compute the target rect, position the caption, kick off the
-  // transition to the target.
-  const targetRect = computeTargetRect(clone);
+  // Compute the target rect from the source element (guaranteed loaded)
+  // rather than the clone (which may not have decoded naturalWidth yet).
+  const targetRect = computeTargetRect(galleryItem);
   positionCaption(captionEl, targetRect);
 
   mediaWrap.style.transition = '';
@@ -151,19 +153,19 @@ function applyRect(el, rect) {
   el.style.height = `${rect.height}px`;
 }
 
-function computeTargetRect(clone) {
-  // Resolve aspect ratio from the underlying image/video. For a cloned
-  // <picture>, drop in to the inner <img>.
+function computeTargetRect(galleryItem) {
+  // Read aspect ratio from the source gallery item — images/videos are
+  // already decoded there, so naturalWidth/videoWidth are always valid.
+  // Reading from the clone can return 0 if the browser hasn't re-decoded it.
   let aspect = 16 / 9; // safe default
-  if (clone.tagName === 'PICTURE') {
-    const img = clone.querySelector('img');
-    if (img?.naturalWidth && img.naturalHeight) {
-      aspect = img.naturalWidth / img.naturalHeight;
+  const srcImg = galleryItem.querySelector('img');
+  if (srcImg?.naturalWidth && srcImg.naturalHeight) {
+    aspect = srcImg.naturalWidth / srcImg.naturalHeight;
+  } else {
+    const srcVideo = galleryItem.querySelector('video');
+    if (srcVideo?.videoWidth && srcVideo.videoHeight) {
+      aspect = srcVideo.videoWidth / srcVideo.videoHeight;
     }
-  } else if (clone.tagName === 'IMG' && clone.naturalWidth && clone.naturalHeight) {
-    aspect = clone.naturalWidth / clone.naturalHeight;
-  } else if (clone.tagName === 'VIDEO' && clone.videoWidth && clone.videoHeight) {
-    aspect = clone.videoWidth / clone.videoHeight;
   }
 
   const vw = window.innerWidth;

@@ -43,6 +43,11 @@ const SNAP_DURATION_MS = 1000;
 const LINE_REVEAL_DELAY_PER_LINE_MS = 80;
 const DESCRIPTION_REVEAL_DELAY_DIRECT_MS = 60;
 const DESCRIPTION_REVEAL_DELAY_AFTER_SWEEP_MS = 1100;
+const SCROLL_EDGE_THRESHOLD = 1;
+
+const isAtBottom = (el) =>
+  el.scrollTop + el.clientHeight >= el.scrollHeight - SCROLL_EDGE_THRESHOLD;
+const isAtTop = (el) => el.scrollTop <= SCROLL_EDGE_THRESHOLD;
 
 let teardown = null;
 // v1.8: section order is description-then-gallery. showGallery tracks
@@ -64,6 +69,17 @@ export function initProject(data, slug) {
   // per-tab via sessionStorage; cleared automatically when the tab is
   // closed.
   try { sessionStorage.setItem('lastProjectSlug', slug); } catch {}
+
+  // Set the per-project highlight color as a CSS custom property so the
+  // gallery-state rules in project.css can reference it. Removing the
+  // property (rather than setting it to empty) lets the token default
+  // (--color-accent) take over cleanly for projects without a custom color.
+  const highlight = project.highlightColor?.trim();
+  if (highlight) {
+    document.documentElement.style.setProperty('--project-highlight', highlight);
+  } else {
+    document.documentElement.style.removeProperty('--project-highlight');
+  }
 
   updateHead(data.site, project);
   renderInfoRow(project);
@@ -182,54 +198,81 @@ function renderInfoRow(project) {
 
 /* ---------- Progress bar ----------
  *
- * A 4px horizontal line below the DESCRIPTION and GALLERY labels tracks
+ * A 2px horizontal line below the DESCRIPTION and GALLERY labels tracks
  * continuous scroll progress across both sections. DESCRIPTION fills the
- * bar from 0 to the boundary point (= GALLERY label's x position within
- * the nav track). The gallery fills from the boundary to the right end.
+ * bar from 0 to galleryBoundary; gallery fills from galleryBoundary to 1.
  *
- * GALLERY label position is measured from the description content's right
- * edge and updated on resize. On mobile the CSS fallback (left: 55%) is
- * used and JS measurement is skipped. */
+ * The nav-track is sized to match the description text box width so the
+ * bar spans the same horizontal space as the description content. GALLERY
+ * is placed at a fixed 70 % fraction of the track on desktop (same across
+ * all projects). On mobile GALLERY is in normal flow and its boundary is
+ * read live from its rendered position each tick. */
 
 function initProgressBar(galleryAPI) {
-  const navTrack    = document.querySelector('[data-info-nav-track]');
-  const navLabels   = document.querySelector('.info-nav-labels');
+  const navTrack     = document.querySelector('[data-info-nav-track]');
+  const progressBar  = document.querySelector('[data-progress-bar]');
   const progressFill = document.querySelector('[data-progress-fill]');
-  const descBtn     = document.querySelector('[data-section-btn="description"]');
-  const galleryBtn  = document.querySelector('[data-section-btn="gallery"]');
-  const descSection = document.querySelector('[data-section-description]');
-  const descContent = document.querySelector('[data-description-content]');
-  if (!navTrack || !navLabels || !progressFill || !descBtn || !galleryBtn || !descSection) return;
+  const descBtn      = document.querySelector('[data-section-btn="description"]');
+  const galleryBtn   = document.querySelector('[data-section-btn="gallery"]');
+  const descSection  = document.querySelector('[data-section-description]');
+  const descContent  = document.querySelector('[data-description-content]');
+  if (!navTrack || !progressBar || !progressFill || !descBtn || !galleryBtn || !descSection) return;
 
   const mqlMobile = window.matchMedia('(max-width: 600px)');
-  // Desktop: cached boundary set by measureGalleryBtnX (position driven by JS
-  // measuring the description content's right edge). Mobile: computed live each
-  // tick from the GALLERY button's rendered position — no timing dependency.
-  let galleryBoundary = 0.55;
+  // Fixed fraction on desktop — same across all projects. On mobile the
+  // boundary is read live from the GALLERY button's rendered position.
+  const GALLERY_BOUNDARY = 0.70;
+  let galleryBoundary = GALLERY_BOUNDARY;
   // Tracks when an in-progress CSS transition owns the fill's width; the
   // rAF loop pauses until this timestamp passes to avoid overriding it.
   let smoothUntil = 0;
 
-  // Desktop-only: position the GALLERY label and cache the boundary fraction.
-  function measureGalleryBtnX() {
-    if (mqlMobile.matches || !descContent) return;
-    const trackRect   = navTrack.getBoundingClientRect();
-    if (trackRect.width <= 0) return;
-    const contentRect = descContent.getBoundingClientRect();
-    const labelsRect  = navLabels.getBoundingClientRect();
-    const rawX = contentRect.right - labelsRect.left;
-    // Keep at least 60px from the right edge so the GALLERY label is legible.
-    const clampedX = Math.max(0, Math.min(rawX, trackRect.width - 60));
-    galleryBtn.style.left = `${clampedX}px`;
-    galleryBoundary = clampedX / trackRect.width;
+  let barBaseLeft = 0;
+  let isDescHover = false;
+  // 0.9em of --fs-label (13px) — matches the arrow-clip expansion on hover.
+  const descHoverShift = parseFloat(getComputedStyle(descBtn).fontSize) * 0.9;
+
+  // Pins the bar's left/right to the nav-track's rendered position.
+  // The bar is position: fixed so its vertical position is constant, but
+  // its horizontal extent must be updated whenever the layout shifts.
+  function positionBar() {
+    const rect = navTrack.getBoundingClientRect();
+    if (rect.width <= 0) return;
+    barBaseLeft = rect.left;
+    progressBar.style.left  = `${barBaseLeft + (isDescHover ? descHoverShift : 0)}px`;
+    progressBar.style.right = `${window.innerWidth - rect.right}px`;
   }
 
-  requestAnimationFrame(() => requestAnimationFrame(measureGalleryBtnX));
+  // Desktop-only: place GALLERY at the fixed boundary fraction of the track.
+  function positionGalleryBtn() {
+    if (mqlMobile.matches) return;
+    const trackRect = navTrack.getBoundingClientRect();
+    if (trackRect.width <= 0) return;
+    galleryBtn.style.left = `${Math.round(trackRect.width * GALLERY_BOUNDARY)}px`;
+  }
+
+  function measureAndPosition() {
+    // Size nav-track to match the description text box so the bar spans the
+    // same horizontal space as the description content. On mobile, flexbox
+    // handles the width instead.
+    if (!mqlMobile.matches && descContent) {
+      navTrack.style.width = `${descContent.getBoundingClientRect().width}px`;
+    } else {
+      navTrack.style.removeProperty('width');
+    }
+    // Suppress the hover transition so the bar snaps on resize.
+    progressBar.style.transition = 'none';
+    positionBar();
+    positionGalleryBtn();
+    requestAnimationFrame(() => progressBar.style.removeProperty('transition'));
+  }
+
+  requestAnimationFrame(() => requestAnimationFrame(measureAndPosition));
 
   let resizeTimer = null;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(measureGalleryBtnX, 100);
+    resizeTimer = setTimeout(measureAndPosition, 100);
   }, { passive: true });
 
   // Returns the current boundary fraction. On mobile reads the GALLERY
@@ -249,6 +292,22 @@ function initProgressBar(galleryAPI) {
     smoothUntil = performance.now() + durationMs;
     progressFill.style.transition = `width ${durationMs}ms ease`;
     progressFill.style.width = `${targetP * 100}%`;
+  }
+
+  // Shift the bar's left edge on DESCRIPTION hover (pointer devices only).
+  // Right edge stays fixed — the bar gets narrower from the left, never
+  // reaching the X icon. JS drives this directly because inline style.left
+  // always outranks any CSS selector rule, so :has() cannot override it.
+  const mqlHover = window.matchMedia('(hover: hover) and (pointer: fine)');
+  if (mqlHover.matches) {
+    descBtn.addEventListener('mouseenter', () => {
+      isDescHover = true;
+      progressBar.style.left = `${barBaseLeft + descHoverShift}px`;
+    });
+    descBtn.addEventListener('mouseleave', () => {
+      isDescHover = false;
+      progressBar.style.left = `${barBaseLeft}px`;
+    });
   }
 
   // DESCRIPTION click: snap to description top. Animate bar back to 0.
@@ -467,7 +526,6 @@ function setupWheelAndSnap(galleryAPI) {
 
   const GESTURE_END_GAP_MS = 80;
   const MOUSE_BUFFER_MS = 30;
-  const AT_EDGE_THRESHOLD = 1;
   // Touchpad inertia tail filter — events below this delta magnitude
   // don't refresh the gesture window. Without it a strong fling's
   // long-lasting weak inertia kept the window open indefinitely and
@@ -483,11 +541,6 @@ function setupWheelAndSnap(galleryAPI) {
   let mode = null;                  // null = unknown / first event; 'continuous' = touchpad
   let bufferedEvent = null;
   let bufferTimer = null;
-
-  function descriptionAtBottom() {
-    return descriptionSection.scrollTop + descriptionSection.clientHeight
-      >= descriptionSection.scrollHeight - AT_EDGE_THRESHOLD;
-  }
 
   function galleryGestureReset() {
     mode = null;
@@ -525,7 +578,7 @@ function setupWheelAndSnap(galleryAPI) {
     // Native scroll handles wheel events anywhere inside the
     // description that isn't at the very bottom. A forward wheel
     // landing while already at the bottom snaps up to the gallery.
-    if (!descriptionAtBottom()) return;
+    if (!isAtBottom(descriptionSection)) return;
     if (e.deltaY <= 0) return;
     snapToGallery();
     gestureActed = true;
@@ -598,7 +651,7 @@ function setupWheelAndSnap(galleryAPI) {
     touchStart = null;
     if (Math.abs(dy) < Math.abs(dx) * 1.2) return;
     if (Math.abs(dy) < 50) return;
-    if (dy < 0 && !snapState.showGallery && descriptionAtBottom()) {
+    if (dy < 0 && !snapState.showGallery && isAtBottom(descriptionSection)) {
       snapToGallery();
     } else if (dy > 0 && snapState.showGallery && galleryAPI.isAtStart()) {
       snapToDescription();
@@ -641,17 +694,10 @@ function setupWheelAndSnap(galleryAPI) {
  * reversed that decision in v1.18; v1.19 tunes the description
  * behavior to scroll first / snap at the edge. */
 const KEYBOARD_SCROLL_STEP_PX = 80;
-const KEYBOARD_AT_EDGE_THRESHOLD = 1;
 
 function setupKeyboard(galleryAPI) {
   const descriptionSection = document.querySelector('[data-section-description]');
   if (!descriptionSection) return;
-
-  const descriptionAtTop = () =>
-    descriptionSection.scrollTop <= KEYBOARD_AT_EDGE_THRESHOLD;
-  const descriptionAtBottom = () =>
-    descriptionSection.scrollTop + descriptionSection.clientHeight
-      >= descriptionSection.scrollHeight - KEYBOARD_AT_EDGE_THRESHOLD;
 
   window.addEventListener('keydown', (e) => {
     // Defer to fullscreen.js's own Escape handler when a fullscreen
@@ -687,7 +733,7 @@ function setupKeyboard(galleryAPI) {
       }
     } else {
       if (e.key === 'ArrowDown') {
-        if (descriptionAtBottom()) {
+        if (isAtBottom(descriptionSection)) {
           snapToGallery();
         } else {
           descriptionSection.scrollBy({ top: KEYBOARD_SCROLL_STEP_PX, behavior: 'smooth' });
@@ -696,7 +742,7 @@ function setupKeyboard(galleryAPI) {
         return;
       }
       if (e.key === 'ArrowUp') {
-        if (!descriptionAtTop()) {
+        if (!isAtTop(descriptionSection)) {
           descriptionSection.scrollBy({ top: -KEYBOARD_SCROLL_STEP_PX, behavior: 'smooth' });
           e.preventDefault();
         }
@@ -711,7 +757,7 @@ function setupKeyboard(galleryAPI) {
  * user was at so they come back to where they were. The description
  * text reveal animation runs only on initial entry (see
  * triggerDescriptionReveal), so nothing toggles here on it. */
-function snapToGallery(_galleryAPI) {
+function snapToGallery() {
   if (snapState.showGallery || snapState.isAnimating) return;
   const shell = document.querySelector('[data-project-shell]');
   const gallerySection = document.querySelector('[data-section-gallery]');

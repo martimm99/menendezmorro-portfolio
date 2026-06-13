@@ -43,8 +43,8 @@ export function initGallery({
 
   renderItems({ items, projectTitle, track, onItemActivate });
 
-  const videoObserver = observeVideos(track);
   const mqlMobile = window.matchMedia('(max-width: 768px)');
+  const videoObserver = observeVideos(track, gallery, mqlMobile);
 
   // Wheel handling lives in project.js. Gallery exposes step()
   // instead; project.js's wheel handler owns all the throttling and
@@ -229,7 +229,7 @@ function buildVideo(media, projectTitle, index) {
   video.muted = true;
   video.loop = true;
   video.playsInline = true;
-  video.preload = index < 2 ? 'metadata' : 'none';
+  video.preload = 'metadata';
   video.setAttribute('aria-label', media.alt || `${projectTitle} video ${index + 1}`);
   if (media.poster) video.poster = '/' + media.poster.replace(/^\//, '');
   return video;
@@ -247,7 +247,7 @@ function buildVideo(media, projectTitle, index) {
  * mode, and handles the snap-back path itself when in description
  * mode. */
 
-function snapToIndex(track, items, index, instant = false, gallery = null) {
+function snapToIndex(track, items, index, instant, gallery) {
   // Image 0 → left-aligned (scroll = 0, sits at CSS padding-left).
   // Last image → right-aligned (right edge at --page-pad-x from viewport
   //   right), mirroring image 1. trackMaxScroll gives that position when
@@ -257,12 +257,9 @@ function snapToIndex(track, items, index, instant = false, gallery = null) {
   if (index === 0) {
     target = 0;
   } else if (index === items.length - 1) {
-    const container = gallery ?? track.parentElement;
-    target = trackMaxScroll(track, container);
+    target = trackMaxScroll(track, gallery);
   } else {
-    const container = gallery || track.parentElement;
-    const galleryHalf = container ? container.clientWidth / 2 : 0;
-    target = Math.max(0, items[index].offsetLeft + items[index].offsetWidth / 2 - galleryHalf);
+    target = Math.max(0, items[index].offsetLeft + items[index].offsetWidth / 2 - gallery.clientWidth / 2);
   }
   applyScroll(track, target, instant);
 }
@@ -339,7 +336,7 @@ function setupDrag({ gallery, track, mqlMobile, onItemActivate }) {
 
 /* ---------- Arrow buttons (mobile) ---------- */
 
-function setupArrows({ prevBtn, nextBtn, gallery, track, mqlMobile }) {
+function setupArrows({ prevBtn, nextBtn, track, mqlMobile }) {
   if (!prevBtn || !nextBtn) return null;
 
   // Arrow visibility is driven by both viewport (desktop hides both)
@@ -377,35 +374,99 @@ function setupArrows({ prevBtn, nextBtn, gallery, track, mqlMobile }) {
 }
 
 function stepMobileArrow(track, direction) {
-  // Mobile uses native scroll with snap. Step by one snap-aligned item.
+  // Mobile uses native scroll with snap. Find the currently centred item,
+  // then scrollTo the next/prev item's snap position directly. Using scrollTo
+  // (not scrollBy with items[0]'s width) is necessary because items can have
+  // different widths (videos vs images) and the delta approach can overshoot
+  // or undershoot, landing on the wrong snap point.
   const items = Array.from(track.querySelectorAll('.gallery-item'));
   if (items.length === 0) return;
-  const itemWidth = items[0].getBoundingClientRect().width;
-  const gap = parseFloat(getComputedStyle(track).gap) || 0;
-  const offset = direction * (itemWidth + gap);
-  track.scrollBy({ left: offset, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+
+  const viewportHalf = track.clientWidth / 2;
+  const scrollCenter = track.scrollLeft + viewportHalf;
+
+  let currentIdx = 0;
+  let minDist = Infinity;
+  for (let i = 0; i < items.length; i++) {
+    const dist = Math.abs(items[i].offsetLeft + items[i].offsetWidth / 2 - scrollCenter);
+    if (dist < minDist) { minDist = dist; currentIdx = i; }
+  }
+
+  const targetIdx = Math.max(0, Math.min(items.length - 1, currentIdx + direction));
+  if (targetIdx === currentIdx) return;
+
+  const target = items[targetIdx];
+  const snapLeft = Math.max(0, target.offsetLeft + target.offsetWidth / 2 - viewportHalf);
+  track.scrollTo({ left: snapLeft, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
 }
 
 /* ---------- Video autoplay observer ---------- */
 
-function observeVideos(track) {
-  if (!('IntersectionObserver' in window)) return null;
+function observeVideos(track, gallery, mqlMobile) {
   const videos = Array.from(track.querySelectorAll('video'));
   if (videos.length === 0) return null;
+  if (!('IntersectionObserver' in window)) return null;
 
-  const observer = new IntersectionObserver((entries) => {
-    for (const entry of entries) {
-      const v = entry.target;
-      if (entry.intersectionRatio >= VIDEO_VISIBILITY_THRESHOLD) {
-        v.play().catch(() => {});
-      } else {
-        v.pause();
+  // Mobile: IntersectionObserver on each video (viewport root, 0.9 threshold).
+  // Full-width items mean at most one video is ≥90% visible at a time.
+  if (mqlMobile.matches) {
+    const io = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.intersectionRatio >= VIDEO_VISIBILITY_THRESHOLD) {
+          entry.target.play().catch(() => {});
+        } else {
+          entry.target.pause();
+        }
       }
-    }
-  }, { threshold: VIDEO_VISIBILITY_THRESHOLD });
+    }, { threshold: VIDEO_VISIBILITY_THRESHOLD });
+    videos.forEach((v) => io.observe(v));
+    return io;
+  }
 
-  videos.forEach((v) => observer.observe(v));
-  return observer;
+  // Desktop: only the video closest to the gallery's horizontal centre plays.
+  //
+  // Pre-compute video → gallery-item mapping once (items don't change after
+  // render) to avoid a closest() traversal on every syncPlayback() call.
+  //
+  // currentScroll() reads track.style.transform (the inline target) rather
+  // than getComputedStyle (which animates mid-transition), so play/pause
+  // resolves to the post-snap position before the animation completes.
+  const videoItems = new Map();
+  for (const v of videos) {
+    const item = v.closest('.gallery-item');
+    if (item) videoItems.set(v, item);
+  }
+
+  function syncPlayback() {
+    const scroll = currentScroll(track);
+    const galleryHalf = gallery.clientWidth / 2;
+    let bestVideo = null;
+    let minDist = Infinity;
+    for (const [video, item] of videoItems) {
+      const dist = Math.abs(item.offsetLeft + item.offsetWidth / 2 - scroll - galleryHalf);
+      if (dist < minDist) { minDist = dist; bestVideo = video; }
+    }
+    for (const video of videos) {
+      if (video === bestVideo) video.play().catch(() => {});
+      else video.pause();
+    }
+  }
+
+  function pauseAll() { videos.forEach((v) => v.pause()); }
+
+  // Fires on every applyScroll() call (track.style.transform changes).
+  const styleMo = new MutationObserver(syncPlayback);
+  styleMo.observe(track, { attributeFilter: ['style'] });
+
+  // Pause all when the gallery leaves the viewport (user is in description section).
+  const galleryIo = new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting) syncPlayback();
+    else pauseAll();
+  }, { threshold: 0.1 });
+  galleryIo.observe(gallery);
+
+  syncPlayback();
+  return { disconnect() { styleMo.disconnect(); galleryIo.disconnect(); } };
 }
 
 /* ---------- Scroll helpers ---------- */
