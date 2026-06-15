@@ -147,7 +147,7 @@
 .static-get-in-touch {
   position: fixed;
   top: var(--page-pad-y);
-  right: var(--page-pad-x);
+  right: calc(var(--page-pad-x) + 44px + var(--space-3));
   z-index: var(--z-info);
   display: flex;
   align-items: center;
@@ -167,8 +167,8 @@
 
 .static-get-in-touch .contact-icon {
   display: block;
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   color: var(--project-highlight);
   flex: 0 0 auto;
   transition: color var(--dur-highlight) ease;
@@ -185,8 +185,7 @@
 .static-info-row {
   position: fixed;
   left: var(--page-pad-x);
-  /* Leave room for the back-arrow (44px wide) + a small gap to the left. */
-  right: calc(var(--page-pad-x) + 44px + var(--space-2));
+  right: var(--page-pad-x);
   bottom: var(--page-pad-y);
   z-index: var(--z-info);
   margin: 0;
@@ -226,17 +225,52 @@
 /* Links anchors: inline-flex so the hover arrow aligns with the text */
 .info-links-cell dd a {
   color: inherit;
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.2em;
+  text-decoration: none;
   display: inline-flex;
   align-items: center;
 }
 
+/* NEXT PROJECT: dl cell, always populated by JS, pushed to the far right */
+.info-next-cell {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  margin: 0;
+}
+
+.info-next-cell[hidden] { display: none; }
+
+.info-next-cell dt {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-light);
+  letter-spacing: var(--ls-label);
+  opacity: 0.7;
+}
+
+.info-next-cell dd {
+  margin: var(--space-1) 0 0;
+  font-size: var(--fs-project-info-value);
+  font-weight: var(--fw-light);
+  line-height: var(--lh-snug);
+}
+
+.info-next-cell dd a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Persistent mobile → arrow; hidden on desktop (hover arrow takes its role) */
+.info-next-arrow-mobile {
+  display: none;
+}
+
 .info-nav-track {
-  /* Width is set by JS to match the description text box exactly. flex-shrink
-   * allows it to compress on narrow viewports when LINKS is also visible. */
-  flex: 0 1 auto;
+  /* Width is set by JS to match the description text box exactly. flex-shrink: 0
+   * prevents the track (and therefore the progress bar) from compressing when
+   * LINKS and NEXT PROJECT are present in the same row. */
+  flex: 0 0 auto;
   min-width: 0;
 }
 
@@ -321,7 +355,7 @@
 .static-back-arrow {
   position: fixed;
   right: var(--page-pad-x);
-  bottom: var(--page-pad-y);
+  top: var(--page-pad-y);
   z-index: var(--z-info);
   display: inline-flex;
   align-items: center;
@@ -617,12 +651,9 @@
     right: auto;
     font-size: clamp(18px, 4.8vw, 20px);
   }
-  .static-get-in-touch .contact-icon { width: 13px; height: 13px; }
+  .static-get-in-touch .contact-icon { width: 17px; height: 17px; }
 
   .static-back-arrow {
-    top: var(--page-pad-y);
-    right: var(--page-pad-x);
-    bottom: auto;
     width: 32px;
     height: 32px;
   }
@@ -632,11 +663,13 @@
    * arrow already handles "return to Home" on small screens. */
   .site-header { display: none; }
 
-  /* Mobile info row: back-arrow is at top-right on mobile, so the bar
-   * can extend to the normal right margin. Smaller fonts throughout. */
+  /* Mobile info row: back-arrow is at top-right so bar extends fully.
+   * right: 16px aligns the NEXT PROJECT arrow's left edge with the X
+   * button's left edge (X: right 40px, width 32px → left edge 72px from
+   * right; arrow: right 16px, width 56px → left edge 72px from right). */
   .static-info-row {
     left: 20px;
-    right: var(--page-pad-x);
+    right: 16px;
     gap: clamp(24px, 5vw, 40px);
   }
   /* Mobile: nav-track fills available row space; no JS-set width. */
@@ -662,6 +695,25 @@
   }
   .info-section-btn {
     font-size: clamp(11px, 2.8vw, 13px);
+  }
+
+  /* Mobile: hide LINKS, show NEXT PROJECT as a bare → arrow icon.
+   * Cancel the desktop margin-left: auto on NEXT PROJECT — the nav-track
+   * uses flex: 1 1 auto here, so auto margins are not needed and would
+   * prevent the track from growing. */
+  .info-links-cell { display: none !important; }
+  .info-next-cell { margin-left: 0 !important; }
+
+  .info-next-cell dt,
+  .info-next-name { display: none; }
+
+  .info-next-cell dd { margin: 0; }
+
+  .info-next-arrow-mobile {
+    display: block;
+    width: 56px;
+    height: 40px;
+    stroke-width: 1;
   }
 
   .description-content {

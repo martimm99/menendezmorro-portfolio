@@ -19,6 +19,7 @@
   --page-pad-x: 40px;
   --page-pad-y: 20px;
   overflow: hidden; /* Home is fixed-bleed; nothing scrolls */
+  touch-action: none; /* Prevent browser scroll-cancel (pointercancel) on touch swipe */
 }
 
 /* ---------- Cover stage ---------- */
@@ -241,31 +242,49 @@
 }
 
 @media (max-width: 599px) {
-  /* Mobile Home matches the legacy layout: info row is hidden, title and
-   * role move to the bottom-left corner stacked, both left-aligned. */
+  /* Mobile Home: title and role stack in a flex column pinned to the bottom
+   * of .home-content. The margin-bottom on .project-title is the fixed gap
+   * between title and role — constant regardless of how many lines the role
+   * wraps to (previously the gap shrank as the role grew, because both
+   * elements used independent fixed bottom values). */
   .info-row {
     display: none;
   }
 
+  /* Flex column anchored at the bottom; padding-bottom replaces the old
+   * role bottom: 56px (same visual anchor for the role's lower edge). */
+  .home-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 var(--page-pad-x) 56px;
+  }
+
   .project-title {
-    font-size: var(--fs-title-mobile);
+    /* relative keeps the element as a containing block for the absolute
+     * slot overlays while participating in the flex column flow. */
+    position: relative;
     top: auto;
-    bottom: 96px;
+    bottom: auto;
+    left: auto;
+    right: auto;
     transform: none;
-    left: var(--page-pad-x);
-    right: var(--page-pad-x);
+    font-size: var(--fs-title-mobile);
     max-width: none;
+    margin: 0 0 var(--space-4); /* fixed gap to role below */
   }
 
   .project-role {
+    position: relative;
     top: auto;
-    bottom: 56px;
+    bottom: auto;
+    left: auto;
+    right: auto;
     transform: none;
-    left: var(--page-pad-x);
-    right: var(--page-pad-x);
     text-align: left;
     max-width: none;
     font-size: clamp(16px, 4vw, 20px);
+    margin: 0;
   }
 
 }
@@ -334,48 +353,12 @@
     left: 0;
   }
 
-  /* Mobile project title overlay: pin to the PARENT's bottom edge
-   * (matching mobile's bottom-anchored title position), fill the
-   * parent's width, and let height follow content. Without these
-   * overrides, the base rule's `top: 0; bottom: 0; width: max-content`
-   * pins the overlay to the leaving title's box, causing:
-   *
-   *   - Short → Long: the long incoming title overflows on one
-   *     line (max-content suppresses wrap) and only breaks into
-   *     lines after the transition.
-   *   - Long → Short: the short incoming title appears at the TOP
-   *     of the multi-line leaving box, then jumps down to its real
-   *     position after the transition.
-   *
-   * Pinning the overlay's bottom to the parent's bottom puts the
-   * incoming text at its FINAL resting position from frame 1. Width
-   * 100% lets it wrap in the same column the in-flow current slot
-   * eventually will. */
   .project-title .slot-clip[aria-hidden="true"] {
     top: auto;
     bottom: 0;
     width: 100%;
   }
 
-  /* In-flow slot-clip baseline alignment.
-   *
-   * The default `vertical-align: baseline` is in play for all
-   * inline-block slot-clips (set further up in this file). But per
-   * CSS spec, an inline-block with `overflow != visible` (which our
-   * slot-clip has via `overflow: hidden`) treats its OWN baseline as
-   * the bottom margin edge — and `vertical-align: baseline` then
-   * aligns that to the PARENT's text baseline (font-baseline within
-   * line-height). The result: the in-flow slot-clip's bottom sits
-   * ~12px ABOVE the parent's line-box bottom (= descender depth).
-   *
-   * Meanwhile the overlay above uses `bottom: 0` absolute, which
-   * lands it at parent's content-area bottom = line-box bottom.
-   *
-   * So after the animation ends and promoteSlots swaps the new text
-   * into the in-flow slot, the title jumps UP ~12px to match the
-   * inline-block-baseline alignment. The fix below switches the
-   * in-flow slot-clip to align with line-box bottom (matching the
-   * overlay), so there's no visible jump after the transition. */
   .project-title .slot-clip {
     vertical-align: bottom;
   }

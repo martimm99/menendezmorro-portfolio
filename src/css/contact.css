@@ -157,12 +157,11 @@
   padding: var(--space-2) 0;
 }
 
-.contact-page .static-get-in-touch .dot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: var(--color-accent);
+.contact-page .static-get-in-touch .contact-icon {
+  display: block;
+  width: 24px;
+  height: 24px;
+  color: var(--color-accent);
   flex: 0 0 auto;
 }
 
@@ -212,9 +211,7 @@
 
 .contact-info dd a {
   color: inherit;
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.2em;
+  text-decoration: none;
 }
 
 /* ---------- Back button (X icon) ---------- */
@@ -277,7 +274,7 @@
     right: auto;
     font-size: clamp(18px, 4.8vw, 20px);
   }
-  .contact-page .static-get-in-touch .dot { width: 8px; height: 8px; }
+  .contact-page .static-get-in-touch .contact-icon { width: 17px; height: 17px; }
 
   .contact-page .static-back-arrow {
     top: var(--page-pad-y);

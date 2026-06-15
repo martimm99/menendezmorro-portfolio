@@ -18,7 +18,15 @@
 
 import { prefersReducedMotion } from './utils.js';
 
-const SWEEP_MS = 1000; // mirrors --dur-sweep in tokens.css
+// Read --dur-sweep from the CSS token at call time so the correct duration
+// is used on mobile (600ms) vs desktop (1000ms) without duplicating the value.
+function getSweepMs() {
+  const raw = getComputedStyle(document.documentElement)
+    .getPropertyValue('--dur-sweep').trim();
+  if (raw.endsWith('ms')) return parseFloat(raw);
+  if (raw.endsWith('s'))  return parseFloat(raw) * 1000;
+  return 1000;
+}
 
 /**
  * Run a horizontal sweep on the cover stage.
@@ -58,7 +66,7 @@ export function horizontalSweep({ activeLayer, nextLayer, direction }) {
       return;
     }
 
-    setTimeout(finalize, SWEEP_MS + 60);
+    setTimeout(finalize, getSweepMs() + 60);
   });
 }
 
@@ -108,7 +116,7 @@ export function slideTextSlots(slotPairs, direction) {
         return;
       }
 
-      setTimeout(finalize, SWEEP_MS + 60);
+      setTimeout(finalize, getSweepMs() + 60);
     });
   });
 }

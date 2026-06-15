@@ -55,6 +55,7 @@ let teardown = null;
 // Initial false = description is what the user sees on landing.
 let snapState = { showGallery: false, isAnimating: false };
 let touchStart = null;
+let wakeProgressBar = null;
 
 export function initProject(data, slug) {
   const project = data.projects.find((p) => p.slug === slug);
@@ -83,6 +84,7 @@ export function initProject(data, slug) {
 
   updateHead(data.site, project);
   renderInfoRow(project);
+  renderNextProject(project, data.projects);
   renderDescription(project);
   setupNavigation(data.site);
   initFullscreen();
@@ -101,7 +103,8 @@ export function initProject(data, slug) {
       // the click handler passes only the index.
       const item = document.querySelectorAll('.gallery-item')[index];
       if (item) openFullscreen(item);
-    }
+    },
+    onDrag: () => wakeProgressBar?.()
   });
 
   // Single wheel + touch listener owns both the gallery stepping and
@@ -194,6 +197,28 @@ function renderInfoRow(project) {
       linksCell.hidden = true;
     }
   }
+}
+
+/* ---------- Next project ---------- */
+
+function renderNextProject(project, allProjects) {
+  const cell = document.querySelector('[data-info-cell="next"]');
+  const slot = document.querySelector('[data-next-project-link]');
+  if (!cell || !slot) return;
+
+  const currentIndex = allProjects.findIndex((p) => p.slug === project.slug);
+  const nextProject = allProjects[(currentIndex + 1) % allProjects.length];
+  if (!nextProject) return;
+
+  cell.hidden = false;
+  const arrowSvg = '<span class="info-arrow-clip" aria-hidden="true"><svg class="info-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><use href="/assets/icons/arrows.svg#arrow-right"/></svg></span>';
+  const mobileArrow = '<svg class="info-next-arrow-mobile" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><use href="/assets/icons/arrows.svg#arrow-right"/></svg>';
+  slot.innerHTML = `<a href="/${nextProject.slug}" class="info-link info-next-link">${arrowSvg}<span class="info-next-name">${escapeHtml(nextProject.title)}</span>${mobileArrow}</a>`;
+
+  slot.querySelector('.info-next-link')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    forceRevealAndNavigate(`/${nextProject.slug}`);
+  });
 }
 
 /* ---------- Progress bar ----------
@@ -336,10 +361,21 @@ function initProgressBar(galleryAPI) {
     }
   });
 
-  // Continuous rAF loop. Pauses during CSS transitions (see smoothUntil).
+  // Event-driven rAF loop. Runs only while progress is changing or an
+  // animation is in flight; sleeps once stable to stop forcing style
+  // recalcs on every idle frame. Woken by description scroll, gallery
+  // scroll, and snap start via the module-level wakeProgressBar ref.
+  let tickRafId = null;
+  let prevP = -1;
+
+  function wake() {
+    if (!tickRafId) tickRafId = requestAnimationFrame(tickProgress);
+  }
+
   function tickProgress(timestamp) {
+    tickRafId = null;
     if (timestamp < smoothUntil) {
-      requestAnimationFrame(tickProgress);
+      tickRafId = requestAnimationFrame(tickProgress);
       return;
     }
     if (progressFill.style.transition) progressFill.style.transition = '';
@@ -354,9 +390,24 @@ function initProgressBar(galleryAPI) {
       : descP * gb;
 
     progressFill.style.width = `${p * 100}%`;
-    requestAnimationFrame(tickProgress);
+
+    // Keep running while progress is visibly changing or an animation is
+    // in flight; sleep once stable to stop burning frame budget idle.
+    if (Math.abs(p - prevP) > 0.0005 || snapState.isAnimating) {
+      prevP = p;
+      tickRafId = requestAnimationFrame(tickProgress);
+    } else {
+      prevP = p;
+    }
   }
-  requestAnimationFrame(tickProgress);
+
+  // Wake on description scroll (fires on every native scroll frame).
+  descSection.addEventListener('scroll', wake, { passive: true });
+  // Wake on gallery-track scroll (mobile swipe + arrow buttons fire native scroll events).
+  document.querySelector('[data-gallery-track]')?.addEventListener('scroll', wake, { passive: true });
+  // Wake ref used by snap functions and gallery wheel handler.
+  wakeProgressBar = wake;
+  wake();
 }
 
 /* ---------- Description content ---------- */
@@ -587,6 +638,7 @@ function setupWheelAndSnap(galleryAPI) {
   function handleGalleryWheel(e) {
     const delta = pickAxis(e.deltaX, e.deltaY);
     if (delta === 0) return;
+    wakeProgressBar?.();
 
     // Description-snap-back: only on a NEW gesture (mode null AND
     // no buffer pending) at the first image with a backward delta.
@@ -631,6 +683,7 @@ function setupWheelAndSnap(galleryAPI) {
       bufferedEvent = null;
       bufferTimer = null;
       galleryAPI.step(buffDelta);
+      wakeProgressBar?.();
     }, MOUSE_BUFFER_MS);
   }
 
@@ -717,11 +770,13 @@ function setupKeyboard(galleryAPI) {
     if (snapState.showGallery) {
       if (e.key === 'ArrowLeft') {
         galleryAPI.step(-1);
+        wakeProgressBar?.();
         e.preventDefault();
         return;
       }
       if (e.key === 'ArrowRight') {
         galleryAPI.step(+1);
+        wakeProgressBar?.();
         e.preventDefault();
         return;
       }
@@ -767,6 +822,7 @@ function snapToGallery() {
   snapState.isAnimating = true;
   shell.classList.add('show-gallery');
   gallerySection.setAttribute('aria-hidden', 'false');
+  wakeProgressBar?.();
 
   const reduced = prefersReducedMotion();
   setTimeout(() => {
@@ -788,6 +844,7 @@ function snapToDescription() {
   snapState.isAnimating = true;
   shell.classList.remove('show-gallery');
   gallerySection.setAttribute('aria-hidden', 'true');
+  wakeProgressBar?.();
 
   const reduced = prefersReducedMotion();
   // Reset gallery to its first image after the slide-down completes

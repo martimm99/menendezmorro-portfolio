@@ -37,7 +37,8 @@ export function initGallery({
   track,
   prevBtn,
   nextBtn,
-  onItemActivate
+  onItemActivate,
+  onDrag
 }) {
   if (!items?.length || !gallery || !track) return { destroy() {}, step() {}, isMobile: () => false };
 
@@ -49,7 +50,7 @@ export function initGallery({
   // Wheel handling lives in project.js. Gallery exposes step()
   // instead; project.js's wheel handler owns all the throttling and
   // calls step() once per real gesture.
-  const dragCleanup  = setupDrag({ gallery, track, mqlMobile, onItemActivate });
+  const dragCleanup  = setupDrag({ gallery, track, mqlMobile, onItemActivate, onDrag });
   const arrowCleanup = setupArrows({ prevBtn, nextBtn, gallery, track, mqlMobile });
 
   // The track's CSS padding-right: var(--page-pad-x) naturally
@@ -142,6 +143,9 @@ export function initGallery({
         const max = track.scrollWidth - track.clientWidth;
         return max > 0 ? Math.min(Math.max(track.scrollLeft / max, 0), 1) : 0;
       }
+      // readLiveScroll reads the *animated* transform (getComputedStyle) rather
+      // than the inline-style target so the progress bar tracks the CSS
+      // transition frame-by-frame instead of snapping to the end position.
       const max = trackMaxScroll(track, gallery);
       return max > 0 ? Math.min(Math.max(readLiveScroll(track) / max, 0), 1) : 0;
     }
@@ -270,7 +274,7 @@ export function pickAxis(dx, dy) {
 
 /* ---------- Drag (pointer) ---------- */
 
-function setupDrag({ gallery, track, mqlMobile, onItemActivate }) {
+function setupDrag({ gallery, track, mqlMobile, onItemActivate, onDrag }) {
   let pointerId = null;
   let startX = 0;
   let startScroll = 0;
@@ -308,6 +312,7 @@ function setupDrag({ gallery, track, mqlMobile, onItemActivate }) {
     const max = trackMaxScroll(track, gallery);
     const next = clamp(startScroll - dx, 0, max);
     applyScroll(track, next, /* instant */ true);
+    onDrag?.();
   };
   const up = (e) => {
     if (pointerId !== e.pointerId) return;
@@ -437,13 +442,27 @@ function observeVideos(track, gallery, mqlMobile) {
     if (item) videoItems.set(v, item);
   }
 
+  // Cache item center positions and gallery half-width so syncPlayback
+  // has zero layout reads per call. Refreshed via ResizeObserver on resize.
+  let galleryHalf = gallery.clientWidth / 2;
+  const itemCenters = new Map();
+  for (const [video, item] of videoItems) {
+    itemCenters.set(video, item.offsetLeft + item.offsetWidth / 2);
+  }
+
+  function refreshCache() {
+    galleryHalf = gallery.clientWidth / 2;
+    for (const [video, item] of videoItems) {
+      itemCenters.set(video, item.offsetLeft + item.offsetWidth / 2);
+    }
+  }
+
   function syncPlayback() {
     const scroll = currentScroll(track);
-    const galleryHalf = gallery.clientWidth / 2;
     let bestVideo = null;
     let minDist = Infinity;
-    for (const [video, item] of videoItems) {
-      const dist = Math.abs(item.offsetLeft + item.offsetWidth / 2 - scroll - galleryHalf);
+    for (const [video] of videoItems) {
+      const dist = Math.abs((itemCenters.get(video) ?? 0) - scroll - galleryHalf);
       if (dist < minDist) { minDist = dist; bestVideo = video; }
     }
     for (const video of videos) {
@@ -458,6 +477,10 @@ function observeVideos(track, gallery, mqlMobile) {
   const styleMo = new MutationObserver(syncPlayback);
   styleMo.observe(track, { attributeFilter: ['style'] });
 
+  // Refresh position cache when the gallery resizes.
+  const resizeObs = new ResizeObserver(refreshCache);
+  resizeObs.observe(gallery);
+
   // Pause all when the gallery leaves the viewport (user is in description section).
   const galleryIo = new IntersectionObserver(([entry]) => {
     if (entry.isIntersecting) syncPlayback();
@@ -466,7 +489,7 @@ function observeVideos(track, gallery, mqlMobile) {
   galleryIo.observe(gallery);
 
   syncPlayback();
-  return { disconnect() { styleMo.disconnect(); galleryIo.disconnect(); } };
+  return { disconnect() { styleMo.disconnect(); galleryIo.disconnect(); resizeObs.disconnect(); } };
 }
 
 /* ---------- Scroll helpers ---------- */

@@ -62,6 +62,10 @@ export function initHome(data) {
   setupKeyboard();
   setupDrag();
   initTimer();
+  window.addEventListener('resize', () => {
+    clearTimeout(scaleTitleResizeTimer);
+    scaleTitleResizeTimer = setTimeout(scaleTitleForMobile, 100);
+  }, { passive: true });
 }
 
 /**
@@ -97,6 +101,8 @@ function renderInitial() {
   // Only the "current" slot in each pair gets text. The "next" slot stays
   // empty until a navigation populates it (and promoteSlots clears it again).
   setSlotText('current', project);
+  // One rAF so layout has settled with the loaded font before measuring.
+  requestAnimationFrame(scaleTitleForMobile);
 }
 
 function setSlotText(role, project) {
@@ -217,6 +223,73 @@ function preloadAdjacent(index) {
   }
 }
 
+// Scale the mobile title font-size down when the longest word would overflow
+// the available width. Runs after each navigation and on resize.
+// Always clears any inline font-size first so a stale mobile-scaled value
+// never persists when the viewport is wider than 599px.
+let scaleTitleResizeTimer = null;
+function scaleTitleForMobile() {
+  const titleEl = document.querySelector('.project-title');
+  if (!titleEl) return;
+  titleEl.style.removeProperty('font-size');
+  if (window.innerWidth > 599) return;
+  const slot = titleEl.querySelector('[data-slot-current][data-project-title]');
+  if (!slot) return;
+  const text = slot.textContent.trim();
+  if (!text) return;
+  const longestWord = text.split(/\s+/).reduce((a, b) => a.length > b.length ? a : b, '');
+  const temp = document.createElement('span');
+  temp.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font-size:inherit;font-family:inherit;font-weight:inherit;letter-spacing:inherit';
+  temp.textContent = longestWord;
+  titleEl.appendChild(temp);
+  const wordWidth = temp.getBoundingClientRect().width;
+  titleEl.removeChild(temp);
+  const availableWidth = titleEl.getBoundingClientRect().width;
+  if (wordWidth > availableWidth) {
+    const currentSize = parseFloat(getComputedStyle(titleEl).fontSize);
+    titleEl.style.fontSize = `${Math.floor(currentSize * (availableWidth / wordWidth))}px`;
+  }
+}
+
+// Pre-scale the incoming title's slot-clip before the sweep animation so
+// the text slides in already at the correct font-size, instead of inheriting
+// the parent's stale value from the outgoing project.
+//
+// Sets font-size on the absolute slot-clip only — the parent is untouched so
+// the outgoing text continues its leave animation at its own correct size.
+// On desktop (>599px) the function only clears any stale mobile override.
+function prescaleTitleForMobile(title) {
+  const titleEl = document.querySelector('.project-title');
+  if (!titleEl) return;
+  const nextSlotClip = titleEl.querySelector('.slot-clip[aria-hidden="true"]');
+  if (!nextSlotClip) return;
+  // Always clear a stale value from the previous navigation.
+  nextSlotClip.style.removeProperty('font-size');
+  if (window.innerWidth > 599) {
+    // On desktop, also clear any stale mobile-scaled value on the parent so
+    // the incoming text inherits the correct CSS font-size.
+    titleEl.style.removeProperty('font-size');
+    return;
+  }
+  // Read the unscaled CSS mobile size directly from the token.
+  const rawFs = getComputedStyle(document.documentElement)
+    .getPropertyValue('--fs-title-mobile').trim();
+  const cssFs = parseFloat(rawFs);
+  if (!cssFs) return;
+  const longestWord = title.split(/\s+/).reduce((a, b) => a.length > b.length ? a : b, '');
+  const temp = document.createElement('span');
+  temp.style.cssText = `position:absolute;visibility:hidden;white-space:nowrap;font-size:${cssFs}px;font-family:inherit;font-weight:inherit;letter-spacing:inherit`;
+  temp.textContent = longestWord;
+  titleEl.appendChild(temp);
+  const wordWidth = temp.getBoundingClientRect().width;
+  titleEl.removeChild(temp);
+  const availableWidth = titleEl.getBoundingClientRect().width;
+  const scaledSize = wordWidth > availableWidth
+    ? Math.floor(cssFs * (availableWidth / wordWidth))
+    : cssFs;
+  nextSlotClip.style.fontSize = `${scaledSize}px`;
+}
+
 function setupClickHandlers() {
   document.querySelector('.project-title').addEventListener('click', goToCurrentProject);
   document.querySelector('[data-nav-contact]').addEventListener('click', (e) => {
@@ -297,10 +370,10 @@ function setupDrag() {
   let startY = null;
   let pointerId = null;
   const THRESHOLD = 50;
-  const stage = document.querySelector('.cover-stage');
-  if (!stage) return;
 
-  stage.addEventListener('pointerdown', (e) => {
+  // Listen on document so swipes starting anywhere on screen work —
+  // including over the title (z-index 70), which sits above .cover-stage.
+  document.addEventListener('pointerdown', (e) => {
     if (state.isAnimating) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     startX = e.clientX;
@@ -308,7 +381,7 @@ function setupDrag() {
     pointerId = e.pointerId;
   });
 
-  stage.addEventListener('pointerup', (e) => {
+  document.addEventListener('pointerup', (e) => {
     if (pointerId !== e.pointerId || startX === null) {
       startX = null;
       pointerId = null;
@@ -318,11 +391,18 @@ function setupDrag() {
     const dy = e.clientY - startY;
     startX = null;
     pointerId = null;
-    if (Math.abs(dx) < THRESHOLD || Math.abs(dx) < Math.abs(dy)) return;
-    userNavigate(dx < 0 ? 'next' : 'prev');
+    const absDx = Math.abs(dx);
+    const absDy = Math.abs(dy);
+    // Dominant-axis classification. Ties (exactly 45°) go to horizontal so
+    // a slightly diagonal left/right swipe always reads as horizontal.
+    if (absDx >= THRESHOLD && absDx >= absDy) {
+      userNavigate(dx < 0 ? 'next' : 'prev');
+    } else if (absDy >= THRESHOLD && absDy > absDx) {
+      userNavigate(dy < 0 ? 'next' : 'prev');
+    }
   });
 
-  stage.addEventListener('pointercancel', () => {
+  document.addEventListener('pointercancel', () => {
     startX = null;
     pointerId = null;
   });
@@ -479,6 +559,9 @@ async function navigate(direction) {
 
   // Set the queued text values on the "next" slots in sync.
   setSlotText('next', nextProject);
+  // Pre-scale the incoming slot-clip to the correct font-size before the sweep
+  // starts so the title slides in at the right size from frame one.
+  prescaleTitleForMobile(nextProject.title);
 
   // Run cover sweep and text slide in parallel; they share duration and easing.
   const pairs = collectSlotPairs();
@@ -488,6 +571,7 @@ async function navigate(direction) {
   ]);
 
   promoteSlots();
+  scaleTitleForMobile();
   state.activeLayerIdx = 1 - state.activeLayerIdx;
   state.index = nextIndex;
   preloadAdjacent(state.index);
