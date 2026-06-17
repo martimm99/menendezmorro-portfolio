@@ -94,33 +94,14 @@
         }
       ],
       "duration": "3.5 months",
-      "cover": "assets/media/build-a-rocket/build-a-rocket-1.jpg",
+      "cover": "assets/media/build-a-rocket/build-a-rocket-cover.jpg",
       "coverAlt": "Build A Rocket cover",
       "media": [
-        {
-          "type": "image",
-          "src": "assets/media/build-a-rocket/build-a-rocket-1.jpg",
-          "alt": "Build A Rocket image 1",
-          "caption": ""
-        },
-        {
-          "type": "image",
-          "src": "assets/media/build-a-rocket/build-a-rocket-2.jpg",
-          "alt": "Build A Rocket image 2",
-          "caption": ""
-        },
-        {
-          "type": "image",
-          "src": "assets/media/build-a-rocket/build-a-rocket-3.jpg",
-          "alt": "Build A Rocket image 3",
-          "caption": ""
-        },
-        {
-          "type": "image",
-          "src": "assets/media/build-a-rocket/build-a-rocket-4.jpg",
-          "alt": "Build A Rocket image 4",
-          "caption": ""
-        }
+        { "type": "video", "src": "assets/media/build-a-rocket/build-a-rocket-1.mp4", "alt": "Build A Rocket video 1",  "caption": "" },
+        { "type": "image", "src": "assets/media/build-a-rocket/build-a-rocket-2.jpg", "alt": "Build A Rocket image 2",  "caption": "" },
+        { "type": "image", "src": "assets/media/build-a-rocket/build-a-rocket-3.jpg", "alt": "Build A Rocket image 3",  "caption": "" },
+        { "type": "video", "src": "assets/media/build-a-rocket/build-a-rocket-4.mp4", "alt": "Build A Rocket video 4",  "caption": "" },
+        { "type": "image", "src": "assets/media/build-a-rocket/build-a-rocket-5.jpg", "alt": "Build A Rocket image 5",  "caption": "" }
       ]
     },
     {

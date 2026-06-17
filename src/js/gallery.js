@@ -28,7 +28,7 @@ import { prefersReducedMotion } from './utils.js';
 
 const SCROLL_TRANSITION_MS = 350;
 const DRAG_CLICK_THRESHOLD = 5;
-const VIDEO_VISIBILITY_THRESHOLD = 0.9;
+const VIDEO_VISIBILITY_THRESHOLD = 0.5;
 
 export function initGallery({
   items,
@@ -443,7 +443,9 @@ function observeVideos(track, gallery, mqlMobile) {
   }
 
   // Cache item center positions and gallery half-width so syncPlayback
-  // has zero layout reads per call. Refreshed via ResizeObserver on resize.
+  // has zero layout reads per call. Refreshed via ResizeObserver on resize
+  // and after each video's loadedmetadata fires (item dimensions may shift
+  // before the video's intrinsic size is known).
   let galleryHalf = gallery.clientWidth / 2;
   const itemCenters = new Map();
   for (const [video, item] of videoItems) {
@@ -455,6 +457,10 @@ function observeVideos(track, gallery, mqlMobile) {
     for (const [video, item] of videoItems) {
       itemCenters.set(video, item.offsetLeft + item.offsetWidth / 2);
     }
+  }
+
+  for (const video of videos) {
+    video.addEventListener('loadedmetadata', () => { refreshCache(); syncPlayback(); }, { once: true });
   }
 
   function syncPlayback() {
