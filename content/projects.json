@@ -1,246 +1,611 @@
 {
   "projects": [
     {
-      "slug": "morro",
-      "title": "MORRO",
-      "role": "Branding and Art Direction",
-      "year": "2026",
-      "location": "Mallorca",
-      "type": "design",
-      "subcategory": [],
-      "highlightColor": "#0055FF",
-      "description": "Digital design studio.",
       "longDescription": "MORRO is a self-branding exercise.\n\nFrom the need of talking to the world from my own identity, the idea of defining my own visual identity materialised into this project. Years of postponing it and failed attempts led to collecting some learnings about what would work when visually defining myself, and what wouldn't.\n\nUsing my full name as my personal brand had worked for me in the past, but now it felt informal, personal and too long, so the process started with a naming exercise that resulted in using one of my last names as the name to encompass my work.\n\nAs mentioned before, the previous failed attempts to identify myself with a graphic identity taught me to not only aim for meaning, but also for a style I identified with. After extensive research and plenty of sketching and visual testing, I was able to rule out everything that didn't feel like me and to define what did feel like me: imperfect but clean design, relaxed shapes, warm tones and quotidian imagery.\n\nManual sketches turned into digital vectors that were then mixed with texture, typography, color and images, always keeping in mind the specific art direction that defines me.\n\nMORRO is my personal brand as a designer. It signs all my freelance work as well as this portfolio. Together with its claim, \"MUCHO MORRO\" (a pun that would translate to \"having some nerve\") it aims to represent being bold and believing in what you do.",
+      "media": [
+        {
+          "type": "image",
+          "src": "assets/media/morro/morro-1.jpg",
+          "alt": "MORRO image 1",
+          "caption": "Visual introduction to the logotype."
+        },
+        {
+          "type": "image",
+          "src": "assets/media/morro/morro-2.jpg",
+          "alt": "MORRO image 2",
+          "caption": "Visual introduction to the style."
+        },
+        {
+          "type": "image",
+          "src": "assets/media/morro/morro-3.jpg",
+          "alt": "MORRO image 3",
+          "caption": "Introduction of the word \"Mucho\" (meaning \"a lot\" - \"having a lot of nerve\")"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/morro/morro-4.jpg",
+          "alt": "MORRO image 4",
+          "caption": "Introduction to the isotype."
+        },
+        {
+          "type": "image",
+          "src": "assets/media/morro/morro-5.jpg",
+          "alt": "MORRO image 5",
+          "caption": "Other statements of the visual style."
+        },
+        {
+          "type": "image",
+          "src": "assets/media/morro/morro-6.jpg",
+          "alt": "MORRO image 6",
+          "caption": "Application of the brand tag on physical assets."
+        },
+        {
+          "type": "image",
+          "src": "assets/media/morro/morro-7.jpg",
+          "alt": "MORRO image 7",
+          "caption": "Sketch of a previous attempt to define a brand identity. Ruled out because of a style mismatch."
+        },
+        {
+          "type": "image",
+          "src": "assets/media/morro/morro-8.jpg",
+          "alt": "MORRO image 8",
+          "caption": "Preview of a previous branding attempt."
+        },
+        {
+          "type": "image",
+          "src": "assets/media/morro/morro-9.jpg",
+          "alt": "MORRO image 9",
+          "caption": "Preview of a previous branding attempt."
+        },
+        {
+          "type": "image",
+          "src": "assets/media/morro/morro-10.jpg",
+          "alt": "MORRO image 10",
+          "caption": "Preview of a previous branding attempt."
+        },
+        {
+          "type": "image",
+          "src": "assets/media/morro/morro-11.jpg",
+          "alt": "MORRO image 11",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/morro/morro-12.jpg",
+          "alt": "MORRO image 12",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/morro/morro-13.jpg",
+          "alt": "MORRO image 13",
+          "caption": ""
+        }
+      ],
+      "slug": "morro",
+      "highlightColor": "#0055FF",
+      "coverAlt": "MORRO cover",
+      "location": "Mallorca",
+      "role": "Branding and Art Direction",
+      "cover": "assets/media/morro/morro-cover.jpg",
+      "title": "MORRO",
       "links": [
         {
           "url": "https://www.instagram.com/uepmorro/",
           "text": "@uepmorro"
         }
       ],
-      "cover": "assets/media/morro/morro-cover.jpg",
-      "coverAlt": "MORRO cover",
-      "media": [
-        { "type": "image", "src": "assets/media/morro/morro-1.jpg",  "alt": "MORRO image 1",  "caption": "Visual introduction to the logotype." },
-        { "type": "image", "src": "assets/media/morro/morro-2.jpg",  "alt": "MORRO image 2",  "caption": "Visual introduction to the style." },
-        { "type": "image", "src": "assets/media/morro/morro-3.jpg",  "alt": "MORRO image 3",  "caption": "Introduction of the word \"Mucho\" (meaning \"a lot\" - \"having a lot of nerve\")" },
-        { "type": "image", "src": "assets/media/morro/morro-4.jpg",  "alt": "MORRO image 4",  "caption": "Introduction to the isotype." },
-        { "type": "image", "src": "assets/media/morro/morro-5.jpg",  "alt": "MORRO image 5",  "caption": "Other statements of the visual style." },
-        { "type": "image", "src": "assets/media/morro/morro-6.jpg",  "alt": "MORRO image 6",  "caption": "Application of the brand tag on physical assets." },
-        { "type": "image", "src": "assets/media/morro/morro-7.jpg",  "alt": "MORRO image 7",  "caption": "Sketch of a previous attempt to define a brand identity. Ruled out because of a style mismatch." },
-        { "type": "image", "src": "assets/media/morro/morro-8.jpg",  "alt": "MORRO image 8",  "caption": "Preview of a previous branding attempt." },
-        { "type": "image", "src": "assets/media/morro/morro-9.jpg",  "alt": "MORRO image 9",  "caption": "Preview of a previous branding attempt." },
-        { "type": "image", "src": "assets/media/morro/morro-10.jpg", "alt": "MORRO image 10", "caption": "Preview of a previous branding attempt." },
-        { "type": "image", "src": "assets/media/morro/morro-11.jpg", "alt": "MORRO image 11", "caption": "" },
-        { "type": "image", "src": "assets/media/morro/morro-12.jpg", "alt": "MORRO image 12", "caption": "" },
-        { "type": "image", "src": "assets/media/morro/morro-13.jpg", "alt": "MORRO image 13", "caption": "" }
-      ]
+      "type": "design",
+      "description": "Digital design studio.",
+      "year": "2026",
+      "subcategory": []
     },
     {
-      "slug": "lufthansa-innovation-hub",
-      "title": "LIH",
-      "role": "Graphic Design & Motion Graphics",
-      "year": "2026",
-      "location": "Berlin",
-      "type": "design",
-      "subcategory": [],
-      "highlightColor": "#00FF80",
-      "description": "Digital solutions for the next in travel and mobility.",
       "longDescription": "",
+      "media": [
+        {
+          "type": "video",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-1.mp4",
+          "alt": "Lufthansa Innovation Hub video 1",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-2.jpg",
+          "alt": "Lufthansa Innovation Hub image 2",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-3.jpg",
+          "alt": "Lufthansa Innovation Hub image 3",
+          "caption": ""
+        },
+        {
+          "type": "video",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-4.mp4",
+          "alt": "Lufthansa Innovation Hub video 4",
+          "caption": ""
+        },
+        {
+          "type": "video",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-5.mp4",
+          "alt": "Lufthansa Innovation Hub video 5",
+          "caption": ""
+        },
+        {
+          "type": "video",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-6.mp4",
+          "alt": "Lufthansa Innovation Hub video 6",
+          "caption": ""
+        },
+        {
+          "type": "video",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-7.mp4",
+          "alt": "Lufthansa Innovation Hub video 7",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-8.jpg",
+          "alt": "Lufthansa Innovation Hub image 8",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-9.jpg",
+          "alt": "Lufthansa Innovation Hub image 9",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-10.jpg",
+          "alt": "Lufthansa Innovation Hub image 10",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-11.jpg",
+          "alt": "Lufthansa Innovation Hub image 11",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-12.jpg",
+          "alt": "Lufthansa Innovation Hub image 12",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-13.jpg",
+          "alt": "Lufthansa Innovation Hub image 13",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-14.jpg",
+          "alt": "Lufthansa Innovation Hub image 14",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-15.jpg",
+          "alt": "Lufthansa Innovation Hub image 15",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-16.jpg",
+          "alt": "Lufthansa Innovation Hub image 16",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-17.jpg",
+          "alt": "Lufthansa Innovation Hub image 17",
+          "caption": ""
+        }
+      ],
+      "slug": "lufthansa-innovation-hub",
+      "highlightColor": "#00FF80",
+      "coverAlt": "Lufthansa Innovation Hub cover",
+      "location": "Berlin",
+      "role": "Graphic Design & Motion Graphics",
+      "cover": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-cover.jpg",
+      "title": "LIH",
       "links": [
         {
           "url": "https://lh-innovationhub.de/en/",
           "text": "Website"
         }
       ],
-      "cover": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-cover.jpg",
-      "coverAlt": "Lufthansa Innovation Hub cover",
-      "media": [
-        { "type": "video", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-1.mp4", "alt": "Lufthansa Innovation Hub video 1",  "caption": "" },
-        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-2.jpg", "alt": "Lufthansa Innovation Hub image 2",  "caption": "" },
-        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-3.jpg", "alt": "Lufthansa Innovation Hub image 3",  "caption": "" },
-        { "type": "video", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-4.mp4", "alt": "Lufthansa Innovation Hub video 4",  "caption": "" },
-        { "type": "video", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-5.mp4", "alt": "Lufthansa Innovation Hub video 5",  "caption": "" },
-        { "type": "video", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-6.mp4", "alt": "Lufthansa Innovation Hub video 6",  "caption": "" },
-        { "type": "video", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-7.mp4", "alt": "Lufthansa Innovation Hub video 7",  "caption": "" },
-        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-8.jpg", "alt": "Lufthansa Innovation Hub image 8",  "caption": "" },
-        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-9.jpg", "alt": "Lufthansa Innovation Hub image 9",  "caption": "" },
-        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-10.jpg", "alt": "Lufthansa Innovation Hub image 10", "caption": "" },
-        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-11.jpg", "alt": "Lufthansa Innovation Hub image 11", "caption": "" },
-        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-12.jpg", "alt": "Lufthansa Innovation Hub image 12", "caption": "" },
-        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-13.jpg", "alt": "Lufthansa Innovation Hub image 13", "caption": "" },
-        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-14.jpg", "alt": "Lufthansa Innovation Hub image 14", "caption": "" },
-        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-15.jpg", "alt": "Lufthansa Innovation Hub image 15", "caption": "" },
-        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-16.jpg", "alt": "Lufthansa Innovation Hub image 16", "caption": "" },
-        { "type": "image", "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-17.jpg", "alt": "Lufthansa Innovation Hub image 17", "caption": "" }
-      ]
+      "type": "design",
+      "description": "Digital solutions for the next in travel and mobility.",
+      "year": "2026",
+      "subcategory": []
     },
     {
-      "slug": "build-a-rocket",
-      "title": "BUILD A ROCKET",
-      "role": "Web Design",
-      "year": "2026",
-      "location": "Berlin",
-      "type": "design",
-      "subcategory": [],
-      "highlightColor": "#0055FF",
-      "description": "Full-service gaming agency.",
       "longDescription": "",
+      "media": [
+        {
+          "type": "image",
+          "src": "assets/media/build-a-rocket/build-a-rocket-1.jpg",
+          "alt": "Build A Rocket image 1",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/build-a-rocket/build-a-rocket-2.jpg",
+          "alt": "Build A Rocket image 2",
+          "caption": ""
+        },
+        {
+          "type": "video",
+          "src": "assets/media/build-a-rocket/build-a-rocket-3.mp4",
+          "alt": "Build A Rocket video 3",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/build-a-rocket/build-a-rocket-4.jpg",
+          "alt": "Build A Rocket image 4",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/build-a-rocket/build-a-rocket-5.jpg",
+          "alt": "Build A Rocket image 5",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/build-a-rocket/build-a-rocket-6.jpg",
+          "alt": "Build A Rocket image 6",
+          "caption": ""
+        },
+        {
+          "type": "video",
+          "src": "assets/media/build-a-rocket/build-a-rocket-7.mp4",
+          "alt": "Build A Rocket video 7",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/build-a-rocket/build-a-rocket-8.jpg",
+          "alt": "Build A Rocket image 8",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/build-a-rocket/build-a-rocket-9.jpg",
+          "alt": "Build A Rocket image 9",
+          "caption": ""
+        }
+      ],
+      "slug": "build-a-rocket",
+      "highlightColor": "#0055FF",
+      "coverAlt": "Build A Rocket cover",
+      "location": "Berlin",
+      "role": "Web Design",
+      "cover": "assets/media/build-a-rocket/build-a-rocket-cover.jpg",
+      "title": "BUILD A ROCKET",
       "links": [
         {
           "url": "https://buildarocket.com/en",
           "text": "Website"
         }
       ],
-      "cover": "assets/media/build-a-rocket/build-a-rocket-cover.jpg",
-      "coverAlt": "Build A Rocket cover",
-      "media": [
-        { "type": "image", "src": "assets/media/build-a-rocket/build-a-rocket-1.jpg", "alt": "Build A Rocket image 1", "caption": "" },
-        { "type": "image", "src": "assets/media/build-a-rocket/build-a-rocket-2.jpg", "alt": "Build A Rocket image 2", "caption": "" },
-        { "type": "video", "src": "assets/media/build-a-rocket/build-a-rocket-3.mp4", "alt": "Build A Rocket video 3", "caption": "" },
-        { "type": "image", "src": "assets/media/build-a-rocket/build-a-rocket-4.jpg", "alt": "Build A Rocket image 4", "caption": "" },
-        { "type": "image", "src": "assets/media/build-a-rocket/build-a-rocket-5.jpg", "alt": "Build A Rocket image 5", "caption": "" },
-        { "type": "image", "src": "assets/media/build-a-rocket/build-a-rocket-6.jpg", "alt": "Build A Rocket image 6", "caption": "" },
-        { "type": "video", "src": "assets/media/build-a-rocket/build-a-rocket-7.mp4", "alt": "Build A Rocket video 7", "caption": "" },
-        { "type": "image", "src": "assets/media/build-a-rocket/build-a-rocket-8.jpg", "alt": "Build A Rocket image 8", "caption": "" },
-        { "type": "image", "src": "assets/media/build-a-rocket/build-a-rocket-9.jpg", "alt": "Build A Rocket image 9", "caption": "" }
-      ]
+      "type": "design",
+      "description": "Full-service gaming agency.",
+      "year": "2026",
+      "subcategory": []
     },
     {
-      "slug": "reaviva",
-      "title": "GESTIÓN REAVIVA",
-      "role": "Branding and Web Design & Development",
-      "year": "2025",
-      "location": "Mallorca",
-      "type": "design",
-      "subcategory": [],
-      "highlightColor": "#0055FF",
-      "description": "Technical services for construction projects.",
       "longDescription": "",
+      "media": [
+        {
+          "type": "image",
+          "src": "assets/media/reaviva/gestion-reaviva-1.jpg",
+          "alt": "Gestión Reaviva image 1",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/reaviva/gestion-reaviva-2.jpg",
+          "alt": "Gestión Reaviva image 2",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/reaviva/gestion-reaviva-3.jpg",
+          "alt": "Gestión Reaviva image 3",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/reaviva/gestion-reaviva-4.jpg",
+          "alt": "Gestión Reaviva image 4",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/reaviva/gestion-reaviva-5.jpg",
+          "alt": "Gestión Reaviva image 5",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/reaviva/gestion-reaviva-6.jpg",
+          "alt": "Gestión Reaviva image 6",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/reaviva/gestion-reaviva-7.jpg",
+          "alt": "Gestión Reaviva image 7",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/reaviva/gestion-reaviva-8.jpg",
+          "alt": "Gestión Reaviva image 8",
+          "caption": ""
+        }
+      ],
+      "slug": "reaviva",
+      "highlightColor": "#0055FF",
+      "coverAlt": "Gestión Reaviva cover",
+      "location": "Mallorca",
+      "role": "Branding and Web Design & Development",
+      "cover": "assets/media/reaviva/gestion-reaviva-cover.jpg",
+      "title": "GESTIÓN REAVIVA",
       "links": [
         {
           "url": "https://www.gestionreaviva.com/",
           "text": "Website"
         }
       ],
-      "cover": "assets/media/reaviva/gestion-reaviva-cover.jpg",
-      "coverAlt": "Gestión Reaviva cover",
-      "media": [
-        { "type": "image", "src": "assets/media/reaviva/gestion-reaviva-1.jpg", "alt": "Gestión Reaviva image 1", "caption": "" },
-        { "type": "image", "src": "assets/media/reaviva/gestion-reaviva-2.jpg", "alt": "Gestión Reaviva image 2", "caption": "" },
-        { "type": "image", "src": "assets/media/reaviva/gestion-reaviva-3.jpg", "alt": "Gestión Reaviva image 3", "caption": "" },
-        { "type": "image", "src": "assets/media/reaviva/gestion-reaviva-4.jpg", "alt": "Gestión Reaviva image 4", "caption": "" },
-        { "type": "image", "src": "assets/media/reaviva/gestion-reaviva-5.jpg", "alt": "Gestión Reaviva image 5", "caption": "" },
-        { "type": "image", "src": "assets/media/reaviva/gestion-reaviva-6.jpg", "alt": "Gestión Reaviva image 6", "caption": "" },
-        { "type": "image", "src": "assets/media/reaviva/gestion-reaviva-7.jpg", "alt": "Gestión Reaviva image 7", "caption": "" },
-        { "type": "image", "src": "assets/media/reaviva/gestion-reaviva-8.jpg", "alt": "Gestión Reaviva image 8", "caption": "" }
-      ]
+      "type": "design",
+      "description": "Technical services for construction projects.",
+      "year": "2025",
+      "subcategory": []
     },
     {
-      "slug": "festival-z",
-      "title": "FESTIVAL Z",
-      "role": "Creative Direction",
-      "year": "2026",
-      "location": "Girona",
-      "type": "design",
-      "subcategory": [],
-      "highlightColor": "#FF03AD",
-      "description": "Performing arts festival.",
       "longDescription": "",
+      "media": [
+        {
+          "type": "image",
+          "src": "assets/media/festival-z/festival-z-1.jpg",
+          "alt": "Festival Z image 1",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/festival-z/festival-z-2.jpg",
+          "alt": "Festival Z image 2",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/festival-z/festival-z-3.jpg",
+          "alt": "Festival Z image 3",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/festival-z/festival-z-4.jpg",
+          "alt": "Festival Z image 4",
+          "caption": ""
+        },
+        {
+          "type": "video",
+          "src": "assets/media/festival-z/festival-z-5.mp4",
+          "alt": "Festival Z video 5",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/festival-z/festival-z-6.jpg",
+          "alt": "Festival Z image 6",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/festival-z/festival-z-7.jpg",
+          "alt": "Festival Z image 7",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/festival-z/festival-z-8.jpg",
+          "alt": "Festival Z image 8",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/festival-z/festival-z-9.jpg",
+          "alt": "Festival Z image 9",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/festival-z/festival-z-10.jpg",
+          "alt": "Festival Z image 10",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/festival-z/festival-z-11.jpg",
+          "alt": "Festival Z image 11",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/festival-z/festival-z-12.jpg",
+          "alt": "Festival Z image 12",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/festival-z/festival-z-13.jpg",
+          "alt": "Festival Z image 13",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/festival-z/festival-z-14.jpg",
+          "alt": "Festival Z image 14",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/festival-z/festival-z-15.jpg",
+          "alt": "Festival Z image 15",
+          "caption": ""
+        }
+      ],
+      "slug": "festival-z",
+      "highlightColor": "#FF03AD",
+      "coverAlt": "Festival Z cover",
+      "location": "Girona",
+      "role": "Creative Direction",
+      "cover": "assets/media/festival-z/festival-z-cover.jpg",
+      "title": "FESTIVAL Z",
       "links": [
         {
           "url": "https://www.festivalz.org/en/",
           "text": "Website"
         }
       ],
-      "cover": "assets/media/festival-z/festival-z-cover.jpg",
-      "coverAlt": "Festival Z cover",
-      "media": [
-        { "type": "image", "src": "assets/media/festival-z/festival-z-1.jpg",  "alt": "Festival Z image 1",  "caption": "" },
-        { "type": "image", "src": "assets/media/festival-z/festival-z-2.jpg",  "alt": "Festival Z image 2",  "caption": "" },
-        { "type": "image", "src": "assets/media/festival-z/festival-z-3.jpg",  "alt": "Festival Z image 3",  "caption": "" },
-        { "type": "image", "src": "assets/media/festival-z/festival-z-4.jpg",  "alt": "Festival Z image 4",  "caption": "" },
-        { "type": "video", "src": "assets/media/festival-z/festival-z-5.mp4",  "alt": "Festival Z video 5",  "caption": "" },
-        { "type": "image", "src": "assets/media/festival-z/festival-z-6.jpg",  "alt": "Festival Z image 6",  "caption": "" },
-        { "type": "image", "src": "assets/media/festival-z/festival-z-7.jpg",  "alt": "Festival Z image 7",  "caption": "" },
-        { "type": "image", "src": "assets/media/festival-z/festival-z-8.jpg",  "alt": "Festival Z image 8",  "caption": "" },
-        { "type": "image", "src": "assets/media/festival-z/festival-z-9.jpg",  "alt": "Festival Z image 9",  "caption": "" },
-        { "type": "image", "src": "assets/media/festival-z/festival-z-10.jpg", "alt": "Festival Z image 10", "caption": "" },
-        { "type": "image", "src": "assets/media/festival-z/festival-z-11.jpg", "alt": "Festival Z image 11", "caption": "" },
-        { "type": "image", "src": "assets/media/festival-z/festival-z-12.jpg", "alt": "Festival Z image 12", "caption": "" },
-        { "type": "image", "src": "assets/media/festival-z/festival-z-13.jpg", "alt": "Festival Z image 13", "caption": "" },
-        { "type": "image", "src": "assets/media/festival-z/festival-z-14.jpg", "alt": "Festival Z image 14", "caption": "" },
-        { "type": "image", "src": "assets/media/festival-z/festival-z-15.jpg", "alt": "Festival Z image 15", "caption": "" }
-      ]
+      "type": "design",
+      "description": "Performing arts festival.",
+      "year": "2026",
+      "subcategory": []
     },
     {
-      "slug": "titles",
-      "title": "TITLES",
-      "role": "Graphic Design",
-      "year": "2023",
-      "location": "Girona",
-      "type": "design",
-      "subcategory": [],
-      "highlightColor": "#0055FF",
-      "description": "Titles design for audiovisual projects.",
       "longDescription": "",
+      "media": [
+        {
+          "type": "video",
+          "src": "assets/media/titles/titles-1.mp4",
+          "alt": "Titles video 1",
+          "caption": ""
+        },
+        {
+          "type": "video",
+          "src": "assets/media/titles/titles-2.mp4",
+          "alt": "Titles video 2",
+          "caption": ""
+        },
+        {
+          "type": "video",
+          "src": "assets/media/titles/titles-3.mp4",
+          "alt": "Titles video 3",
+          "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/media/titles/titles-4.jpg",
+          "alt": "Titles image 4",
+          "caption": ""
+        },
+        {
+          "type": "video",
+          "src": "assets/media/titles/titles-5.mp4",
+          "alt": "Titles video 5",
+          "caption": ""
+        },
+        {
+          "type": "video",
+          "src": "assets/media/titles/titles-6.mp4",
+          "alt": "Titles video 6",
+          "caption": ""
+        },
+        {
+          "type": "video",
+          "src": "assets/media/titles/titles-7.mp4",
+          "alt": "Titles video 7",
+          "caption": ""
+        },
+        {
+          "type": "video",
+          "src": "assets/media/titles/titles-8.mp4",
+          "alt": "Titles video 8",
+          "caption": ""
+        },
+        {
+          "type": "video",
+          "src": "assets/media/titles/titles-9.mp4",
+          "alt": "Titles video 9",
+          "caption": ""
+        },
+        {
+          "type": "video",
+          "src": "assets/media/titles/titles-10.mp4",
+          "alt": "Titles video 10",
+          "caption": ""
+        },
+        {
+          "type": "video",
+          "src": "assets/media/titles/titles-11.mp4",
+          "alt": "Titles video 11",
+          "caption": ""
+        }
+      ],
+      "slug": "titles",
+      "highlightColor": "#0055FF",
+      "coverAlt": "Titles cover",
+      "location": "Girona",
+      "role": "Graphic Design",
+      "cover": "assets/media/titles/titles-1.mp4",
+      "title": "TITLES",
       "links": [
         {
           "url": "https://www.youtube.com/watch?v=sJiwuL1KLHk&list=RDsJiwuL1KLHk&start_radio=1",
           "text": "Youtube"
         }
       ],
-      "cover": "assets/media/titles/titles-1.mp4",
-      "coverAlt": "Titles cover",
-      "media": [
-        { "type": "video", "src": "assets/media/titles/titles-1.mp4",  "alt": "Titles video 1",  "caption": "" },
-        { "type": "video", "src": "assets/media/titles/titles-2.mp4",  "alt": "Titles video 2",  "caption": "" },
-        { "type": "video", "src": "assets/media/titles/titles-3.mp4",  "alt": "Titles video 3",  "caption": "" },
-        { "type": "image", "src": "assets/media/titles/titles-4.jpg",  "alt": "Titles image 4",  "caption": "" },
-        { "type": "video", "src": "assets/media/titles/titles-5.mp4",  "alt": "Titles video 5",  "caption": "" },
-        { "type": "video", "src": "assets/media/titles/titles-6.mp4",  "alt": "Titles video 6",  "caption": "" },
-        { "type": "video", "src": "assets/media/titles/titles-7.mp4",  "alt": "Titles video 7",  "caption": "" },
-        { "type": "video", "src": "assets/media/titles/titles-8.mp4",  "alt": "Titles video 8",  "caption": "" },
-        { "type": "video", "src": "assets/media/titles/titles-9.mp4",  "alt": "Titles video 9",  "caption": "" },
-        { "type": "video", "src": "assets/media/titles/titles-10.mp4", "alt": "Titles video 10", "caption": "" },
-        { "type": "video", "src": "assets/media/titles/titles-11.mp4", "alt": "Titles video 11", "caption": "" }
-      ]
+      "type": "design",
+      "description": "Titles design for audiovisual projects.",
+      "year": "2023",
+      "subcategory": []
     },
     {
+      "longDescription": "",
+      "media": [],
       "slug": "architecture",
-      "title": "ARCHITECTURE",
-      "role": "Photography and Postproduction",
-      "year": "2026",
-      "location": "Mallorca",
-      "type": "photo",
-      "subcategory": [],
       "highlightColor": "#0055FF",
-      "description": "Photography service for real estate agencies.",
-      "longDescription": "",
-      "links": [],
-      "cover": "",
       "coverAlt": "",
-      "media": []
+      "location": "Mallorca",
+      "role": "Photography and Postproduction",
+      "cover": "/assets/media/architecture-cover.jpg",
+      "title": "ARCHITECTURE",
+      "links": [],
+      "type": "photo",
+      "description": "Photography service for real estate agencies.",
+      "year": "2026",
+      "subcategory": []
     },
     {
-      "slug": "concerts",
-      "title": "CONCERTS",
-      "role": "Photography and Postproduction",
-      "year": "2026",
-      "location": "Madrid",
-      "type": "photo",
-      "subcategory": [],
-      "highlightColor": "#0055FF",
-      "description": "Concert photography for artists, labels and media.",
       "longDescription": "",
+      "media": [],
+      "slug": "concerts",
+      "highlightColor": "#0055FF",
+      "coverAlt": "",
+      "location": "Madrid",
+      "role": "Photography and Postproduction",
+      "cover": "",
+      "title": "CONCERTS",
       "links": [
         {
           "url": "https://fleek.25gramos.com/live_show/live-show-w-gloosito/",
           "text": "25Gramos"
         }
       ],
-      "cover": "",
-      "coverAlt": "",
-      "media": []
+      "type": "photo",
+      "description": "Concert photography for artists, labels and media.",
+      "year": "2026",
+      "subcategory": []
     }
   ]
 }
