@@ -280,6 +280,13 @@ function setupClickHandlers() {
     // Logo on Home is a no-op per spec; intercept to prevent reload.
     e.preventDefault();
   });
+
+  // Desktop only: clicking the cover background opens the current project.
+  // No cursor or hover change — the cover stays visually inert.
+  document.querySelector('.cover-stage')?.addEventListener('click', (e) => {
+    if (window.innerWidth <= 599 || state.isAnimating) return;
+    goToCurrentProject(e);
+  });
 }
 
 function goToCurrentProject(e) {
