@@ -572,10 +572,17 @@
     },
     {
       "longDescription": "",
-      "media": [],
+      "media": [
+        {
+          "type": "image",
+          "src": "/assets/media/architecture-1.jpg",
+          "alt": "MORRO Architecture 1",
+          "caption": ""
+        }
+      ],
       "slug": "architecture",
       "highlightColor": "#0055FF",
-      "coverAlt": "",
+      "coverAlt": "architecture cover",
       "location": "Mallorca",
       "role": "Photography and Postproduction",
       "cover": "/assets/media/architecture-cover.jpg",
