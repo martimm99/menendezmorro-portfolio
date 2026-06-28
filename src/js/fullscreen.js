@@ -46,7 +46,7 @@ export function initFullscreen() {
 
 export function openFullscreen(galleryItem) {
   if (!stage || state.isOpen || state.isAnimating) return;
-  const sourceMedia = galleryItem.querySelector('picture, video');
+  const sourceMedia = galleryItem.querySelector('img, video');
   if (!sourceMedia) return;
 
   const sourceRect = galleryItem.getBoundingClientRect();
