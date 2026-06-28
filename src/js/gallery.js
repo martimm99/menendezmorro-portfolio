@@ -434,20 +434,21 @@ function observeVideos(track, gallery, mqlMobile) {
     if (item) videoItems.set(v, item);
   }
 
-  // Cache item center positions and gallery half-width so syncPlayback
-  // has zero layout reads per call. Refreshed via ResizeObserver on resize
-  // and after each video's loadedmetadata fires (item dimensions may shift
-  // before the video's intrinsic size is known).
+  // Cache center positions for ALL items (not just video items) so syncPlayback
+  // can find the truly active item. If that item is an image, no video plays.
+  // Refreshed via ResizeObserver on resize and after each video's loadedmetadata
+  // fires (item dimensions may shift before intrinsic size is known).
+  const allItems = Array.from(track.querySelectorAll('.gallery-item'));
   let galleryHalf = gallery.clientWidth / 2;
   const itemCenters = new Map();
-  for (const [video, item] of videoItems) {
-    itemCenters.set(video, item.offsetLeft + item.offsetWidth / 2);
+  for (const item of allItems) {
+    itemCenters.set(item, item.offsetLeft + item.offsetWidth / 2);
   }
 
   function refreshCache() {
     galleryHalf = gallery.clientWidth / 2;
-    for (const [video, item] of videoItems) {
-      itemCenters.set(video, item.offsetLeft + item.offsetWidth / 2);
+    for (const item of allItems) {
+      itemCenters.set(item, item.offsetLeft + item.offsetWidth / 2);
     }
   }
 
@@ -460,14 +461,14 @@ function observeVideos(track, gallery, mqlMobile) {
 
   function syncPlayback() {
     const scroll = currentScroll(track);
-    let bestVideo = null;
+    let bestItem = null;
     let minDist = Infinity;
-    for (const [video] of videoItems) {
-      const dist = Math.abs((itemCenters.get(video) ?? 0) - scroll - galleryHalf);
-      if (dist < minDist) { minDist = dist; bestVideo = video; }
+    for (const item of allItems) {
+      const dist = Math.abs((itemCenters.get(item) ?? 0) - scroll - galleryHalf);
+      if (dist < minDist) { minDist = dist; bestItem = item; }
     }
-    for (const video of videos) {
-      if (video === bestVideo) video.play().catch(() => {});
+    for (const [video, item] of videoItems) {
+      if (item === bestItem) video.play().catch(() => {});
       else video.pause();
     }
   }
