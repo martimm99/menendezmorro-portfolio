@@ -91,7 +91,7 @@ function getCover(project) {
     const type = /\.mp4$/i.test(project.cover) ? 'video' : 'image';
     return { type, src: project.cover, alt: project.coverAlt || `${project.title} cover` };
   }
-  return project.media[0];
+  return project.media[0] ?? null;
 }
 
 function renderInitial() {
@@ -139,6 +139,7 @@ function promoteSlots() {
 
 function paintCover(layer, mediaItem, projectTitle, highPriority = false) {
   layer.innerHTML = '';
+  if (!mediaItem) return;
   if (mediaItem.type === 'video') {
     const video = renderVideo(mediaItem, projectTitle);
     layer.appendChild(video);
@@ -214,7 +215,7 @@ function preloadAdjacent(index) {
   for (const i of new Set([prev, next])) {
     if (i === index) continue;
     const cover = getCover(state.data.projects[i]);
-    if (cover.type !== 'image') continue;
+    if (!cover || cover.type !== 'image') continue;
     const src = '/' + cover.src.replace(/^\//, '');
     const ext = src.match(/\.[^.]+$/)?.[0] ?? '';
     const desktopWebp = src.slice(0, -ext.length) + '-desktop.webp';
