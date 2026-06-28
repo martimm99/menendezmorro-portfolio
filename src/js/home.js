@@ -88,7 +88,8 @@ function resumeIndex(data) {
 // media[0] so projects without a dedicated cover still render.
 function getCover(project) {
   if (project.cover) {
-    return { type: 'image', src: project.cover, alt: project.coverAlt || `${project.title} cover` };
+    const type = /\.mp4$/i.test(project.cover) ? 'video' : 'image';
+    return { type, src: project.cover, alt: project.coverAlt || `${project.title} cover` };
   }
   return project.media[0];
 }

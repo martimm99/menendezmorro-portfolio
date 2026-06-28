@@ -28,19 +28,20 @@ const state = {
   sourceRect: null
 };
 
-let stage, mediaWrap, captionEl;
+let stage, backdrop, mediaWrap, captionEl;
 let escListener = null;
 
 export function initFullscreen() {
   stage     = document.querySelector('[data-fullscreen-stage]');
+  backdrop  = document.querySelector('[data-fullscreen-backdrop]');
   mediaWrap = document.querySelector('[data-fullscreen-media]');
   captionEl = document.querySelector('[data-fullscreen-caption]');
   if (!stage || !mediaWrap) return;
 
-  // Click outside the media to close.
-  stage.addEventListener('click', (e) => {
-    if (state.isOpen && !e.target.closest('[data-fullscreen-media]')) closeFullscreen();
-  });
+  // Clicking the backdrop (empty space around the media) closes fullscreen.
+  // The backdrop is behind the media wrap in z-order, so clicks on the media
+  // — including native video controls — go to the media, not the backdrop.
+  backdrop?.addEventListener('click', () => { if (state.isOpen) closeFullscreen(); });
 }
 
 export function openFullscreen(galleryItem) {

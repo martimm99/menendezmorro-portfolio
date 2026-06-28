@@ -117,8 +117,7 @@ collections:
                 fields:
                   - { name: "url",  label: "URL",          widget: "string" }
                   - { name: "text", label: "Display text", widget: "string" }
-              - { name: "duration", label: "Duration", widget: "string", required: false }
-              - { name: "cover",    label: "Cover image", widget: "file", required: false, hint: "Home page cover. Separate from the gallery — name it <slug>-cover.jpg." }
+              - { name: "cover",    label: "Cover image", widget: "file", required: false, hint: "Home page cover. Can be a new file or any file already in the media library — no need to upload twice." }
               - { name: "coverAlt", label: "Cover alt text", widget: "string", required: false, hint: "Screen reader description of the cover image." }
               - name: "media"
                 label: "Media"

@@ -148,6 +148,19 @@ export function initGallery({
       // transition frame-by-frame instead of snapping to the end position.
       const max = trackMaxScroll(track, gallery);
       return max > 0 ? Math.min(Math.max(readLiveScroll(track) / max, 0), 1) : 0;
+    },
+    // Returns the *target* gallery progress using the inline-style transform
+    // (currentScroll), not the live animated position. Used by the discrete
+    // mouse-wheel path so the progress fill can be driven with its own CSS
+    // transition toward the correct destination rather than trailing the
+    // gallery's animation via rAF.
+    getTargetProgress: () => {
+      if (mqlMobile.matches) {
+        const max = track.scrollWidth - track.clientWidth;
+        return max > 0 ? Math.min(Math.max(track.scrollLeft / max, 0), 1) : 0;
+      }
+      const max = trackMaxScroll(track, gallery);
+      return max > 0 ? Math.min(Math.max(currentScroll(track) / max, 0), 1) : 0;
     }
   };
 }
@@ -459,8 +472,11 @@ function observeVideos(track, gallery, mqlMobile) {
     }
   }
 
+  // Guard playback so videos never start before the gallery is in view.
+  let isGalleryVisible = false;
+
   for (const video of videos) {
-    video.addEventListener('loadedmetadata', () => { refreshCache(); syncPlayback(); }, { once: true });
+    video.addEventListener('loadedmetadata', () => { refreshCache(); if (isGalleryVisible) syncPlayback(); }, { once: true });
   }
 
   function syncPlayback() {
@@ -480,7 +496,7 @@ function observeVideos(track, gallery, mqlMobile) {
   function pauseAll() { videos.forEach((v) => v.pause()); }
 
   // Fires on every applyScroll() call (track.style.transform changes).
-  const styleMo = new MutationObserver(syncPlayback);
+  const styleMo = new MutationObserver(() => { if (isGalleryVisible) syncPlayback(); });
   styleMo.observe(track, { attributeFilter: ['style'] });
 
   // Refresh position cache when the gallery resizes.
@@ -488,13 +504,14 @@ function observeVideos(track, gallery, mqlMobile) {
   resizeObs.observe(gallery);
 
   // Pause all when the gallery leaves the viewport (user is in description section).
+  // On first entry, videos start from the beginning because play() was never called.
   const galleryIo = new IntersectionObserver(([entry]) => {
+    isGalleryVisible = entry.isIntersecting;
     if (entry.isIntersecting) syncPlayback();
     else pauseAll();
   }, { threshold: 0.1 });
   galleryIo.observe(gallery);
 
-  syncPlayback();
   return { disconnect() { styleMo.disconnect(); galleryIo.disconnect(); resizeObs.disconnect(); } };
 }
 

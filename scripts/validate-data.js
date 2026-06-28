@@ -50,7 +50,7 @@ const projectsSchema = {
       required: [
         'slug', 'title', 'role', 'year', 'location', 'type',
         'subcategory', 'description', 'longDescription', 'links',
-        'duration', 'media'
+        'media'
       ],
       properties: {
         slug:            { type: 'string', pattern: SLUG_PATTERN },
@@ -67,12 +67,11 @@ const projectsSchema = {
           items: { $ref: '#/$defs/link' }
         },
         highlightColor: { type: 'string' },
-        duration:  { type: 'string' },
         cover:     { type: 'string' },
         coverAlt:  { type: 'string' },
         media: {
           type: 'array',
-          minItems: 1,
+          minItems: 0,
           items: { $ref: '#/$defs/media' }
         }
       }

@@ -4,7 +4,7 @@
 # and content/ (see scripts/build.js). Redirects live in public/_redirects.
 
 [build]
-  command = "npm run build"
+  command = "npm run optimize-images && npm run build"
   publish = "public"
 
 [build.environment]

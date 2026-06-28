@@ -56,6 +56,7 @@ let teardown = null;
 let snapState = { showGallery: false, isAnimating: false };
 let touchStart = null;
 let wakeProgressBar = null;
+let setProgressStep = null;
 
 export function initProject(data, slug) {
   const project = data.projects.find((p) => p.slug === slug);
@@ -405,6 +406,17 @@ function initProgressBar(galleryAPI) {
   descSection.addEventListener('scroll', wake, { passive: true });
   // Wake on gallery-track scroll (mobile swipe + arrow buttons fire native scroll events).
   document.querySelector('[data-gallery-track]')?.addEventListener('scroll', wake, { passive: true });
+  // Drives the fill with its own CSS transition toward the target progress
+  // that corresponds to a discrete gallery step. Used by the mouse-wheel
+  // buffer path instead of wakeProgressBar so the fill animates smoothly
+  // in sync with the gallery's snap transition rather than trailing it
+  // via rAF (which would read the previous step's position on the first
+  // tick and then stop, producing a one-step-late instant jump).
+  setProgressStep = (targetGallP) => {
+    const gb = readBoundary();
+    setProgressSmooth(gb + targetGallP * (1 - gb), 350);
+  };
+
   // Wake ref used by snap functions and gallery wheel handler.
   wakeProgressBar = wake;
   wake();
@@ -683,7 +695,7 @@ function setupWheelAndSnap(galleryAPI) {
       bufferedEvent = null;
       bufferTimer = null;
       galleryAPI.step(buffDelta);
-      wakeProgressBar?.();
+      setProgressStep?.(galleryAPI.getTargetProgress?.() ?? 0);
     }, MOUSE_BUFFER_MS);
   }
 

@@ -143,7 +143,7 @@ async function processSource(sourcePath, { force }) {
 
   const folder = dirname(sourcePath);
   const stem = basename(sourcePath, extname(sourcePath));
-  const result = { ok: true, written: 0, sourceBytes: sourceStat.size, outputBytes: 0, oversize: [] };
+  const result = { failed: false, overBudget: false, written: 0, sourceBytes: sourceStat.size, outputBytes: 0, oversize: [] };
 
   for (const variant of variants) {
     const outPath = join(folder, `${stem}-${variant.name}.webp`);
@@ -161,16 +161,16 @@ async function processSource(sourcePath, { force }) {
       const outBytes = info.size ?? statSync(outPath).size;
       result.written += 1;
       result.outputBytes += outBytes;
-      const overBudget = outBytes > BUDGET_BYTES;
-      if (overBudget) {
+      const over = outBytes > BUDGET_BYTES;
+      if (over) {
         result.oversize.push({ path: outPath, bytes: outBytes });
-        result.ok = false;
+        result.overBudget = true;
       }
       console.log(
-        `    → ${basename(outPath)}  ${info.width}×${info.height}  ${formatKb(outBytes)}  ${percentDelta(sourceStat.size, outBytes)}${overBudget ? '  !! > 300 KB' : ''}`
+        `    → ${basename(outPath)}  ${info.width}×${info.height}  ${formatKb(outBytes)}  ${percentDelta(sourceStat.size, outBytes)}${over ? '  !! > 300 KB' : ''}`
       );
     } catch (err) {
-      result.ok = false;
+      result.failed = true;
       console.error(`    → ${basename(outPath)} — error: ${err.message}`);
     }
   }
@@ -191,7 +191,8 @@ async function main() {
   let totalWritten = 0;
   let totalSourceBytes = 0;
   let totalOutputBytes = 0;
-  let hadError = false;
+  let hadFailure = false;
+  let hadBudgetWarning = false;
   const oversize = [];
 
   for (const dir of projectDirs) {
@@ -218,7 +219,8 @@ async function main() {
       totalWritten += result.written;
       totalSourceBytes += result.sourceBytes;
       totalOutputBytes += result.outputBytes;
-      if (!result.ok) hadError = true;
+      if (result.failed) hadFailure = true;
+      if (result.overBudget) hadBudgetWarning = true;
       oversize.push(...result.oversize);
     }
 
@@ -233,15 +235,15 @@ async function main() {
     console.log(`optimize-images: ${savedSign} ${formatKb(Math.abs(savedBytes))} versus encoding sources at every variant size.`);
   }
 
-  if (oversize.length > 0) {
-    console.error('');
-    console.error(`optimize-images: ${oversize.length} variant(s) exceeded the 300 KB budget:`);
+  if (hadBudgetWarning) {
+    console.warn('');
+    console.warn(`optimize-images: ${oversize.length} variant(s) exceeded the 300 KB budget (warning only — optimise the source image to fix):`);
     for (const item of oversize) {
-      console.error(`  ${relative(projectRoot, item.path)} — ${formatKb(item.bytes)}`);
+      console.warn(`  ${relative(projectRoot, item.path)} — ${formatKb(item.bytes)}`);
     }
   }
 
-  if (hadError) process.exit(1);
+  if (hadFailure) process.exit(1);
 }
 
 main().catch((err) => {

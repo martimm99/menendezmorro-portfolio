@@ -16,25 +16,19 @@
   position: fixed;
   inset: 0;
   z-index: var(--z-fullscreen);
-  pointer-events: none;       /* children opt back in */
+  pointer-events: none;       /* always transparent — children opt in individually */
 }
 
 .fullscreen-stage[hidden] {
   display: none;
 }
 
-/* When open, the stage covers the whole viewport and captures clicks so
- * clicking outside the media closes the fullscreen. The gallery items
- * below are blocked from receiving events. */
-.fullscreen-stage.is-open {
-  pointer-events: auto;
-}
-
 /* Backdrop: fills the stage behind the media, fades in/out with is-open.
  * Covers the gallery and page chrome smoothly without hiding them
  * instantly. Transition duration matches the media box (0.42s) so both
- * settle at the same time. pointer-events: none so clicks reach the
- * close button and media box above it. */
+ * settle at the same time. When open, it's the click target for closing
+ * fullscreen — clicks on the media wrap (above it in z-order) go to the
+ * media, not the backdrop, so only true outside-media clicks land here. */
 .fullscreen-backdrop {
   position: absolute;
   inset: 0;
@@ -42,6 +36,10 @@
   opacity: 0;
   transition: opacity 0.42s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
+}
+
+.fullscreen-stage.is-open .fullscreen-backdrop {
+  pointer-events: auto;
 }
 
 .fullscreen-stage.is-open .fullscreen-backdrop {

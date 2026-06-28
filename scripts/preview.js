@@ -79,7 +79,32 @@ const server = createServer((req, res) => {
     return;
   }
   const type = MIME[extname(filePath).toLowerCase()] || 'application/octet-stream';
-  res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'no-store' });
+  const total = statSync(filePath).size;
+  const rangeHeader = req.headers['range'];
+
+  if (rangeHeader) {
+    const match = rangeHeader.match(/bytes=(\d+)-(\d*)/);
+    if (match) {
+      const start = parseInt(match[1], 10);
+      const end   = match[2] ? parseInt(match[2], 10) : total - 1;
+      res.writeHead(206, {
+        'Content-Type':   type,
+        'Content-Range':  `bytes ${start}-${end}/${total}`,
+        'Accept-Ranges':  'bytes',
+        'Content-Length': end - start + 1,
+        'Cache-Control':  'no-store',
+      });
+      createReadStream(filePath, { start, end }).pipe(res);
+      return;
+    }
+  }
+
+  res.writeHead(200, {
+    'Content-Type':   type,
+    'Accept-Ranges':  'bytes',
+    'Content-Length': total,
+    'Cache-Control':  'no-store',
+  });
   createReadStream(filePath).pipe(res);
 });
 
