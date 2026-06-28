@@ -227,6 +227,28 @@ async function main() {
     if (!touched) console.log('  (no source images)');
   }
 
+  // Process source files at the root of assets/media/ (e.g. CMS-uploaded covers
+  // that land flat rather than in a project subfolder). Skipped for --slug runs.
+  if (!opts.slug) {
+    const rootFiles = readdirSync(mediaRoot, { withFileTypes: true })
+      .filter((e) => e.isFile() && classify(e.name) === 'source')
+      .map((e) => e.name)
+      .sort();
+    if (rootFiles.length > 0) {
+      console.log('(media root)');
+      for (const name of rootFiles) {
+        totalSources += 1;
+        const result = await processSource(resolve(mediaRoot, name), opts);
+        totalWritten += result.written;
+        totalSourceBytes += result.sourceBytes;
+        totalOutputBytes += result.outputBytes;
+        if (result.failed) hadFailure = true;
+        if (result.overBudget) hadBudgetWarning = true;
+        oversize.push(...result.oversize);
+      }
+    }
+  }
+
   console.log('');
   console.log(`optimize-images: processed ${totalSources} source(s), wrote ${totalWritten} variant(s).`);
   if (totalWritten > 0) {
