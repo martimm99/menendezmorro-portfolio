@@ -461,11 +461,15 @@ function observeVideos(track, gallery, mqlMobile) {
 
   function syncPlayback() {
     const scroll = currentScroll(track);
+    const maxScroll = trackMaxScroll(track, gallery);
     let bestItem = null;
     let minDist = Infinity;
-    for (const item of allItems) {
-      const dist = Math.abs((itemCenters.get(item) ?? 0) - scroll - galleryHalf);
-      if (dist < minDist) { minDist = dist; bestItem = item; }
+    for (let i = 0; i < allItems.length; i++) {
+      const snapPos = i === allItems.length - 1
+        ? maxScroll
+        : Math.max(0, (itemCenters.get(allItems[i]) ?? 0) - galleryHalf);
+      const dist = Math.abs(snapPos - scroll);
+      if (dist < minDist) { minDist = dist; bestItem = allItems[i]; }
     }
     for (const [video, item] of videoItems) {
       if (item === bestItem) video.play().catch(() => {});
