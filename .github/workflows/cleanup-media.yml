@@ -1,0 +1,35 @@
+name: Clean up orphaned media
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - content/projects.json
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Delete orphaned media files
+        run: node scripts/cleanup-media.js
+
+      - name: Commit deletions if any
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add assets/media/
+          if git diff --staged --quiet; then
+            echo "No orphaned files found."
+          else
+            git commit -m "cleanup: remove orphaned media files [skip netlify]"
+            git push
+          fi
