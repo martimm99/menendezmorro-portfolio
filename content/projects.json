@@ -576,13 +576,88 @@
         {
           "type": "image",
           "src": "/assets/media/architecture-1.jpg",
-          "alt": "MORRO Architecture 1",
+          "alt": "architecture-1",
+          "caption": "Binifaldó, 10"
+        },
+        {
+          "type": "image",
+          "src": "/assets/media/architecture-2.jpg",
+          "alt": "architecture-2",
+          "caption": "Binifaldó, 10"
+        },
+        {
+          "type": "image",
+          "src": "/assets/media/architecture-3.jpg",
+          "alt": "architecture-3",
+          "caption": "Binifaldó, 10"
+        },
+        {
+          "type": "image",
+          "src": "/assets/media/architecture-4.jpg",
+          "alt": "architecture-4",
+          "caption": "Binifaldó, 10"
+        },
+        {
+          "type": "image",
+          "src": "/assets/media/architecture-5.jpg",
+          "alt": "architecture-5",
+          "caption": "Binifaldó, 10"
+        },
+        {
+          "type": "image",
+          "src": "/assets/media/architecture-6.jpg",
+          "alt": "architecture-6",
+          "caption": "Binifaldó, 10"
+        },
+        {
+          "type": "image",
+          "alt": "architecture-7",
+          "src": "/assets/media/architecture-7.jpg",
+          "caption": "Colegio de Aparejadores de Mallorca"
+        },
+        {
+          "type": "image",
+          "src": "/assets/media/architecture-8.jpg",
+          "caption": "Colegio de Aparejadores de Mallorca",
+          "alt": "architecture-8"
+        },
+        {
+          "type": "image",
+          "src": "/assets/media/architecture-9.jpg",
+          "caption": "Colegio de Aparejadores de Mallorca",
+          "alt": "architecture-9"
+        },
+        {
+          "type": "image",
+          "src": "/assets/media/architecture-10.jpg",
+          "alt": "architecture-10",
+          "caption": "Colegio de Aparejadores de Mallorca"
+        },
+        {
+          "type": "image",
+          "src": "/assets/media/architecture-11.jpg",
+          "alt": "architecture-11",
           "caption": ""
+        },
+        {
+          "type": "image",
+          "src": "/assets/media/architecture-12.jpg",
+          "alt": "architecture-12"
+        },
+        {
+          "type": "image",
+          "alt": "architecture-13",
+          "src": "/assets/media/architecture-13.jpg"
+        },
+        {
+          "type": "image",
+          "src": "/assets/media/architecture-14.jpg",
+          "alt": "architecture-14"
         }
       ],
       "slug": "architecture",
       "highlightColor": "#0055FF",
-      "coverAlt": "architecture cover",
+      "coverAlt": "architecture-cover",
       "location": "Mallorca",
       "role": "Photography and Postproduction",
       "cover": "/assets/media/architecture-cover.jpg",
