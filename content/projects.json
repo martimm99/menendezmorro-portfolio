@@ -575,83 +575,83 @@
       "media": [
         {
           "type": "image",
-          "src": "/assets/media/architecture-1.jpg",
+          "src": "assets/media/architecture/architecture-1.jpg",
           "alt": "architecture-1",
           "caption": "Binifaldó, 10"
         },
         {
           "type": "image",
-          "src": "/assets/media/architecture-2.jpg",
+          "src": "assets/media/architecture/architecture-2.jpg",
           "alt": "architecture-2",
           "caption": "Binifaldó, 10"
         },
         {
           "type": "image",
-          "src": "/assets/media/architecture-3.jpg",
+          "src": "assets/media/architecture/architecture-3.jpg",
           "alt": "architecture-3",
           "caption": "Binifaldó, 10"
         },
         {
           "type": "image",
-          "src": "/assets/media/architecture-4.jpg",
+          "src": "assets/media/architecture/architecture-4.jpg",
           "alt": "architecture-4",
           "caption": "Binifaldó, 10"
         },
         {
           "type": "image",
-          "src": "/assets/media/architecture-5.jpg",
+          "src": "assets/media/architecture/architecture-5.jpg",
           "alt": "architecture-5",
           "caption": "Binifaldó, 10"
         },
         {
           "type": "image",
-          "src": "/assets/media/architecture-6.jpg",
+          "src": "assets/media/architecture/architecture-6.jpg",
           "alt": "architecture-6",
           "caption": "Binifaldó, 10"
         },
         {
           "type": "image",
           "alt": "architecture-7",
-          "src": "/assets/media/architecture-7.jpg",
+          "src": "assets/media/architecture/architecture-7.jpg",
           "caption": "Colegio de Aparejadores de Mallorca"
         },
         {
           "type": "image",
-          "src": "/assets/media/architecture-8.jpg",
+          "src": "assets/media/architecture/architecture-8.jpg",
           "caption": "Colegio de Aparejadores de Mallorca",
           "alt": "architecture-8"
         },
         {
           "type": "image",
-          "src": "/assets/media/architecture-9.jpg",
+          "src": "assets/media/architecture/architecture-9.jpg",
           "caption": "Colegio de Aparejadores de Mallorca",
           "alt": "architecture-9"
         },
         {
           "type": "image",
-          "src": "/assets/media/architecture-10.jpg",
+          "src": "assets/media/architecture/architecture-10.jpg",
           "alt": "architecture-10",
           "caption": "Colegio de Aparejadores de Mallorca"
         },
         {
           "type": "image",
-          "src": "/assets/media/architecture-11.jpg",
+          "src": "assets/media/architecture/architecture-11.jpg",
           "alt": "architecture-11",
           "caption": ""
         },
         {
           "type": "image",
-          "src": "/assets/media/architecture-12.jpg",
+          "src": "assets/media/architecture/architecture-12.jpg",
           "alt": "architecture-12"
         },
         {
           "type": "image",
           "alt": "architecture-13",
-          "src": "/assets/media/architecture-13.jpg"
+          "src": "assets/media/architecture/architecture-13.jpg"
         },
         {
           "type": "image",
-          "src": "/assets/media/architecture-14.jpg",
+          "src": "assets/media/architecture/architecture-14.jpg",
           "alt": "architecture-14"
         }
       ],
@@ -660,7 +660,7 @@
       "coverAlt": "architecture-cover",
       "location": "Mallorca",
       "role": "Photography and Postproduction",
-      "cover": "/assets/media/architecture-cover.jpg",
+      "cover": "assets/media/architecture/architecture-cover.jpg",
       "title": "ARCHITECTURE",
       "links": [],
       "type": "photo",
@@ -670,13 +670,189 @@
     },
     {
       "longDescription": "",
-      "media": [],
+      "media": [
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-1.jpg",
+          "alt": "concerts-1"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-2.jpg",
+          "alt": "concerts-2"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-3.jpg",
+          "alt": "concerts-3"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-4.jpg",
+          "alt": "concerts-4"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-5.jpg",
+          "alt": "concerts-5"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-6.jpg",
+          "alt": "concerts-6"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-7.jpg",
+          "alt": "concerts-7"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-8.jpg",
+          "alt": "concerts-8"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-9.jpg",
+          "alt": "concerts-9"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-10.jpg",
+          "alt": "concerts-10"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-11.jpg",
+          "alt": "concerts-11"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-12.jpg",
+          "alt": "concerts-12"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-13.jpg",
+          "alt": "concerts-13"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-14.jpg",
+          "alt": "concerts-14"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-15.jpg",
+          "alt": "concerts-15"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-16.jpg",
+          "alt": "concerts-16"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-17.jpg",
+          "alt": "concerts-17"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-18.jpg",
+          "alt": "concerts-18"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-19.jpg",
+          "alt": "concerts-19"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-20.jpg",
+          "alt": "concerts-20"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-21.jpg",
+          "alt": "concerts-21"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-22.jpg",
+          "alt": "concerts-22"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-23.jpg",
+          "alt": "concerts-23"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-24.jpg",
+          "alt": "concerts-24"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-25.jpg",
+          "alt": "concerts-25"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-26.jpg",
+          "alt": "concerts-26"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-27.jpg",
+          "alt": "concerts-27"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-28.jpg",
+          "alt": "concerts-28"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-29.jpg",
+          "alt": "concerts-29"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-30.jpg",
+          "alt": "concerts-30"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-31.jpg",
+          "alt": "concerts-31"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-32.jpg",
+          "alt": "concerts-32"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-33.jpg",
+          "alt": "concerts-33"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-34.jpg",
+          "alt": "concerts-34"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/concerts/concerts-35.jpg",
+          "alt": "concerts-35"
+        }
+      ],
       "slug": "concerts",
       "highlightColor": "#0055FF",
       "coverAlt": "",
       "location": "Madrid",
       "role": "Photography and Postproduction",
-      "cover": "",
+      "cover": "assets/media/concerts/concerts-cover.jpg",
       "title": "CONCERTS",
       "links": [
         {
