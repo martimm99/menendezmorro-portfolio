@@ -441,9 +441,6 @@
   cursor: zoom-in;
 }
 
-.gallery-item picture {
-  display: block;
-}
 
 .gallery-item img,
 .gallery-item video {
@@ -615,9 +612,6 @@
     justify-content: center;
   }
 
-  .gallery-item picture {
-    display: block;
-  }
 
   .gallery-item img,
   .gallery-item video {

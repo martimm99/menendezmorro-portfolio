@@ -57,7 +57,6 @@
   z-index: 2;
 }
 
-.cover-layer > picture,
 .cover-layer > video,
 .cover-layer > img {
   width: 100%;

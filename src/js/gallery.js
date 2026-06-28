@@ -204,26 +204,9 @@ function renderItems({ items, projectTitle, track, onItemActivate }) {
 
 function buildPicture(media, projectTitle, index) {
   const src = '/' + media.src.replace(/^\//, '');
-  const ext = src.match(/\.[^.]+$/)?.[0] ?? '';
-  const base = src.slice(0, -ext.length);
-  const mobileWebp = `${base}-mobile.webp`;
-  const desktopWebp = `${base}-desktop.webp`;
-  const alt = media.alt || `${projectTitle} image ${index + 1}`;
-
-  const picture = document.createElement('picture');
-
-  const mobileSrc = document.createElement('source');
-  mobileSrc.media = '(max-width: 768px)';
-  mobileSrc.type = 'image/webp';
-  mobileSrc.srcset = mobileWebp;
-
-  const desktopSrc = document.createElement('source');
-  desktopSrc.type = 'image/webp';
-  desktopSrc.srcset = desktopWebp;
-
   const img = document.createElement('img');
   img.src = src;
-  img.alt = alt;
+  img.alt = media.alt || `${projectTitle} image ${index + 1}`;
   img.decoding = 'async';
   if (index < 2) {
     img.loading = 'eager';
@@ -232,11 +215,7 @@ function buildPicture(media, projectTitle, index) {
     img.loading = 'lazy';
     if ('fetchPriority' in img) img.fetchPriority = 'low';
   }
-
-  picture.appendChild(mobileSrc);
-  picture.appendChild(desktopSrc);
-  picture.appendChild(img);
-  return picture;
+  return img;
 }
 
 function buildVideo(media, projectTitle, index) {

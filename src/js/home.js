@@ -146,39 +146,19 @@ function paintCover(layer, mediaItem, projectTitle, highPriority = false) {
     state.videoObserver?.observe(video);
     return;
   }
-  const picture = renderPicture(mediaItem, projectTitle, highPriority);
-  layer.appendChild(picture);
+  const img = renderPicture(mediaItem, projectTitle, highPriority);
+  layer.appendChild(img);
 }
 
 function renderPicture(mediaItem, projectTitle, highPriority) {
   const src = '/' + mediaItem.src.replace(/^\//, '');
-  const ext = src.match(/\.[^.]+$/)?.[0] ?? '';
-  const base = src.slice(0, -ext.length);
-  const mobileWebp = `${base}-mobile.webp`;
-  const desktopWebp = `${base}-desktop.webp`;
-  const alt = mediaItem.alt || `${projectTitle} cover`;
-
-  const picture = document.createElement('picture');
-  const mobileSrc = document.createElement('source');
-  mobileSrc.media = '(max-width: 768px)';
-  mobileSrc.type = 'image/webp';
-  mobileSrc.srcset = mobileWebp;
-
-  const desktopSrc = document.createElement('source');
-  desktopSrc.type = 'image/webp';
-  desktopSrc.srcset = desktopWebp;
-
   const img = document.createElement('img');
   img.src = src;
-  img.alt = alt;
+  img.alt = mediaItem.alt || `${projectTitle} cover`;
   img.loading = 'eager';
   img.decoding = 'async';
   if (highPriority && 'fetchPriority' in img) img.fetchPriority = 'high';
-
-  picture.appendChild(mobileSrc);
-  picture.appendChild(desktopSrc);
-  picture.appendChild(img);
-  return picture;
+  return img;
 }
 
 function renderVideo(mediaItem, projectTitle) {
@@ -217,11 +197,9 @@ function preloadAdjacent(index) {
     const cover = getCover(state.data.projects[i]);
     if (!cover || cover.type !== 'image') continue;
     const src = '/' + cover.src.replace(/^\//, '');
-    const ext = src.match(/\.[^.]+$/)?.[0] ?? '';
-    const desktopWebp = src.slice(0, -ext.length) + '-desktop.webp';
     const img = new Image();
     if ('fetchPriority' in img) img.fetchPriority = 'low';
-    img.src = desktopWebp;
+    img.src = src;
   }
 }
 
