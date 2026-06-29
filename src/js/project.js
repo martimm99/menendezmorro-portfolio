@@ -839,6 +839,10 @@ function snapToGallery() {
   const reduced = prefersReducedMotion();
   setTimeout(() => {
     snapState.isAnimating = false;
+    // Gallery is now fully visible — refresh item dimensions and sync video
+    // playback in a stable state, in case the IO fired mid-animation and the
+    // play() call raced with pending video state.
+    teardown?.wake?.();
   }, reduced ? 0 : SNAP_DURATION_MS);
 }
 

@@ -133,6 +133,9 @@ export function initGallery({
       dragCleanup?.();
       arrowCleanup?.();
     },
+    // Refresh item-center cache and sync video playback. Called after the
+    // gallery snap animation ends so playback starts in a stable state.
+    wake() { videoObserver?.wake?.(); },
     step,
     resetToStart,
     freeScrollDelta,
@@ -460,18 +463,24 @@ function observeVideos(track, gallery, mqlMobile) {
     video.addEventListener('loadedmetadata', () => { refreshCache(); if (isGalleryVisible) syncPlayback(); }, { once: true });
   }
 
+  // Track the active item index so the ResizeObserver can re-snap to the
+  // same item after a viewport resize without relying on stale DOM reads.
+  let activeItemIdx = 0;
+
   function syncPlayback() {
     const scroll = currentScroll(track);
     const maxScroll = trackMaxScroll(track, gallery);
-    let bestItem = null;
+    let bestIdx = 0;
     let minDist = Infinity;
     for (let i = 0; i < allItems.length; i++) {
       const snapPos = i === allItems.length - 1
         ? maxScroll
         : Math.max(0, (itemCenters.get(allItems[i]) ?? 0) - galleryHalf);
       const dist = Math.abs(snapPos - scroll);
-      if (dist < minDist) { minDist = dist; bestItem = allItems[i]; }
+      if (dist < minDist) { minDist = dist; bestIdx = i; }
     }
+    activeItemIdx = bestIdx;
+    const bestItem = allItems[bestIdx];
     for (const [video, item] of videoItems) {
       if (item === bestItem) video.play().catch(() => {});
       else video.pause();
@@ -484,10 +493,17 @@ function observeVideos(track, gallery, mqlMobile) {
   const styleMo = new MutationObserver(() => { if (isGalleryVisible) syncPlayback(); });
   styleMo.observe(track, { attributeFilter: ['style'] });
 
-  // Refresh position cache when the gallery resizes, then re-evaluate
-  // which video should be playing with the updated positions.
+  // On resize, item widths change (vw-based) so snap positions shift in
+  // pixel space while track.style.transform keeps the old pixel value.
+  // Refresh the cache first, then re-snap instantly to the stored active
+  // item's new position so the gallery stays visually anchored.
   const resizeObs = new ResizeObserver(() => {
     refreshCache();
+    const newMax = trackMaxScroll(track, gallery);
+    const newSnap = activeItemIdx === allItems.length - 1
+      ? newMax
+      : Math.max(0, (itemCenters.get(allItems[activeItemIdx]) ?? 0) - galleryHalf);
+    applyScroll(track, newSnap, true);
     if (isGalleryVisible) syncPlayback();
   });
   resizeObs.observe(gallery);
@@ -501,7 +517,13 @@ function observeVideos(track, gallery, mqlMobile) {
   }, { threshold: 0.1 });
   galleryIo.observe(gallery);
 
-  return { disconnect() { styleMo.disconnect(); galleryIo.disconnect(); resizeObs.disconnect(); } };
+  return {
+    disconnect() { styleMo.disconnect(); galleryIo.disconnect(); resizeObs.disconnect(); },
+    // Called by project.js after the gallery snap animation ends to ensure the
+    // correct video is playing in a stable, post-animation state. Bypasses the
+    // isGalleryVisible guard since the caller guarantees the gallery is visible.
+    wake() { refreshCache(); syncPlayback(); }
+  };
 }
 
 /* ---------- Scroll helpers ---------- */
