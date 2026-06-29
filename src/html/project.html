@@ -5,20 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#ffffff">
 
-    <title>{{siteTitle}}</title>
-    <meta name="description" content="{{siteDescription}}">
-    <link rel="canonical" href="{{siteUrl}}/">
+    <title>{{pageTitle}}</title>
+    <meta name="description" content="{{pageDescription}}">
+    <link rel="canonical" href="{{pageUrl}}">
 
     <meta property="og:type" content="article">
-    <meta property="og:title" content="{{siteTitle}}">
-    <meta property="og:description" content="{{siteDescription}}">
-    <meta property="og:url" content="{{siteUrl}}/">
-    <meta property="og:image" content="{{siteUrl}}/{{ogImage}}">
+    <meta property="og:title" content="{{pageTitle}}">
+    <meta property="og:description" content="{{pageDescription}}">
+    <meta property="og:url" content="{{pageUrl}}">
+    <meta property="og:image" content="{{pageOgImage}}">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{siteTitle}}">
-    <meta name="twitter:description" content="{{siteDescription}}">
-    <meta name="twitter:image" content="{{siteUrl}}/{{ogImage}}">
+    <meta name="twitter:title" content="{{pageTitle}}">
+    <meta name="twitter:description" content="{{pageDescription}}">
+    <meta name="twitter:image" content="{{pageOgImage}}">
 
     <link rel="icon" type="image/gif" href="/assets/favicon.gif">
     <link rel="preload" href="/assets/fonts/Geist-Regular.woff2" as="font" type="font/woff2" crossorigin>
@@ -29,6 +29,7 @@
     <link rel="stylesheet" href="/css/project.css">
     <link rel="stylesheet" href="/css/fullscreen.css">
 
+    {{analyticsScript}}
     {{siteDataScript}}
     <script type="module" src="/js/main.js"></script>
   </head>
@@ -101,7 +102,7 @@
       <span data-toast-message></span>
     </div>
 
-    <div class="fullscreen-stage" data-fullscreen-stage hidden role="dialog" aria-modal="true" aria-label="Image preview">
+    <div class="fullscreen-stage" data-fullscreen-stage hidden role="dialog" aria-modal="true" aria-label="Image preview" tabindex="-1">
       <div class="fullscreen-backdrop" data-fullscreen-backdrop aria-hidden="true"></div>
       <div class="fullscreen-media" data-fullscreen-media></div>
       <p class="fullscreen-caption" data-fullscreen-caption hidden></p>

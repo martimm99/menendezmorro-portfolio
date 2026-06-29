@@ -89,7 +89,7 @@ function renderSocials(socials) {
     .map((s) => `
       <div class="info-cell">
         <dt>${escapeHtml(s.label)}</dt>
-        <dd><a href="${encodeURI(s.url)}" target="_blank" rel="noopener" class="info-link">${arrowSvg}${escapeHtml(s.displayText)}</a></dd>
+        <dd><a href="${encodeURI(s.url)}" target="_blank" rel="noopener noreferrer" class="info-link">${arrowSvg}${escapeHtml(s.displayText)}</a></dd>
       </div>
     `)
     .join('');

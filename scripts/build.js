@@ -2,8 +2,8 @@
  * build.js
  *
  * Assembles the publish tree at public/ from the authoring tree under src/,
- * assets/, and content/. Run by `npm run build` locally and by Netlify on
- * every deploy (see netlify.toml).
+ * assets/, and content/. Run by `npm run build` locally and by GitHub Actions
+ * on every push to main (see .github/workflows/deploy-pages.yml).
  *
  * Steps:
  *   1. Discover authoring HTML files in src/html/.
@@ -30,8 +30,8 @@
  *   public/<name>.html  from src/html/<name>.html (with token substitution)
  *
  * Build inputs that survive untouched:
- *   public/404.html, public/_redirects, public/robots.txt, public/admin/
- *   public/sitemap.xml (produced separately by build-sitemap.js in Phase 12)
+ *   public/404.html, public/robots.txt, public/admin/
+ *   public/sitemap.xml (produced separately by build-sitemap.js)
  */
 
 import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
@@ -75,6 +75,24 @@ function buildSiteDataScript(site, projectsDoc) {
   const data = { projects: projectsDoc.projects, site };
   const json = JSON.stringify(data).replace(/<\/(script)/gi, '<\\/$1');
   return `<script>window.__SITE_DATA__=${json};</script>`;
+}
+
+function buildAnalyticsScript(site) {
+  const id = site.analytics?.googleAnalyticsId;
+  if (!id) return '';
+  return `<script async src="https://www.googletagmanager.com/gtag/js?id=${id}"></script>\n    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${id}');</script>`;
+}
+
+function buildWebsiteStructuredData(site) {
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: site.siteTitle,
+    url: `${site.siteUrl}/`,
+    description: site.siteDescription,
+  };
+  const json = JSON.stringify(data).replace(/<\/(script)/gi, '<\\/$1');
+  return `<script type="application/ld+json">${json}</script>`;
 }
 
 async function listSourceHtml() {
@@ -130,16 +148,25 @@ async function buildHtml(files, tokens) {
 // Generate a real HTML file at public/<slug>/index.html for each project
 // and at public/contact/index.html for the contact page, so every URL
 // is served directly without server-side redirect rules.
-async function buildRoutedPages(projectSlugs, tokens) {
+// Each project page gets its own canonical URL and meta tags baked in,
+// so search engines see correct per-project metadata even before JS runs.
+async function buildRoutedPages(projects, tokens) {
   const projectTemplate = await readFile(join(SRC, 'html', 'project.html'), 'utf8');
   const contactTemplate = await readFile(join(SRC, 'html', 'contact.html'), 'utf8');
-  const projectOutput = substituteTokens(projectTemplate, tokens);
   const contactOutput = substituteTokens(contactTemplate, tokens);
 
-  for (const slug of projectSlugs) {
-    const dir = join(PUBLIC, slug);
+  for (const project of projects) {
+    const pageTitle = `${project.title} — ${tokens.siteTitle}`;
+    const pageDescription = project.description || tokens.siteDescription;
+    const pageUrl = `${tokens.siteUrl}/${project.slug}`;
+    const pageOgImage = project.cover
+      ? `${tokens.siteUrl}/${project.cover}`
+      : `${tokens.siteUrl}/${tokens.ogImage}`;
+    const projectTokens = { ...tokens, pageTitle, pageDescription, pageUrl, pageOgImage };
+    const output = substituteTokens(projectTemplate, projectTokens);
+    const dir = join(PUBLIC, project.slug);
     await mkdir(dir, { recursive: true });
-    await writeFile(join(dir, 'index.html'), projectOutput);
+    await writeFile(join(dir, 'index.html'), output);
   }
 
   const contactDir = join(PUBLIC, 'contact');
@@ -150,13 +177,20 @@ async function buildRoutedPages(projectSlugs, tokens) {
 async function main() {
   const site = await readSiteConfig();
   const projectsDoc = await readProjectsConfig();
-  const htmlFiles = await listSourceHtml();
+  const allHtmlFiles = await listSourceHtml();
+  // project.html is rendered per-slug by buildRoutedPages; exclude from top-level output
+  const htmlFiles = allHtmlFiles.filter((f) => f !== 'project.html');
   const projectSlugs = projectsDoc.projects.map((p) => p.slug);
   await cleanPublic(htmlFiles, projectSlugs);
   await copyDirs();
-  const tokens = { ...site, siteDataScript: buildSiteDataScript(site, projectsDoc) };
+  const tokens = {
+    ...site,
+    siteDataScript: buildSiteDataScript(site, projectsDoc),
+    analyticsScript: buildAnalyticsScript(site),
+    websiteStructuredData: buildWebsiteStructuredData(site),
+  };
   await buildHtml(htmlFiles, tokens);
-  await buildRoutedPages(projectSlugs, tokens);
+  await buildRoutedPages(projectsDoc.projects, tokens);
   console.log(`build: ${htmlFiles.length} HTML template(s), ${projectSlugs.length} project page(s), contact page, ${COPY_DIRS.length} directories copied.`);
 }
 

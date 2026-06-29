@@ -2,7 +2,7 @@
   "name": "menendezmorro-portfolio",
   "version": "0.1.0",
   "private": true,
-  "description": "Portfolio of design and photography projects by Martí Menéndez. Vanilla HTML/CSS/JS, deployed on Netlify, edited through Decap CMS.",
+  "description": "Portfolio of design and photography projects by Martí Menéndez. Vanilla HTML/CSS/JS, deployed on GitHub Pages, edited through Decap CMS.",
   "type": "module",
   "engines": {
     "node": ">=20"

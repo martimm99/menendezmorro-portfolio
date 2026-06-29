@@ -192,7 +192,7 @@ function renderInfoRow(project) {
       linksCell.hidden = false;
       const arrowSvg = '<span class="info-arrow-clip" aria-hidden="true"><svg class="info-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><use href="/assets/icons/arrows.svg#arrow-ne"/></svg></span>';
       linksSlot.innerHTML = project.links
-        .map((l) => `<a href="${encodeURI(l.url)}" target="_blank" rel="noopener" class="info-link">${arrowSvg}${escapeHtml(l.text)}</a>`)
+        .map((l) => `<a href="${encodeURI(l.url)}" target="_blank" rel="noopener noreferrer" class="info-link">${arrowSvg}${escapeHtml(l.text)}</a>`)
         .join(', ');
     } else {
       linksCell.hidden = true;

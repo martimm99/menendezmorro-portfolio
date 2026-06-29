@@ -30,6 +30,8 @@ const state = {
 
 let stage, backdrop, mediaWrap, captionEl;
 let escListener = null;
+let trapListener = null;
+let openerElement = null;
 
 export function initFullscreen() {
   stage     = document.querySelector('[data-fullscreen-stage]');
@@ -91,11 +93,15 @@ export function openFullscreen(galleryItem) {
   applyRect(mediaWrap, targetRect);
   stage.classList.add('is-open');
 
+  openerElement = document.activeElement;
+
   setTimeout(() => {
     state.isOpen = true;
     state.isAnimating = false;
-    // Try playing video with sound; if blocked, fall back to muted autoplay.
     tryPlayVideo(clone);
+    // Move focus into the stage so screen readers and keyboard users land
+    // inside the modal, not behind it.
+    stage.focus();
   }, prefersReducedMotion() ? 0 : ANIMATION_MS + 20);
 
   // Esc to close.
@@ -103,6 +109,23 @@ export function openFullscreen(galleryItem) {
     if (e.key === 'Escape') closeFullscreen();
   };
   document.addEventListener('keydown', escListener);
+
+  // Focus trap — keep Tab cycling within the stage.
+  trapListener = (e) => {
+    if (e.key !== 'Tab' || !state.isOpen) return;
+    const focusable = Array.from(stage.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )).filter((el) => !el.disabled);
+    if (focusable.length === 0) { e.preventDefault(); return; }
+    const first = focusable[0];
+    const last  = focusable[focusable.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+    } else {
+      if (document.activeElement === last)  { e.preventDefault(); first.focus(); }
+    }
+  };
+  document.addEventListener('keydown', trapListener);
 }
 
 function closeFullscreen() {
@@ -142,6 +165,13 @@ function closeFullscreen() {
       document.removeEventListener('keydown', escListener);
       escListener = null;
     }
+    if (trapListener) {
+      document.removeEventListener('keydown', trapListener);
+      trapListener = null;
+    }
+    // Return focus to the element that triggered the modal.
+    openerElement?.focus();
+    openerElement = null;
   }, prefersReducedMotion() ? 0 : ANIMATION_MS + 20);
 }
 
