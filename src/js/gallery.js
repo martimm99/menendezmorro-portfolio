@@ -484,8 +484,12 @@ function observeVideos(track, gallery, mqlMobile) {
   const styleMo = new MutationObserver(() => { if (isGalleryVisible) syncPlayback(); });
   styleMo.observe(track, { attributeFilter: ['style'] });
 
-  // Refresh position cache when the gallery resizes.
-  const resizeObs = new ResizeObserver(refreshCache);
+  // Refresh position cache when the gallery resizes, then re-evaluate
+  // which video should be playing with the updated positions.
+  const resizeObs = new ResizeObserver(() => {
+    refreshCache();
+    if (isGalleryVisible) syncPlayback();
+  });
   resizeObs.observe(gallery);
 
   // Pause all when the gallery leaves the viewport (user is in description section).
