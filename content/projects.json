@@ -469,7 +469,7 @@
       "coverAlt": "Festival Z cover",
       "location": "Girona",
       "role": "Creative Direction",
-      "cover": "assets/media/festival-z/festival-z-cover.jpg",
+      "cover": "/assets/media/festival-z-cover.jpg",
       "title": "FESTIVAL Z",
       "links": [
         {
