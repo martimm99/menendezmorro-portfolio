@@ -166,6 +166,7 @@ function renderVideo(mediaItem, projectTitle) {
   const video = document.createElement('video');
   video.src = src;
   video.muted = true;
+  video.autoplay = true;
   video.loop = true;
   video.playsInline = true;
   video.preload = 'metadata';

@@ -223,6 +223,7 @@ function buildVideo(media, projectTitle, index) {
   const video = document.createElement('video');
   video.src = src;
   video.muted = true;
+  video.autoplay = true;
   video.loop = true;
   video.playsInline = true;
   video.preload = 'metadata';
