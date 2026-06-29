@@ -489,7 +489,8 @@
           "type": "video",
           "src": "assets/media/titles/titles-1.mp4",
           "alt": "Titles video 1",
-          "caption": ""
+          "caption": "",
+          "poster": "/assets/media/titles-1-poster.jpg"
         },
         {
           "type": "video",
