@@ -87,7 +87,7 @@
       "coverAlt": "MORRO cover",
       "location": "Mallorca",
       "role": "Branding and Art Direction",
-      "cover": "assets/media/morro/morro-cover.jpg",
+      "cover": "/assets/media/morro-cover.jpg",
       "title": "MORRO",
       "links": [
         {
