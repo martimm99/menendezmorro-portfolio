@@ -144,6 +144,7 @@ function paintCover(layer, mediaItem, projectTitle, highPriority = false) {
     const video = renderVideo(mediaItem, projectTitle);
     layer.appendChild(video);
     state.videoObserver?.observe(video);
+    video.play().catch(() => {});
     return;
   }
   const img = renderPicture(mediaItem, projectTitle, highPriority);
