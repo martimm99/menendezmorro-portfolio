@@ -10,11 +10,10 @@
 # so a stale schema here will reject CMS saves until they line up.
 
 backend:
-  name: git-gateway
+  name: github
+  repo: martimm99/menendezmorro-portfolio
   branch: main
-  # Show "Login with Netlify Identity" — Netlify Identity is configured
-  # in the Netlify dashboard to use GitHub as its OAuth provider, so the
-  # actual sign-in is a GitHub OAuth handshake under the hood.
+  base_url: https://cms-auth.martimm99.workers.dev
 
 media_folder: "assets/media"
 public_folder: "/assets/media"

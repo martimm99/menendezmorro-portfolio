@@ -86,13 +86,17 @@ async function listSourceHtml() {
     .map((e) => e.name);
 }
 
-async function cleanPublic(htmlFiles) {
+async function cleanPublic(htmlFiles, projectSlugs) {
   await mkdir(PUBLIC, { recursive: true });
   for (const { to } of COPY_DIRS) {
     await rm(to, { recursive: true, force: true });
   }
   for (const name of htmlFiles) {
     await rm(join(PUBLIC, name), { force: true });
+  }
+  await rm(join(PUBLIC, 'contact'), { recursive: true, force: true });
+  for (const slug of projectSlugs) {
+    await rm(join(PUBLIC, slug), { recursive: true, force: true });
   }
 }
 
@@ -123,15 +127,37 @@ async function buildHtml(files, tokens) {
   }
 }
 
+// Generate a real HTML file at public/<slug>/index.html for each project
+// and at public/contact/index.html for the contact page, so every URL
+// is served directly without server-side redirect rules.
+async function buildRoutedPages(projectSlugs, tokens) {
+  const projectTemplate = await readFile(join(SRC, 'html', 'project.html'), 'utf8');
+  const contactTemplate = await readFile(join(SRC, 'html', 'contact.html'), 'utf8');
+  const projectOutput = substituteTokens(projectTemplate, tokens);
+  const contactOutput = substituteTokens(contactTemplate, tokens);
+
+  for (const slug of projectSlugs) {
+    const dir = join(PUBLIC, slug);
+    await mkdir(dir, { recursive: true });
+    await writeFile(join(dir, 'index.html'), projectOutput);
+  }
+
+  const contactDir = join(PUBLIC, 'contact');
+  await mkdir(contactDir, { recursive: true });
+  await writeFile(join(contactDir, 'index.html'), contactOutput);
+}
+
 async function main() {
   const site = await readSiteConfig();
   const projectsDoc = await readProjectsConfig();
   const htmlFiles = await listSourceHtml();
-  await cleanPublic(htmlFiles);
+  const projectSlugs = projectsDoc.projects.map((p) => p.slug);
+  await cleanPublic(htmlFiles, projectSlugs);
   await copyDirs();
   const tokens = { ...site, siteDataScript: buildSiteDataScript(site, projectsDoc) };
   await buildHtml(htmlFiles, tokens);
-  console.log(`build: ${htmlFiles.length} HTML file(s), ${COPY_DIRS.length} directories copied.`);
+  await buildRoutedPages(projectSlugs, tokens);
+  console.log(`build: ${htmlFiles.length} HTML template(s), ${projectSlugs.length} project page(s), contact page, ${COPY_DIRS.length} directories copied.`);
 }
 
 main().catch((err) => {
