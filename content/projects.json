@@ -231,55 +231,55 @@
           "type": "image",
           "src": "assets/media/build-a-rocket/build-a-rocket-1.jpg",
           "alt": "Build A Rocket image 1",
-          "caption": ""
+          "caption": "Home page hero section"
         },
         {
           "type": "image",
           "src": "assets/media/build-a-rocket/build-a-rocket-2.jpg",
           "alt": "Build A Rocket image 2",
-          "caption": ""
+          "caption": "Website architecture and user flow sketch"
         },
         {
           "type": "video",
           "src": "assets/media/build-a-rocket/build-a-rocket-3.mp4",
           "alt": "Build A Rocket video 3",
-          "caption": ""
+          "caption": "Website's home page preview"
         },
         {
           "type": "image",
           "src": "assets/media/build-a-rocket/build-a-rocket-4.jpg",
           "alt": "Build A Rocket image 4",
-          "caption": ""
+          "caption": "Form design"
         },
         {
           "type": "image",
           "src": "assets/media/build-a-rocket/build-a-rocket-5.jpg",
           "alt": "Build A Rocket image 5",
-          "caption": ""
+          "caption": "\"How we work\" section"
         },
         {
           "type": "image",
           "src": "assets/media/build-a-rocket/build-a-rocket-6.jpg",
           "alt": "Build A Rocket image 6",
-          "caption": ""
+          "caption": "Website wire-framing preview"
         },
         {
           "type": "video",
           "src": "assets/media/build-a-rocket/build-a-rocket-7.mp4",
           "alt": "Build A Rocket video 7",
-          "caption": ""
+          "caption": "Animation details"
         },
         {
           "type": "image",
           "src": "assets/media/build-a-rocket/build-a-rocket-8.jpg",
           "alt": "Build A Rocket image 8",
-          "caption": ""
+          "caption": "New structure design"
         },
         {
           "type": "image",
           "src": "assets/media/build-a-rocket/build-a-rocket-9.jpg",
           "alt": "Build A Rocket image 9",
-          "caption": ""
+          "caption": "Preview of the website's defined text styles"
         }
       ],
       "slug": "build-a-rocket",
