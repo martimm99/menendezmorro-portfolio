@@ -1,6 +1,6 @@
 {
   "siteTitle": "MORRO",
-  "siteDescription": "MORRO — Portfolio of design and photography projects by Martí Menéndez. Branding, UX/UI, web design, and architecture photography.",
+  "siteDescription": "MORRO — Digital design portfolio by Martí Menéndez. Branding, web design and photography projects.",
   "siteUrl": "https://menendezmorro.com",
   "ogImage": "assets/og-image.jpg",
   "contactEmail": "martimm99@gmail.com",
@@ -10,7 +10,11 @@
     "This website has been designed and developed by Martí Menéndez."
   ],
   "socials": [
-    { "label": "INSTAGRAM", "url": "https://www.instagram.com/uepmorro/", "displayText": "@uepmorro" }
+    {
+      "label": "INSTAGRAM",
+      "url": "https://www.instagram.com/uepmorro/",
+      "displayText": "@uepmorro"
+    }
   ],
   "analytics": {
     "googleAnalyticsId": "G-J5D6SHTPS7"
