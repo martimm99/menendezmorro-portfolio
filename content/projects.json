@@ -225,13 +225,13 @@
       "subcategory": []
     },
     {
-      "longDescription": "A custom description is being written to avoid AI generated content.\n\nThank you for your patience.",
+      "longDescription": "Build A Rocket is a global gaming and esports agency within the SPORTFIVE family.\n\nThis project consists of a complete redesign of their website, starting from a new and more modern approach and rethinking the UX&UI of the site. The project finished with the handover of a Figma file ready to develop, that later resulted in a new fully functional and responsive website for the agency.\n\nThe company was in need of a new website, since the one they had was obsolete and no longer represented the disruptive and cutting-edge but professional and trustworthy values that the brand has earned in the past years.\n\nThe creative process started with a few meetings with the company's design lead to align on what they needed and what they liked and didn't like about their published website. With this, I was able to prepare a moodboard with visual references that matched their needs both from the usability and design perspective.\n\nOn the other side, the site's architecture was laid out in order to have a clear image of how the information was currently being structured. This allowed the user flow to be improved, by updating the structure and optimizing the ranking of the contents.\n\nWith a clearer image of the direction that the project was taking, a few sketches were designed and presented to the client. From there, multiple changes were applied during an iteration process that resulted in a desktop design for all the main website's pages, with which the client felt comfortable and identified.\n\nThe process continued with designing the remaining desktop pages and sections, creating and approving the mobile version, designing the rules for buttons and other components and establishing the text styles for screen sizes across the main responsive breakpoints.\n\nOnce the design was completed, a meeting with the web development team took place to align on the best way to submit the design file, and from there the magic happened to bring the designs to life in their brand new website.\n\nThe published site now transmits the brand values and makes the right impression on all web visitors and potential clients that navigate through it.",
       "media": [
         {
           "type": "image",
           "src": "assets/media/build-a-rocket/build-a-rocket-1.jpg",
           "alt": "Build A Rocket image 1",
-          "caption": "Home page hero section"
+          "caption": "Home hero section"
         },
         {
           "type": "image",
