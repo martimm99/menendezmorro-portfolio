@@ -40,9 +40,6 @@
 
 .fullscreen-stage.is-open .fullscreen-backdrop {
   pointer-events: auto;
-}
-
-.fullscreen-stage.is-open .fullscreen-backdrop {
   opacity: 1;
 }
 

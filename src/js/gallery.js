@@ -408,8 +408,8 @@ function observeVideos(track, gallery, mqlMobile) {
   if (videos.length === 0) return null;
   if (!('IntersectionObserver' in window)) return null;
 
-  // Mobile: IntersectionObserver on each video (viewport root, 0.9 threshold).
-  // Full-width items mean at most one video is ≥90% visible at a time.
+  // Mobile: IntersectionObserver on each video (viewport root, 0.5 threshold).
+  // Full-width items mean at most one video is ≥50% visible at a time.
   if (mqlMobile.matches) {
     const io = new IntersectionObserver((entries) => {
       for (const entry of entries) {

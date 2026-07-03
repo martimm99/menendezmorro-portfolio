@@ -111,7 +111,6 @@
     var(--page-pad-x)
     calc(var(--chrome-mask-bottom) + 20px);
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
 /* ---------- Contact text + Get in touch ---------- */

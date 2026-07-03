@@ -28,11 +28,14 @@ import { initHome } from './home.js';
 import { initProject } from './project.js';
 import { initContact } from './contact.js';
 import { initCursor } from './cursor.js';
+import { initPreloader } from './preloader.js';
 
 let homeInitialized = false;
 let data = null;
 
 function init() {
+  initPreloader();
+
   try {
     data = loadData();
     applyRoute();

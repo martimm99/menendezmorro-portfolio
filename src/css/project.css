@@ -110,7 +110,7 @@
   padding: var(--page-pad-y) var(--page-pad-x);
   color: var(--color-fg-light);
   pointer-events: none;
-  transition: opacity 0.6s ease;
+  transition: opacity 0.6s var(--ease-ui);
 }
 
 /* SVG logomark — see home.css for the rationale (including the
@@ -162,7 +162,7 @@
    * the label across font scaling. */
   line-height: 1;
   padding: var(--space-2) 0;
-  transition: opacity 0.6s ease;
+  transition: opacity 0.6s var(--ease-ui);
 }
 
 .static-get-in-touch .contact-icon {
@@ -193,7 +193,7 @@
   align-items: flex-start;
   gap: clamp(20px, 3vw, 48px);
   color: var(--color-fg-light);
-  transition: opacity 0.6s ease;
+  transition: opacity 0.6s var(--ease-ui);
 }
 
 /* LINKS: dl cell, hidden when project.links is empty */
@@ -364,7 +364,7 @@
   height: 44px;
   color: var(--color-fg-light);
   text-decoration: none;
-  transition: opacity 0.6s ease;
+  transition: opacity 0.6s var(--ease-ui);
 }
 
 .static-back-arrow svg {

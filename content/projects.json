@@ -87,7 +87,7 @@
       "coverAlt": "MORRO cover",
       "location": "Mallorca",
       "role": "Branding and Art Direction",
-      "cover": "/assets/media/morro-cover.jpg",
+      "cover": "assets/media/morro-cover.jpg",
       "title": "MORRO",
       "links": [
         {
@@ -469,7 +469,7 @@
       "coverAlt": "Festival Z cover",
       "location": "Girona",
       "role": "Creative Direction",
-      "cover": "/assets/media/festival-z-cover.jpg",
+      "cover": "assets/media/festival-z-cover.jpg",
       "title": "FESTIVAL Z",
       "links": [
         {
@@ -490,7 +490,7 @@
           "src": "assets/media/titles/titles-1.mp4",
           "alt": "Titles video 1",
           "caption": "",
-          "poster": "/assets/media/titles-1-poster.jpg"
+          "poster": "assets/media/titles/titles-1-poster.jpg"
         },
         {
           "type": "video",

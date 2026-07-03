@@ -22,6 +22,8 @@
 
     <link rel="icon" type="image/gif" href="/assets/favicon.gif">
     <link rel="preload" href="/assets/fonts/Geist-Regular.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/fonts/Geist-Light.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/morro-logo.svg" as="image" type="image/svg+xml">
 
     <!-- Warm the destination CSS cache so the first cross-document
          view-transition into a sub-page doesn't briefly show the
@@ -36,7 +38,7 @@
     <link rel="stylesheet" href="/css/reset.css">
     <link rel="stylesheet" href="/css/base.css">
     <link rel="stylesheet" href="/css/home.css">
-
+    <link rel="stylesheet" href="/css/preloader.css">
     {{websiteStructuredData}}
     {{analyticsScript}}
     {{siteDataScript}}
@@ -56,7 +58,7 @@
     </header>
 
     <main class="home-content">
-      <h1 class="project-title" data-clickable-to-project>
+      <h1 class="project-title">
         <span class="title-arrow-clip" aria-hidden="true">
           <svg class="title-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><use href="/assets/icons/arrows.svg#arrow-se"/></svg>
         </span>

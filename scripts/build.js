@@ -159,8 +159,9 @@ async function buildRoutedPages(projects, tokens) {
     const pageTitle = `${project.title} — ${tokens.siteTitle}`;
     const pageDescription = project.description || tokens.siteDescription;
     const pageUrl = `${tokens.siteUrl}/${project.slug}`;
-    const pageOgImage = project.cover
-      ? `${tokens.siteUrl}/${project.cover}`
+    const coverIsImage = project.cover && !/\.(mp4|webm|mov|ogg)$/i.test(project.cover);
+    const pageOgImage = coverIsImage
+      ? `${tokens.siteUrl}/${project.cover.replace(/^\//, '')}`
       : `${tokens.siteUrl}/${tokens.ogImage}`;
     const projectTokens = { ...tokens, pageTitle, pageDescription, pageUrl, pageOgImage };
     const output = substituteTokens(projectTemplate, projectTokens);

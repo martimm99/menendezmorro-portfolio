@@ -369,7 +369,7 @@
   clip-path: inset(0 0 0 0);
   -webkit-clip-path: inset(0 0 0 0);
   line-height: inherit;
-  will-change: transform, clip-path;
+  will-change: transform;
 }
 
 .slot.is-leaving-up {
