@@ -300,9 +300,12 @@
   left: 0;
   top: 0;
   bottom: 0;
-  width: 0;
+  width: 100%;
   background-color: var(--project-highlight);
   transition: background-color var(--dur-highlight) ease;
+  transform: scaleX(0);
+  transform-origin: left;
+  will-change: transform;
 }
 
 /* DESCRIPTION and GALLERY section labels (dt-equivalent). */

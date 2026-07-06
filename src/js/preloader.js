@@ -3,17 +3,21 @@
  *
  * Three-phase intro on the home page:
  *
- *   Phase 1 — solid blue (#0055ff) shown immediately when JS runs.
+ *   Phase 1 — solid blue (#0055ff) shown on the very first paint. The outer
+ *              #preloader div is created by an inline <script> in index.html
+ *              so it exists before any pixel is rendered. This function adopts
+ *              that element and adds the animation children.
  *   Phase 2 — white fill clipped to the MORRO logo shape sweeps IN
  *              left-to-right with an S-curve leading edge.
  *   Phase 3 — logo held for at least 1 s AND the first cover image loads,
  *              then preloader exits with a right-to-left sweep.
  *
- * The preloader element is created dynamically — it is never in the HTML —
- * so it cannot appear during cross-document view-transition captures on
- * return visits or any other timing edge cases.
+ * On return visits the inline script is skipped (sessionStorage flag), so
+ * #preloader is never in the DOM during view-transition captures.
  *
- * Revert: delete this file + preloader.css, and remove the import in main.js.
+ * Revert: delete this file + preloader.css, remove the import in main.js,
+ * remove the inline <script> and <link rel="stylesheet"> for preloader from
+ * index.html, and remove the <link rel="preload"> for morro-logo.svg.
  */
 
 function afterTransition(el, property = 'clip-path', maxWait = 1200) {
@@ -53,14 +57,24 @@ function getCoverSrc(project) {
 }
 
 export async function initPreloader() {
-  // Only play once per session — skip on back-navigation and subsequent loads.
-  try {
-    if (sessionStorage.getItem('preloaderShown')) return;
-    sessionStorage.setItem('preloaderShown', '1');
-  } catch { return; }
+  // The inline script created #preloader only on first visit. If it's absent,
+  // this is a return visit (or sessionStorage was unavailable) — nothing to do.
+  const el = document.getElementById('preloader');
+  if (!el) return;
 
-  // Build and mount the preloader only when it should play, so it is never
-  // present in the DOM during view-transition captures on return visits.
+  // Set the session flag so subsequent navigations skip the preloader.
+  try {
+    sessionStorage.setItem('preloaderShown', '1');
+  } catch {
+    el.remove();
+    return;
+  }
+
+  // Safety net: if the animation never completes (e.g. a JS error downstream),
+  // remove the preloader after 8 s so the page is never permanently blocked.
+  const safety = setTimeout(() => el.remove(), 8000);
+
+  // Add animation children to the already-visible #preloader.
   const fill = document.createElement('div');
   fill.id = 'preloader-logo-fill';
 
@@ -72,12 +86,7 @@ export async function initPreloader() {
   stage.id = 'preloader-stage';
   stage.appendChild(clip);
 
-  const el = document.createElement('div');
-  el.id = 'preloader';
-  el.setAttribute('aria-hidden', 'true');
   el.appendChild(stage);
-
-  document.body.prepend(el);
 
   // Start fetching the cover now so it is likely cached when we need it later.
   // The SVG mask is preloaded via <link rel="preload"> in the HTML, so it is
@@ -96,5 +105,6 @@ export async function initPreloader() {
   el.classList.add('is-exiting');
   await afterTransition(el);
 
+  clearTimeout(safety);
   el.remove();
 }

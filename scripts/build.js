@@ -80,7 +80,10 @@ function buildSiteDataScript(site, projectsDoc) {
 function buildAnalyticsScript(site) {
   const id = site.analytics?.googleAnalyticsId;
   if (!id) return '';
-  return `<script async src="https://www.googletagmanager.com/gtag/js?id=${id}"></script>\n    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${id}');</script>`;
+  // Stub sets up the gtag queue immediately so early calls are not lost.
+  // The actual gtag.js is loaded lazily during browser idle time so it never
+  // blocks the main thread during page transitions (traced at ~22ms).
+  return `<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${id}');(function(){function l(){var s=document.createElement('script');s.async=1;s.src='https://www.googletagmanager.com/gtag/js?id=${id}';document.head.appendChild(s);}window.requestIdleCallback?requestIdleCallback(l):setTimeout(l,2000);})();</script>`;
 }
 
 function buildWebsiteStructuredData(site) {

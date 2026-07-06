@@ -290,6 +290,14 @@ function initProgressBar(galleryAPI) {
     progressBar.style.transition = 'none';
     positionBar();
     positionGalleryBtn();
+    // Cache mobile boundary so readBoundary() never forces layout inside rAF.
+    if (mqlMobile.matches) {
+      const trackRect = navTrack.getBoundingClientRect();
+      if (trackRect.width > 0) {
+        const btnRect = galleryBtn.getBoundingClientRect();
+        galleryBoundary = Math.max(0, btnRect.left - trackRect.left) / trackRect.width;
+      }
+    }
     requestAnimationFrame(() => progressBar.style.removeProperty('transition'));
   }
 
@@ -301,23 +309,18 @@ function initProgressBar(galleryAPI) {
     resizeTimer = setTimeout(measureAndPosition, 100);
   }, { passive: true });
 
-  // Returns the current boundary fraction. On mobile reads the GALLERY
-  // button's live rendered position each call so layout shifts never
-  // cause a stale boundary — getBoundingClientRect is cheap inside rAF.
+  // Returns the cached boundary fraction. Computed once in measureAndPosition
+  // (called on init and resize) — never forces layout inside the rAF loop.
   function readBoundary() {
-    if (!mqlMobile.matches) return galleryBoundary;
-    const trackRect = navTrack.getBoundingClientRect();
-    if (trackRect.width <= 0) return galleryBoundary;
-    const btnRect = galleryBtn.getBoundingClientRect();
-    return Math.max(0, btnRect.left - trackRect.left) / trackRect.width;
+    return galleryBoundary;
   }
 
   // Animate the bar to a target value with a CSS transition. The rAF loop
   // pauses for the duration so the two don't fight each other.
   function setProgressSmooth(targetP, durationMs) {
     smoothUntil = performance.now() + durationMs;
-    progressFill.style.transition = `width ${durationMs}ms ease`;
-    progressFill.style.width = `${targetP * 100}%`;
+    progressFill.style.transition = `transform ${durationMs}ms ease`;
+    progressFill.style.transform = `scaleX(${targetP})`;
   }
 
   // Shift the bar's left edge on DESCRIPTION hover (pointer devices only).
@@ -390,7 +393,7 @@ function initProgressBar(galleryAPI) {
       ? gb + gallP * (1 - gb)
       : descP * gb;
 
-    progressFill.style.width = `${p * 100}%`;
+    progressFill.style.transform = `scaleX(${p})`;
 
     // Keep running while progress is visibly changing or an animation is
     // in flight; sleep once stable to stop burning frame budget idle.

@@ -45,6 +45,10 @@
     <script type="module" src="/js/main.js"></script>
   </head>
   <body class="home-page">
+    <!-- Runs synchronously before first paint. CSS is render-blocking so
+         preloader.css is guaranteed loaded when this executes, meaning #preloader
+         appears fully styled on the very first frame. Skipped on return visits. -->
+    <script>try{if(!sessionStorage.getItem('preloaderShown')){var p=document.createElement('div');p.id='preloader';p.setAttribute('aria-hidden','true');document.body.appendChild(p)}}catch(e){}</script>
     <div class="cover-stage" aria-hidden="true">
       <div class="cover-layer" data-layer="a"></div>
       <div class="cover-layer" data-layer="b"></div>
