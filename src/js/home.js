@@ -89,7 +89,8 @@ function resumeIndex(data) {
 function getCover(project) {
   if (project.cover) {
     const type = /\.mp4$/i.test(project.cover) ? 'video' : 'image';
-    return { type, src: project.cover, alt: project.coverAlt || `${project.title} cover` };
+    const match = project.media?.find((m) => m.src === project.cover);
+    return { type, src: project.cover, alt: project.coverAlt || `${project.title} cover`, poster: match?.poster };
   }
   return project.media[0] ?? null;
 }
@@ -144,6 +145,17 @@ function paintCover(layer, mediaItem, projectTitle, highPriority = false) {
     const video = renderVideo(mediaItem, projectTitle);
     layer.appendChild(video);
     state.videoObserver?.observe(video);
+
+    const hint = document.createElement('div');
+    hint.className = 'cover-play-hint';
+    layer.appendChild(hint);
+
+    video.addEventListener('playing', () => {
+      hint.style.opacity = '0';
+      hint.addEventListener('transitionend', () => hint.remove(), { once: true });
+    }, { once: true });
+
+    hint.addEventListener('click', () => video.play().catch(() => {}));
     video.play().catch(() => {});
     return;
   }
@@ -170,7 +182,7 @@ function renderVideo(mediaItem, projectTitle) {
   video.autoplay = true;
   video.loop = true;
   video.playsInline = true;
-  video.preload = 'metadata';
+  video.preload = 'auto';
   video.setAttribute('aria-label', `${projectTitle} cover video`);
   if (mediaItem.poster) video.poster = '/' + mediaItem.poster.replace(/^\//, '');
   return video;
