@@ -7,13 +7,13 @@
           "type": "image",
           "src": "assets/media/morro/morro-1.jpg",
           "alt": "MORRO image 1",
-          "caption": "Visual introduction to the logotype – AI generated image"
+          "caption": "Visual introduction to the logotype"
         },
         {
           "type": "image",
           "src": "assets/media/morro/morro-2.jpg",
           "alt": "MORRO image 2",
-          "caption": "Visual introduction to the style – AI generated image"
+          "caption": "Visual introduction to the style"
         },
         {
           "type": "image",
@@ -25,13 +25,13 @@
           "type": "image",
           "src": "assets/media/morro/morro-4.jpg",
           "alt": "MORRO image 4",
-          "caption": "Introduction to the isotype – AI generated image"
+          "caption": "Introduction to the isotype"
         },
         {
           "type": "image",
           "src": "assets/media/morro/morro-5.jpg",
           "alt": "MORRO image 5",
-          "caption": "Other statements of the visual style – AI generated image"
+          "caption": "Other statements of the visual style"
         },
         {
           "type": "image",
@@ -61,13 +61,13 @@
           "type": "image",
           "src": "assets/media/morro/morro-10.jpg",
           "alt": "MORRO image 10",
-          "caption": "Preview of a previous branding attempt – AI generated image"
+          "caption": "Preview of a previous branding attempt"
         },
         {
           "type": "image",
           "src": "assets/media/morro/morro-11.jpg",
           "alt": "MORRO image 11",
-          "caption": "Preview of a previous branding attempt – AI generated image"
+          "caption": "Preview of a previous branding attempt"
         },
         {
           "type": "image",
@@ -130,8 +130,8 @@
         {
           "type": "video",
           "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-5.mp4",
-          "alt": "TNMT's 2024-26 unicorns animation",
-          "caption": ""
+          "alt": "Lufthansa Innovation Hub video 5",
+          "caption": "TNMT's 2024-26 unicorns animation"
         },
         {
           "type": "video",
@@ -167,13 +167,13 @@
           "type": "image",
           "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-11.jpg",
           "alt": "Lufthansa Innovation Hub image 11",
-          "caption": "Concept design for the Company Run – AI generated image"
+          "caption": "Concept design for the Company Run"
         },
         {
           "type": "image",
           "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-12.jpg",
           "alt": "Lufthansa Innovation Hub image 12",
-          "caption": "Concept design for the Company Run – AI generated image"
+          "caption": "Concept design for the Company Run"
         },
         {
           "type": "image",
@@ -377,19 +377,19 @@
           "type": "image",
           "src": "assets/media/festival-z/festival-z-1.jpg",
           "alt": "Festival Z image 1",
-          "caption": ""
+          "caption": "Sketch of the logo"
         },
         {
           "type": "image",
           "src": "assets/media/festival-z/festival-z-2.jpg",
           "alt": "Festival Z image 2",
-          "caption": ""
+          "caption": "Reduced version of the logo"
         },
         {
           "type": "image",
           "src": "assets/media/festival-z/festival-z-3.jpg",
           "alt": "Festival Z image 3",
-          "caption": ""
+          "caption": "Bestiary stickers"
         },
         {
           "type": "image",
@@ -401,67 +401,67 @@
           "type": "video",
           "src": "assets/media/festival-z/festival-z-5.mp4",
           "alt": "Festival Z video 5",
-          "caption": ""
+          "caption": "Sticker of \"Mazeta\", mascot of the festival"
         },
         {
           "type": "image",
           "src": "assets/media/festival-z/festival-z-6.jpg",
           "alt": "Festival Z image 6",
-          "caption": ""
+          "caption": "Poster with the 2026 identity"
         },
         {
           "type": "image",
           "src": "assets/media/festival-z/festival-z-7.jpg",
           "alt": "Festival Z image 7",
-          "caption": ""
+          "caption": "Poster with the 2026 identity"
         },
         {
           "type": "image",
           "src": "assets/media/festival-z/festival-z-8.jpg",
           "alt": "Festival Z image 8",
-          "caption": ""
+          "caption": "Poster with the 2026 identity"
         },
         {
           "type": "image",
           "src": "assets/media/festival-z/festival-z-9.jpg",
           "alt": "Festival Z image 9",
-          "caption": ""
+          "caption": "Poster with the 2026 identity"
         },
         {
           "type": "image",
           "src": "assets/media/festival-z/festival-z-10.jpg",
           "alt": "Festival Z image 10",
-          "caption": ""
+          "caption": "2026 edition on the street"
         },
         {
           "type": "image",
           "src": "assets/media/festival-z/festival-z-11.jpg",
           "alt": "Festival Z image 11",
-          "caption": ""
+          "caption": "Unicorn sticker (2023 edition)"
         },
         {
           "type": "image",
           "src": "assets/media/festival-z/festival-z-12.jpg",
           "alt": "Festival Z image 12",
-          "caption": ""
+          "caption": "Elephant sticker (2024 edition)"
         },
         {
           "type": "image",
           "src": "assets/media/festival-z/festival-z-13.jpg",
           "alt": "Festival Z image 13",
-          "caption": ""
+          "caption": "Rat sticker (2025 edition)"
         },
         {
           "type": "image",
           "src": "assets/media/festival-z/festival-z-14.jpg",
           "alt": "Festival Z image 14",
-          "caption": ""
+          "caption": "Poster design for the 2025 edition"
         },
         {
           "type": "image",
           "src": "assets/media/festival-z/festival-z-15.jpg",
           "alt": "Festival Z image 15",
-          "caption": ""
+          "caption": "Poster design for the 2025 edition"
         }
       ],
       "slug": "festival-z",
