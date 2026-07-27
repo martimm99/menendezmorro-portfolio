@@ -20,21 +20,24 @@
   width: clamp(200px, 40vw, 440px);
 }
 
-/* Clip wrapper: drives the S-curve reveal. Separating clip from mask lets the
-   browser cache the rasterized logo texture and only re-clip it each frame,
-   rather than re-rasterizing the masked element on every animation frame.
-   150px amplitude; start CP2 at -50 (≤ 0) and end CP1 at 490 (≥ 440) ensure
-   nothing is visible before the sweep and everything after. */
+/* Clip wrapper: initial hidden state. The S-curve reveal is driven by JS
+   (requestAnimationFrame) rather than CSS animation — Chrome/Blink's
+   clip-path: path() interpolation is broken for both transition and
+   @keyframes, producing incorrect intermediate frames on desktop.
+   Setting clip-path via inline style each frame bypasses the bug entirely.
+   150px amplitude; start CP2 at -50 (≤ 0) ensures nothing is visible
+   before the sweep. */
 #preloader-logo-clip {
   display: block;
   width: 100%;
   aspect-ratio: 1651.25 / 597.98;
   clip-path: path("M -200 -10 C -350 40 -50 130 -200 170 L -5000 170 L -5000 -10 Z");
-  transition: clip-path 2s cubic-bezier(0.37, 0, 0.63, 1);
 }
 
-#preloader-logo-clip.is-in {
-  clip-path: path("M 640 -10 C 490 40 790 130 640 170 L -5000 170 L -5000 -10 Z");
+@media (max-width: 768px) {
+  #preloader-logo-clip {
+    clip-path: path("M -120 -10 C -220 35 -20 80 -120 125 L -5000 125 L -5000 -10 Z");
+  }
 }
 
 /* Mask layer: white div masked to the MORRO logo shape. Static — no animation.
@@ -52,19 +55,6 @@
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
   will-change: transform;
-}
-
-/* Mobile paths scale the S-curve to the shorter element. At the 768px
-   breakpoint the element is 307px wide × 111px tall (vs 440 × 159 desktop).
-   Constraints: start CP2 ≤ 0 (nothing visible); end CP1 ≥ 307 (fully revealed);
-   Y range beyond 111px so the full logo height is always covered. */
-@media (max-width: 768px) {
-  #preloader-logo-clip {
-    clip-path: path("M -120 -10 C -220 35 -20 80 -120 125 L -5000 125 L -5000 -10 Z");
-  }
-  #preloader-logo-clip.is-in {
-    clip-path: path("M 430 -10 C 330 35 530 80 430 125 L -5000 125 L -5000 -10 Z");
-  }
 }
 
 #preloader.is-exiting {
