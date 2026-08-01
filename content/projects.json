@@ -129,80 +129,87 @@
         },
         {
           "type": "video",
-          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-5.mp4",
+          "src": "/assets/media/collaboration-award-final.mp4",
           "alt": "Lufthansa Innovation Hub video 5",
+          "caption": "[SOUND] Motion graphics and sound design for Startup Gate",
+          "poster": "/assets/media/collaboration-award-poster.jpg"
+        },
+        {
+          "type": "video",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-5.mp4",
+          "alt": "Lufthansa Innovation Hub video 6",
           "caption": "TNMT's 2024-26 unicorns animation"
         },
         {
           "type": "video",
           "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-6.mp4",
-          "alt": "Lufthansa Innovation Hub video 6",
+          "alt": "Lufthansa Innovation Hub video 7",
           "caption": "TNMT's animated slider design"
         },
         {
           "type": "video",
           "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-7.mp4",
-          "alt": "Lufthansa Innovation Hub video 7",
+          "alt": "Lufthansa Innovation Hub video 8",
           "caption": "TNMT's animated cover design"
         },
         {
           "type": "image",
           "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-8.jpg",
-          "alt": "Lufthansa Innovation Hub image 8",
-          "caption": "\"Thank you\" cards designed as part of LIH's merchandise"
-        },
-        {
-          "type": "image",
-          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-9.jpg",
           "alt": "Lufthansa Innovation Hub image 9",
           "caption": "\"Thank you\" cards designed as part of LIH's merchandise"
         },
         {
           "type": "image",
-          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-10.jpg",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-9.jpg",
           "alt": "Lufthansa Innovation Hub image 10",
+          "caption": "\"Thank you\" cards designed as part of LIH's merchandise"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-10.jpg",
+          "alt": "Lufthansa Innovation Hub image 11",
           "caption": "Name tag design"
         },
         {
           "type": "image",
           "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-11.jpg",
-          "alt": "Lufthansa Innovation Hub image 11",
-          "caption": "Concept design for the Company Run"
-        },
-        {
-          "type": "image",
-          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-12.jpg",
           "alt": "Lufthansa Innovation Hub image 12",
           "caption": "Concept design for the Company Run"
         },
         {
           "type": "image",
-          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-13.jpg",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-12.jpg",
           "alt": "Lufthansa Innovation Hub image 13",
-          "caption": "Startup Gate team photoshoot"
+          "caption": "Concept design for the Company Run"
         },
         {
           "type": "image",
-          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-14.jpg",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-13.jpg",
           "alt": "Lufthansa Innovation Hub image 14",
           "caption": "Startup Gate team photoshoot"
         },
         {
           "type": "image",
-          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-15.jpg",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-14.jpg",
           "alt": "Lufthansa Innovation Hub image 15",
+          "caption": "Startup Gate team photoshoot"
+        },
+        {
+          "type": "image",
+          "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-15.jpg",
+          "alt": "Lufthansa Innovation Hub image 16",
           "caption": "Celina's portrait"
         },
         {
           "type": "image",
           "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-16.jpg",
-          "alt": "Lufthansa Innovation Hub image 16",
+          "alt": "Lufthansa Innovation Hub image 17",
           "caption": "Aida's portrait"
         },
         {
           "type": "image",
           "src": "assets/media/lufthansa-innovation-hub/lufthansa-innovation-hub-17.jpg",
-          "alt": "Lufthansa Innovation Hub image 17",
+          "alt": "Lufthansa Innovation Hub image 18",
           "caption": "Núria's portrait"
         }
       ],
