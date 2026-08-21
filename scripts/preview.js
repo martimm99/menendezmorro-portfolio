@@ -54,17 +54,12 @@ function resolveRequestPath(urlPath) {
     return filePath;
   }
 
-  // Template fallback — mirrors public/_redirects so local preview matches
-  // Netlify production. Extensionless paths that don't map to a real file
-  // resolve to contact.html for /contact, or to project.html for any other
-  // slug.
+  // Directory-index fallback — mirrors GitHub Pages behaviour: /slug resolves
+  // to /slug/index.html. This must run before the generic project.html fallback
+  // so per-project pages (with their own embedded __SITE_DATA__) are served.
   if (!extname(safe)) {
-    if (safe === '/contact' || safe === '/contact/') {
-      const contact = join(ROOT, 'contact.html');
-      if (existsSync(contact)) return contact;
-    }
-    const project = join(ROOT, 'project.html');
-    if (existsSync(project)) return project;
+    const dirIndex = join(filePath, 'index.html');
+    if (existsSync(dirIndex) && statSync(dirIndex).isFile()) return dirIndex;
     const home = join(ROOT, 'index.html');
     if (existsSync(home)) return home;
   }

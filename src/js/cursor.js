@@ -31,7 +31,7 @@
  */
 
 const HOVER_SELECTOR = 'a, button, .project-title, [data-action-copy-email], [data-nav-home], [data-nav-contact], .gallery-item, [data-fullscreen-stage].is-open';
-const SPRING_STIFFNESS = 0.07;
+const SPRING_STIFFNESS = 0.12;
 const SPRING_DAMPING = 0.55;
 // Sub-pixel threshold below which the spring is considered "settled."
 // Hitting this on both axes for both position-delta AND velocity

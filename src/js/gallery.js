@@ -460,7 +460,18 @@ function observeVideos(track, gallery, mqlMobile) {
   let isGalleryVisible = false;
 
   for (const video of videos) {
-    video.addEventListener('loadedmetadata', () => { refreshCache(); if (isGalleryVisible) syncPlayback(); }, { once: true });
+    video.addEventListener('loadedmetadata', () => {
+      refreshCache();
+      // Re-snap to the active item so a late metadata load (which changes
+      // intrinsic video width and shifts all subsequent offsetLeft values)
+      // doesn't leave the scroll position pointing at the wrong item.
+      const newMax = trackMaxScroll(track, gallery);
+      const newSnap = activeItemIdx === allItems.length - 1
+        ? newMax
+        : Math.max(0, (itemCenters.get(allItems[activeItemIdx]) ?? 0) - galleryHalf);
+      applyScroll(track, newSnap, true);
+      if (isGalleryVisible) syncPlayback();
+    }, { once: true });
   }
 
   // Track the active item index so the ResizeObserver can re-snap to the
@@ -468,6 +479,7 @@ function observeVideos(track, gallery, mqlMobile) {
   let activeItemIdx = 0;
 
   function syncPlayback() {
+    refreshCache();
     const scroll = currentScroll(track);
     const maxScroll = trackMaxScroll(track, gallery);
     let bestIdx = 0;
