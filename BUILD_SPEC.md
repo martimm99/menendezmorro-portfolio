@@ -1,8 +1,11 @@
 # MORRO — Portfolio Rebuild Build Spec
 
-**Version:** 1.21 (Approved)
+**Version:** 1.22 (Approved)
 **Date:** September 10, 2026
 **Status:** Approved — build authorized
+
+**Changes from v1.21:**
+- **Spec reconciled with the Home auto-advance timer (already shipped).** The "NEXT PROJECT" button on Home has, since ~June 2026, doubled as a 7-second auto-advance timer: its label fills left-to-right and, on reaching full, triggers a horizontal sweep to the next project (wrapping last → first). The spec previously listed "timers of any kind" as a non-goal and stated "no timers anywhere on the site" — both now corrected. Behaviour documented in §2 (Home UI elements, Animations) and §5.1 (new "Auto-advance" subsection): desktop/hover only; pauses while hovering the button (which also brightens it) or the project title; any manual navigation drains and resets it; the countdown does not start until the preloader has finished. Open accessibility gap noted in Appendix A (no dedicated pause control; not suppressed under `prefers-reduced-motion`).
 
 **Changes from v1.20:**
 - **Gallery media: third type — Figma prototype embeds.** In addition to `image` and `video`, a gallery media item can be `type: "figma"`: an embedded, interactive Figma prototype. In the filmstrip it renders as a required `poster` still with a small "Prototype" cue (it does not run inline — same principle as gallery videos having no controls). Clicking/tapping it opens Image fullscreen, where a live Figma `<iframe>` is mounted over the expanded poster and the prototype becomes fully interactive. Closing removes the iframe. Data fields: `url` (Figma share link or embed code — required), `poster` (required), `alt` (required), `caption` (optional), `aspect` (optional `"W:H"` override for the fullscreen frame; defaults to the poster's shape). The embed uses Figma's `embed.figma.com` endpoint with `embed-host=menendezmorro`; the prototype must be shared as "Anyone with the link → can view". See §5.2, §5.4, §6.1, §7. Also: `cleanup-media.js` now preserves `poster` files (previously only `src` and `cover` were kept — video posters would have been deleted as orphans).
@@ -120,7 +123,7 @@ This document defines what we are building and how. It is the contract between c
 - Comments, search, or social sharing widgets.
 - Newsletter signup.
 - A cookie banner.
-- Auto-rotation, slideshows, timers of any kind.
+- Carousel / slideshow UI chrome (dot indicators, visible prev/next controls). *(Home covers do auto-advance on a 7-second timer — see §5.1 — but with no slideshow chrome; the "NEXT PROJECT" button is the only affordance and doubles as the countdown indicator.)*
 - Filtering UI on Home (the data field for `subcategory` is preserved for future use, but no UI).
 - E-commerce or any transactional functionality.
 
@@ -142,6 +145,7 @@ These terms are used consistently in code, documentation, and conversation.
 - **Project title** — large project name positioned center-left of the viewport.
 - **Role label** — horizontal text positioned center-right of the viewport. (This is a change from the current live site, where it is vertical.)
 - **Info row** — bottom of the viewport, showing LOCATION / YEAR / DESCRIPTION.
+- **"NEXT PROJECT" button** — bottom-right of the viewport (desktop/hover only). Advances to the next project on click, and its label doubles as the auto-advance countdown indicator (fills left-to-right over 7 s). See §5.1 "Auto-advance".
 
 ### Project page elements
 
@@ -169,7 +173,7 @@ A state opened by clicking/tapping an image, video, or Figma prototype in the ga
   - Contact → Home: reverse (Contact slides **up**, off the top).
 - **Line reveal** — text-mask reveal animation. Each text line is wrapped in a clipped container; line starts translated 100% below its container, then slides up into view. Staggered delay between lines. Easing `cubic-bezier(.33, 1, .55, 1)`, duration ~0.55s per line. Used for entry of Project page (description text, Get in touch CTA) and Contact page text — identical to current live site for the initial paint, with one v1.12 enhancement: lines below the fold animate as the user scrolls them into the reading area (per-line scroll trigger via IntersectionObserver), instead of all firing on init. The trigger zone excludes the bottom 80px of the viewport (matching the chrome-mask band) so a scrolled-in line animates above the static-element area, and so the last line of a description still triggers when scrolled to the end.
 - **Snap transition (Project page)** — when scrolling between the Description section (landing) and the Gallery section, the page snaps with a smooth animation. Both directions (description → gallery on a scroll-down past the bottom of the text; gallery → description on a scroll-up at the first image). Tunable post-build.
-- **No crossfade, no auto-rotation, no timers anywhere on the site.**
+- **Home auto-advance** — the only *looping* timer on the site. The Home cover advances to the next project every 7 s via the standard Horizontal sweep, with the "NEXT PROJECT" button label acting as the countdown indicator. Full behaviour in §5.1. Two other elements are time-based but fire once, not on a loop, and are not auto-rotation: the Preloader intro sequence (once per session) and the "Email copied" toast (~2 s auto-dismiss). There is no crossfade anywhere.
 
 ---
 
@@ -242,6 +246,20 @@ The map is retained for historical reference only. **Legacy hash URLs are not re
 - **Click on the Project title or Role label** → navigate to that project's page via vertical sweep (Project slides down from top). The cover image itself and the Info row are NOT clickable for navigation.
 - **Click logo "MORRO"** → no-op on Home (already there).
 - **Click "Contact"** → navigate to Contact page via vertical sweep (Contact slides down from top).
+- **Click "NEXT PROJECT" button** (bottom-right, desktop/hover only) → horizontal sweep to the next project. Same as a wheel/arrow "next".
+
+**Auto-advance:**
+
+Home cycles through the project covers on its own.
+
+- **Cadence:** every **7 seconds** the cover advances to the next project via the standard Horizontal sweep. The order wraps: after the last project it returns to the first.
+- **Indicator:** the **"NEXT PROJECT" button label** is the countdown. Its text fills from dim to bright, left-to-right, as the 7 s elapse; at full it fires the advance and the fill drains back.
+- **Availability:** desktop only — shown when `(hover: hover)`, `(pointer: fine)` and viewport ≥ 600px. On touch / narrow viewports the button and the auto-advance are both absent; the user navigates manually.
+- **Start:** the countdown does not begin until the Preloader has finished and the first cover is actually on screen (first visit). On a return visit within the session there is no preloader, so it starts immediately on load.
+- **Pausing:**
+  - Hovering the **"NEXT PROJECT" button** pauses the countdown and brightens the label; leaving resumes from where it was.
+  - Hovering the **project title** freezes the countdown entirely (the user is likely about to click into the project); leaving resumes.
+- **Manual navigation resets it:** any wheel / drag / arrow / button navigation drains the current fill and restarts the 7 s on the new project.
 
 **State:**
 - The current project index is remembered. If the user navigates to a Project page and back, Home returns to the cover of the project they were viewing — not project 0.
@@ -644,6 +662,7 @@ menendezmorro-portfolio/
 - Focus states visible.
 - ARIA labels on icon-only buttons.
 - Color contrast meets WCAG AA on all text.
+- Home auto-advance (§5.1) currently has no explicit pause control and does not stop under `prefers-reduced-motion` — an open WCAG 2.2.2 gap tracked in Appendix A.
 
 **SEO:**
 - Unique `<title>` and `<meta description>` per page (Project pages auto-generate from project data; site-wide fallbacks editable in CMS).
@@ -751,6 +770,7 @@ Things deliberately deferred to build time, with reasonable defaults noted:
 - Whether to inline CSS or load as separate file (default: inline critical, load rest async).
 - Whether to bundle JS modules into one file or keep separate (default: keep separate; HTTP/2 handles this efficiently).
 - Mobile breakpoint exact value (default: 768px).
+- **Home auto-advance accessibility (§5.1).** As shipped, the 7-second auto-advance has no dedicated pause/stop control (only the button- and title-hover pauses) and is not suppressed under `prefers-reduced-motion`. WCAG 2.2.2 (Pause, Stop, Hide) would want an explicit control or an auto-stop. Deferred — revisit whether to add a persistent pause affordance and/or halt auto-advance for reduced-motion users. It is desktop/hover-only, which limits exposure.
 
 ## Appendix B: Decisions deliberately deferred to future versions
 
