@@ -130,7 +130,10 @@ collections:
                     options:
                       - { label: "Image", value: "image" }
                       - { label: "Video", value: "video" }
-                  - { name: "src",     label: "File",    widget: "file" }
+                      - { label: "Prototype (Figma)", value: "figma" }
+                  - { name: "src",     label: "File",    widget: "file", required: false, hint: "Image and Video only — upload the media file." }
+                  - { name: "url",     label: "Figma link", widget: "string", required: false, hint: "Prototype only — paste the Figma share link (Share → Copy link) or the full embed code. The prototype must be shared as \"Anyone with the link → can view\"." }
                   - { name: "alt",     label: "Alt text", widget: "string", hint: "Required for accessibility; auto-filled if blank." }
-                  - { name: "caption", label: "Caption", widget: "string", required: false, hint: "Optional small label under the image." }
-                  - { name: "poster",  label: "Poster (videos only)", widget: "image", required: false }
+                  - { name: "caption", label: "Caption", widget: "string", required: false, hint: "Optional small label under the item." }
+                  - { name: "poster",  label: "Poster", widget: "image", required: false, hint: "Video: optional still shown while the video loads. Prototype: required — this still shows in the gallery and sets the prototype's shape when expanded." }
+                  - { name: "aspect",  label: "Prototype aspect ratio", widget: "string", required: false, hint: "Prototype only, optional. e.g. 16:9 (desktop) or 9:16 (phone). Leave blank to use the poster image's shape." }

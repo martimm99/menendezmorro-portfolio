@@ -2,7 +2,8 @@
  * cleanup-media.js
  *
  * Deletes any image/video files in assets/media/ that are not referenced
- * by any project in content/projects.json. Run automatically by the
+ * by any project in content/projects.json (as a media `src`, a `poster`,
+ * or a project `cover`). Run automatically by the
  * GitHub Action .github/workflows/cleanup-media.yml on every push that
  * changes projects.json.
  *
@@ -27,6 +28,9 @@ function collectRefs(data) {
     if (project.cover) refs.add(normalize(project.cover.replace(/^\//, '')));
     for (const item of (project.media || [])) {
       if (item.src) refs.add(normalize(item.src.replace(/^\//, '')));
+      // Video and Figma-prototype posters are real files under assets/media/
+      // too — keep them, or they'd be treated as orphans and deleted.
+      if (item.poster) refs.add(normalize(item.poster.replace(/^\//, '')));
     }
   }
   return refs;

@@ -4,7 +4,9 @@
  * Renders the project's media list as a horizontal filmstrip and wires up
  * desktop wheel scroll, drag, mobile arrow buttons, and video autoplay
  * observation. Captions appear as small overlays at the bottom-left of each
- * item when present.
+ * item when present. Figma prototype items (`type: "figma"`) render as their
+ * poster still with a "Prototype" cue; the live embed is built by
+ * fullscreen.js when the item is opened.
  *
  * Per BUILD_SPEC.md §5.2:
  *   - Desktop: scroll always controls the gallery; ~30% of visible width
@@ -180,6 +182,13 @@ function renderItems({ items, projectTitle, track, onItemActivate }) {
 
     if (media.type === 'video') {
       fig.appendChild(buildVideo(media, projectTitle, index));
+    } else if (media.type === 'figma') {
+      // The filmstrip shows the poster still with a small cue; the live
+      // prototype is built by fullscreen.js when the item is opened.
+      fig.classList.add('is-embed');
+      fig.dataset.embedUrl = media.url || '';
+      if (media.aspect) fig.dataset.embedAspect = media.aspect;
+      fig.appendChild(buildEmbedPoster(media, projectTitle, index));
     } else {
       fig.appendChild(buildPicture(media, projectTitle, index));
     }
@@ -219,6 +228,36 @@ function buildPicture(media, projectTitle, index) {
     if ('fetchPriority' in img) img.fetchPriority = 'low';
   }
   return img;
+}
+
+function buildEmbedPoster(media, projectTitle, index) {
+  // The cue is anchored to a wrapper that hugs the poster image, so it
+  // stays on the image on mobile (where the caption is in-flow below the
+  // figure and would otherwise push the cue down with it).
+  const frame = document.createElement('span');
+  frame.className = 'gallery-embed-frame';
+
+  const poster = '/' + String(media.poster || '').replace(/^\//, '');
+  const img = document.createElement('img');
+  img.src = poster;
+  img.alt = media.alt || `${projectTitle} prototype ${index + 1}`;
+  img.decoding = 'async';
+  if (index < 2) {
+    img.loading = 'eager';
+    if ('fetchPriority' in img) img.fetchPriority = index === 0 ? 'high' : 'low';
+  } else {
+    img.loading = 'lazy';
+    if ('fetchPriority' in img) img.fetchPriority = 'low';
+  }
+  frame.appendChild(img);
+
+  const cue = document.createElement('span');
+  cue.className = 'gallery-embed-cue';
+  cue.textContent = 'Prototype';
+  cue.setAttribute('aria-hidden', 'true');
+  frame.appendChild(cue);
+
+  return frame;
 }
 
 function buildVideo(media, projectTitle, index) {

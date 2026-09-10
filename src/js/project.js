@@ -124,12 +124,16 @@ function updateHead(site, project) {
   const pageTitle = `${project.title} — ${site.siteTitle}`;
   const pageDescription = project.description || site.siteDescription;
   const pageUrl = `${site.siteUrl}/${project.slug}`;
-  // First media item as the social-preview image. Falls back to the
-  // site-wide OG image if a project has no media (shouldn't happen
-  // per validator, but be defensive).
-  const firstMedia = (project.media || []).find((m) => m && m.src);
-  const projectImage = firstMedia
-    ? `${site.siteUrl}/${String(firstMedia.src).replace(/^\//, '')}`
+  // First usable still as the social-preview image: an image's file, or a
+  // video / Figma prototype's poster. Falls back to the site-wide OG image
+  // if a project has no such media (shouldn't happen per validator, but be
+  // defensive).
+  const previewMedia = (project.media || []).find((m) => m && (m.src || m.poster));
+  const previewPath = previewMedia
+    ? (previewMedia.type === 'image' ? previewMedia.src : (previewMedia.poster || previewMedia.src))
+    : null;
+  const projectImage = previewPath
+    ? `${site.siteUrl}/${String(previewPath).replace(/^\//, '')}`
     : `${site.siteUrl}/${String(site.ogImage || '').replace(/^\//, '')}`;
 
   document.title = pageTitle;

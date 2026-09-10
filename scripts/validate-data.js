@@ -13,6 +13,7 @@
  *
  *   - slugs are unique across all projects
  *   - video media items are warned (not failed) when they lack a poster
+ *   - figma media items are warned when the url is not a "/proto/" link
  *
  * Exit codes:
  *   0  validation passed (possibly with warnings)
@@ -85,17 +86,39 @@ const projectsSchema = {
         text: { type: 'string', minLength: 1 }
       }
     },
+    // Media is one of two shapes. Images and videos carry a local file
+    // (`src`); Figma prototypes carry an external `url` plus a `poster`
+    // still that stands in for them in the gallery filmstrip.
     media: {
-      type: 'object',
-      additionalProperties: false,
-      required: ['type', 'src', 'alt'],
-      properties: {
-        type:    { enum: ['image', 'video'] },
-        src:     { type: 'string', minLength: 1 },
-        alt:     { type: 'string' },
-        caption: { type: 'string' },
-        poster:  { type: 'string' }
-      }
+      oneOf: [
+        {
+          type: 'object',
+          additionalProperties: false,
+          required: ['type', 'src', 'alt'],
+          properties: {
+            type:    { enum: ['image', 'video'] },
+            src:     { type: 'string', minLength: 1 },
+            alt:     { type: 'string' },
+            caption: { type: 'string' },
+            poster:  { type: 'string' }
+          }
+        },
+        {
+          type: 'object',
+          additionalProperties: false,
+          required: ['type', 'url', 'poster', 'alt'],
+          properties: {
+            type:    { const: 'figma' },
+            url:     { type: 'string', minLength: 1, pattern: 'figma\\.com' },
+            poster:  { type: 'string', minLength: 1 },
+            alt:     { type: 'string' },
+            caption: { type: 'string' },
+            // Optional aspect-ratio override for the fullscreen frame,
+            // e.g. "16:9" or "9:16". Blank → derived from the poster.
+            aspect:  { type: 'string', pattern: '^\\d+(\\.\\d+)?([:/]\\d+(\\.\\d+)?)?$' }
+          }
+        }
+      ]
     }
   }
 };
@@ -178,6 +201,9 @@ function crossFieldChecks(projects) {
     (project.media || []).forEach((item, mIdx) => {
       if (item.type === 'video' && !item.poster) {
         warnings.push(`  projects.json${where}/media/${mIdx}: video has no poster (recommended in BUILD_SPEC.md §6.1)`);
+      }
+      if (item.type === 'figma' && item.url && !/\/proto\//.test(item.url) && !/embed_host=/.test(item.url)) {
+        warnings.push(`  projects.json${where}/media/${mIdx}: figma url is not a "/proto/" prototype link — the embed will show a static design, not a clickable prototype (BUILD_SPEC.md §6.1)`);
       }
     });
   });

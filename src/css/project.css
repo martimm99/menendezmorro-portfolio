@@ -487,6 +487,35 @@
 
 .gallery-caption:empty { display: none; }
 
+/* ---------- Prototype (Figma) cue ----------
+ *
+ * Figma prototype items show their poster still in the filmstrip with
+ * this small label; clicking the item opens the live, interactive
+ * prototype in Image fullscreen (same open gesture as an image/video).
+ */
+
+.gallery-embed-frame {
+  position: relative;
+  display: block;
+  line-height: 0; /* no descender gap below the poster image */
+}
+
+.gallery-embed-cue {
+  position: absolute;
+  left: var(--space-3);
+  bottom: var(--space-3);
+  z-index: 1;
+  padding: 5px 10px;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-light);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--color-fg-dark);
+  background-color: rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
 /* ---------- Mobile arrow buttons ---------- */
 
 .gallery-arrow {

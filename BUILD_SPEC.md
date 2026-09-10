@@ -1,8 +1,11 @@
 # MORRO — Portfolio Rebuild Build Spec
 
-**Version:** 1.20 (Approved)
-**Date:** June 9, 2026
+**Version:** 1.21 (Approved)
+**Date:** September 10, 2026
 **Status:** Approved — build authorized
+
+**Changes from v1.20:**
+- **Gallery media: third type — Figma prototype embeds.** In addition to `image` and `video`, a gallery media item can be `type: "figma"`: an embedded, interactive Figma prototype. In the filmstrip it renders as a required `poster` still with a small "Prototype" cue (it does not run inline — same principle as gallery videos having no controls). Clicking/tapping it opens Image fullscreen, where a live Figma `<iframe>` is mounted over the expanded poster and the prototype becomes fully interactive. Closing removes the iframe. Data fields: `url` (Figma share link or embed code — required), `poster` (required), `alt` (required), `caption` (optional), `aspect` (optional `"W:H"` override for the fullscreen frame; defaults to the poster's shape). The embed uses Figma's `embed.figma.com` endpoint with `embed-host=menendezmorro`; the prototype must be shared as "Anyone with the link → can view". See §5.2, §5.4, §6.1, §7. Also: `cleanup-media.js` now preserves `poster` files (previously only `src` and `cover` were kept — video posters would have been deleted as orphans).
 
 **Changes from v1.19:**
 - **Site renamed to MORRO.** The display name across all HTML, data, and documentation has been updated from "MENÉNDEZ MORRO" to "MORRO". The domain (`menendezmorro.com`) and repository/folder names are unchanged.
@@ -155,7 +158,7 @@ These terms are used consistently in code, documentation, and conversation.
 Small text shown directly below each image or video, **left-aligned** with **lower opacity** (~0.6) so it reads as a secondary label rather than a heading. Visible in both the Gallery section and the Image fullscreen state (where the caption sits below the centered, expanded media). Captions are per-media-item (each entry in `media[]` can have its own `caption` text). Optional and gracefully absent when empty — no placeholder, no blank space. Primarily used by category projects (TITLES, ARCHITECTURE, CONCERTS) to label individual pieces (e.g., artist name + venue for a concert photo).
 
 ### Image fullscreen
-A state opened by clicking/tapping an image or video in the gallery. The clicked media animates from its gallery position to a centered, ~90vw expanded position; closing reverses the animation back to the gallery item.
+A state opened by clicking/tapping an image, video, or Figma prototype in the gallery. The clicked media animates from its gallery position to a centered, ~90vw expanded position; closing reverses the animation back to the gallery item. For a Figma prototype, the poster expands and the live interactive embed then loads over it.
 
 ### Animations
 - **Horizontal sweep** — left/right wipe transition. Used between Home covers.
@@ -313,6 +316,8 @@ DESCRIPTION text never truncates with ellipsis — information is preserved. Lon
 - **At the first image, scrolling backward** → triggers the **Snap transition** back to the Description section, which lands at whatever scroll position the user was at before entering the gallery. The forward direction (scrolling down at the bottom of the Description section) → Snap transition into the Gallery section, landing on the first image. The gallery resets to the first image when the user snaps back, so re-entering the gallery always starts fresh.
 - **Videos in gallery:** play muted, loop, **no controls visible**. Each video **autoplays when at least 90% of the video is visible in the viewport** (intersection observer with `threshold: 0.9`); pauses when less than 90% is visible. Click to open in Image fullscreen (where full HTML5 controls become available).
 
+- **Figma prototypes in gallery** (`type: "figma"`): render as the item's `poster` still (required) with a small "Prototype" label at bottom-left. The prototype does **not** run inline in the filmstrip. Click/tap opens Image fullscreen, where the live interactive prototype loads (see §5.4). The poster's aspect ratio (or an explicit `aspect` value) sets the item's shape.
+
 - **Captions:** each media item in the gallery (image or video) can have an optional caption. When present, the caption appears as small overlay text positioned at the **bottom-left** of the media item, white text with a subtle backdrop for legibility. When the caption is empty or absent, nothing renders (no placeholder, no blank space).
 
 **Gallery section — Mobile:**
@@ -377,6 +382,13 @@ Triggered by clicking/tapping an image or video in the Project page Gallery. Beh
 - Autoplays on entry, with sound when the browser allows it. If the browser blocks sound-on-autoplay, the video starts muted and the user can unmute with the visible controls.
 - Click X / Esc to close.
 
+**Figma prototype behavior in fullscreen:**
+
+- The poster still expands first (identical to an image). Once the expand animation settles, a live Figma `<iframe>` is mounted over the poster and fades in when it loads. The prototype is fully interactive — click through it normally.
+- Built from the stored `url` via Figma's `embed.figma.com` endpoint (`embed-host=menendezmorro`); a pasted full `<iframe>` snippet or `embed.figma.com` link is accepted too. The Figma file must be shared "Anyone with the link → can view" or visitors see a Figma login wall.
+- **Close:** click the backdrop (any area outside the prototype), or press Esc when focus is not inside the prototype iframe. Closing removes the iframe so the Figma viewer stops. Note: while focus is inside the cross-origin iframe, Esc is captured by Figma — the backdrop click is the reliable close.
+- Frame size follows the poster's aspect ratio, or the media item's `aspect` override (`"16:9"`, `"9:16"`, …).
+
 ---
 
 ## 6. Data model
@@ -405,7 +417,8 @@ Triggered by clicking/tapping an image or video in the Project page Gallery. Beh
       "media": [
         { "type": "image", "src": "assets/media/morro/morro-1.jpg", "alt": "MORRO image 1", "caption": "" },
         { "type": "image", "src": "assets/media/morro/morro-2.jpg", "alt": "MORRO image 2", "caption": "" },
-        { "type": "video", "src": "assets/media/morro/morro-3.mp4", "poster": "assets/media/morro/morro-3.jpg", "caption": "" }
+        { "type": "video", "src": "assets/media/morro/morro-3.mp4", "poster": "assets/media/morro/morro-3.jpg", "caption": "" },
+        { "type": "figma", "url": "https://www.figma.com/proto/ABC123/Prototype?node-id=1-2", "poster": "assets/media/morro/morro-4.jpg", "alt": "MORRO prototype", "caption": "", "aspect": "16:9" }
       ]
     }
   ]
@@ -423,6 +436,13 @@ Triggered by clicking/tapping an image or video in the Project page Gallery. Beh
 - `media[].alt` text: required for accessibility. Auto-generated as `<Project title> image N` if not provided in CMS.
 - `media[].caption`: optional. Per-image overlay text shown at bottom-left in Gallery and Image fullscreen. Empty/absent → no overlay rendered.
 - Videos: `poster` is optional but recommended (used as fallback if video fails to load).
+- **`type: "figma"`** (Figma prototype embed) uses a different field set:
+  - `url` (**required**) — the Figma share link (`https://www.figma.com/proto/…`), an `embed.figma.com` link, or a full `<iframe …>` embed snippet. The renderer normalises all three. `/proto/` links give a clickable prototype; `/design/` or `/file/` links embed a static canvas (validator warns).
+  - `poster` (**required**) — still image shown in the filmstrip; its aspect ratio also sizes the fullscreen frame.
+  - `alt` (**required**), `caption` (optional) — as above.
+  - `aspect` (optional) — `"W:H"` (e.g. `"16:9"`, `"9:16"`) or a bare decimal; overrides the poster's aspect ratio for the fullscreen frame only.
+  - `src` is **not** used for this type.
+  - The Figma file must be shared "Anyone with the link → can view".
 
 ### 6.2 `site.json` structure (new file — site-wide settings)
 
@@ -482,11 +502,13 @@ For each project, fields:
 - Duration (text)
 - Cost (text)
 - **Media** (list, drag-to-reorder):
-  - Type (select: image / video)
-  - File (image or video upload)
+  - Type (select: image / video / Prototype (Figma))
+  - File (image or video upload) — image / video only
+  - Figma link (text) — prototype only: share link or full embed code
   - Alt text (text, for accessibility)
   - Caption (text, optional) — shown as overlay at bottom-left in Gallery and fullscreen
-  - Poster (image upload, videos only)
+  - Poster (image upload) — optional for video; **required** for a Figma prototype (shown in the gallery + sizes the fullscreen frame)
+  - Prototype aspect ratio (text, optional) — prototype only, e.g. `16:9` / `9:16`
 
 **Drag-to-reorder** works at two levels: project order on Home, and media order within a project's gallery.
 

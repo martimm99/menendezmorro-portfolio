@@ -66,6 +66,24 @@
   object-fit: contain;
 }
 
+/* Figma prototype embed — mounted over the expanded poster clone once the
+ * expand animation settles (fullscreen.js mountEmbed), then faded in when
+ * the iframe loads. Sits above the poster so it covers it as it appears. */
+.fullscreen-embed {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  opacity: 0;
+  background-color: var(--color-bg-light);
+  transition: opacity 0.3s ease;
+}
+
+.fullscreen-embed.is-ready {
+  opacity: 1;
+}
+
 /* Caption: positioned by JS below the expanded media. Hidden while the
  * image is mid-animation; fades in after the box reaches its target
  * and fades out at the start of the close animation. */
@@ -121,7 +139,8 @@
 @media (prefers-reduced-motion: reduce) {
   .fullscreen-media,
   .fullscreen-caption,
-  .fullscreen-backdrop {
+  .fullscreen-backdrop,
+  .fullscreen-embed {
     transition: none;
   }
 }

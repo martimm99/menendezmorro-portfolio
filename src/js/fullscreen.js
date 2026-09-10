@@ -10,11 +10,18 @@
  *
  * The module owns no UI on its own — it operates on the .fullscreen-
  * stage scaffold already present in project.html.
+ *
+ * Figma prototype items (`type: "figma"`) expand their poster still like
+ * an image; once the expand settles, a live Figma embed <iframe> is
+ * mounted over the poster and faded in. Closing removes the iframe (so
+ * the Figma viewer stops) and collapses the poster back to the gallery.
  */
 
 import { prefersReducedMotion } from './utils.js';
 
 const ANIMATION_MS = 420;
+// Identifies this site to Figma's embed endpoint (embed-host / embed_host).
+const FIGMA_EMBED_HOST = 'menendezmorro';
 const SIDE_MARGIN_VW_DESKTOP = 5;
 const SIDE_MARGIN_VW_MOBILE = 2;  // matches gallery's 96vw items so wide
                                   // images don't visually shrink on open
@@ -99,6 +106,7 @@ export function openFullscreen(galleryItem) {
     state.isOpen = true;
     state.isAnimating = false;
     tryPlayVideo(clone);
+    mountEmbed(galleryItem);
     // Move focus into the stage so screen readers and keyboard users land
     // inside the modal, not behind it.
     stage.focus();
@@ -139,6 +147,11 @@ function closeFullscreen() {
   // Pause any video so it doesn't keep playing after collapse.
   const video = mediaWrap.querySelector('video');
   if (video) video.pause();
+
+  // Tear down a Figma embed immediately so its viewer stops running. The
+  // poster clone stays in the wrap and handles the collapse animation.
+  const embed = mediaWrap.querySelector('iframe');
+  if (embed) embed.remove();
 
   // Recompute the source rect in case the layout moved while open
   // (e.g., window resize) — fall back to the stored rect.
@@ -188,14 +201,21 @@ function computeTargetRect(galleryItem) {
   // Read aspect ratio from the source gallery item — images/videos are
   // already decoded there, so naturalWidth/videoWidth are always valid.
   // Reading from the clone can return 0 if the browser hasn't re-decoded it.
+  // A Figma item may carry an explicit `aspect` override (its poster shape
+  // is otherwise used, same as any image).
   let aspect = 16 / 9; // safe default
-  const srcImg = galleryItem.querySelector('img');
-  if (srcImg?.naturalWidth && srcImg.naturalHeight) {
-    aspect = srcImg.naturalWidth / srcImg.naturalHeight;
+  const aspectOverride = parseAspect(galleryItem.dataset.embedAspect);
+  if (aspectOverride) {
+    aspect = aspectOverride;
   } else {
-    const srcVideo = galleryItem.querySelector('video');
-    if (srcVideo?.videoWidth && srcVideo.videoHeight) {
-      aspect = srcVideo.videoWidth / srcVideo.videoHeight;
+    const srcImg = galleryItem.querySelector('img');
+    if (srcImg?.naturalWidth && srcImg.naturalHeight) {
+      aspect = srcImg.naturalWidth / srcImg.naturalHeight;
+    } else {
+      const srcVideo = galleryItem.querySelector('video');
+      if (srcVideo?.videoWidth && srcVideo.videoHeight) {
+        aspect = srcVideo.videoWidth / srcVideo.videoHeight;
+      }
     }
   }
 
@@ -253,4 +273,84 @@ function tryPlayVideo(clone) {
       clone.play().catch(() => { /* still blocked; user can hit play */ });
     });
   }
+}
+
+/* ---------- Figma prototype embed ---------- */
+
+// Build the live Figma <iframe> over the already-expanded poster clone
+// and fade it in once it loads. No-op for non-embed items.
+function mountEmbed(galleryItem) {
+  const embedUrl = galleryItem?.dataset.embedUrl;
+  if (!embedUrl) return;
+  const src = figmaEmbedSrc(embedUrl);
+  if (!src) return;
+
+  const iframe = document.createElement('iframe');
+  iframe.src = src;
+  iframe.title = galleryItem.querySelector('img')?.alt || 'Figma prototype';
+  iframe.className = 'fullscreen-embed';
+  iframe.loading = 'lazy';
+  iframe.allowFullscreen = true;
+  iframe.setAttribute('allow', 'fullscreen');
+  iframe.referrerPolicy = 'no-referrer';
+
+  const reveal = () => iframe.classList.add('is-ready');
+  iframe.addEventListener('load', reveal, { once: true });
+  // Cross-origin load can be slow or (rarely) not fire — reveal anyway.
+  setTimeout(reveal, 2500);
+
+  mediaWrap.appendChild(iframe);
+}
+
+// Normalise whatever the CMS stored — a share link, an embed.figma.com
+// URL, or a full <iframe …> snippet — into an embeddable iframe src.
+// Returns '' if it can't be recognised as a Figma URL.
+function figmaEmbedSrc(raw) {
+  let value = String(raw || '').trim();
+
+  const fromSnippet = value.match(/<iframe[^>]*\ssrc=["']([^"']+)["']/i);
+  if (fromSnippet) value = fromSnippet[1].replace(/&amp;/g, '&');
+
+  let url;
+  try {
+    url = new URL(value);
+  } catch {
+    return '';
+  }
+  const host = url.hostname.toLowerCase();
+  if (!host.endsWith('figma.com')) return '';
+
+  // Already an embed URL — just make sure it identifies a host.
+  if (host === 'embed.figma.com') {
+    if (!url.searchParams.has('embed-host')) url.searchParams.set('embed-host', FIGMA_EMBED_HOST);
+    return url.toString();
+  }
+
+  // Old-style wrapper endpoint (www.figma.com/embed?embed_host=…&url=…) — valid as-is.
+  if (url.pathname === '/embed') return url.toString();
+
+  // A normal share link (/proto/, /design/, /file/, /board/, /slides/, /deck/)
+  // → same path on embed.figma.com with an embed-host param.
+  if (/^\/(proto|design|file|board|slides|deck)\//.test(url.pathname)) {
+    const embed = new URL('https://embed.figma.com' + url.pathname + url.search);
+    embed.searchParams.set('embed-host', FIGMA_EMBED_HOST);
+    return embed.toString();
+  }
+
+  // Any other figma.com URL — fall back to the wrapper endpoint.
+  return `https://www.figma.com/embed?embed_host=${FIGMA_EMBED_HOST}&url=${encodeURIComponent(value)}`;
+}
+
+// Parse "16:9", "9/16", or a bare decimal like "1.6" into a width/height
+// ratio. Returns null for blank or malformed input.
+function parseAspect(value) {
+  if (!value) return null;
+  const parts = String(value).trim().split(/[:/]/);
+  if (parts.length === 2) {
+    const w = Number(parts[0]);
+    const h = Number(parts[1]);
+    return w > 0 && h > 0 ? w / h : null;
+  }
+  const n = Number(parts[0]);
+  return n > 0 ? n : null;
 }
