@@ -116,23 +116,41 @@ const PATHS = {
 
 const easeReveal = cubicBezier(0.37, 0, 0.63, 1);
 
+// Signal that the intro is over and the cover is now on screen. The home
+// page waits for this before starting its auto-advance countdown, so the
+// first project's timer doesn't run (or elapse) behind the blue intro.
+// Idempotent; sets a flag too so a listener attached later still sees it.
+function signalPreloaderDone() {
+  if (window.__preloaderDone) return;
+  window.__preloaderDone = true;
+  window.dispatchEvent(new Event('preloader:done'));
+}
+
 export async function initPreloader() {
   // The inline script created #preloader only on first visit. If it's absent,
-  // this is a return visit (or sessionStorage was unavailable) — nothing to do.
+  // this is a return visit (or sessionStorage was unavailable) — nothing to
+  // play, so the cover is already visible.
   const el = document.getElementById('preloader');
-  if (!el) return;
+  if (!el) {
+    signalPreloaderDone();
+    return;
+  }
 
   // Set the session flag so subsequent navigations skip the preloader.
   try {
     sessionStorage.setItem('preloaderShown', '1');
   } catch {
     el.remove();
+    signalPreloaderDone();
     return;
   }
 
   // Safety net: if the animation never completes (e.g. a JS error downstream),
   // remove the preloader after 8 s so the page is never permanently blocked.
-  const safety = setTimeout(() => el.remove(), 8000);
+  const safety = setTimeout(() => {
+    el.remove();
+    signalPreloaderDone();
+  }, 8000);
 
   // Add animation children to the already-visible #preloader.
   const fill = document.createElement('div');
@@ -168,4 +186,5 @@ export async function initPreloader() {
 
   clearTimeout(safety);
   el.remove();
+  signalPreloaderDone();
 }

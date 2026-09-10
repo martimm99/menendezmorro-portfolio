@@ -439,8 +439,23 @@ function initTimer() {
     });
   }
 
+  // The auto-advance countdown must not start until the preloader has
+  // finished and the cover is actually on screen — otherwise the first
+  // project's 7 s runs (and can elapse) behind the blue intro. On return
+  // visits there is no preloader and window.__preloaderDone is already
+  // set, so the countdown starts right away.
+  if (window.__preloaderDone) {
+    startTimerLoop();
+  } else {
+    window.addEventListener('preloader:done', startTimerLoop, { once: true });
+  }
+}
+
+function startTimerLoop() {
   timerState.lastTimestamp = null;
-  timerState.rafId = requestAnimationFrame(tickTimer);
+  if (!timerState.rafId) {
+    timerState.rafId = requestAnimationFrame(tickTimer);
+  }
 }
 
 // Called only by user-initiated navigation — fully resets timer and interrupts
