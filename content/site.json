@@ -11,6 +11,11 @@
   ],
   "socials": [
     {
+      "label": "LINKEDIN",
+      "url": "https://www.linkedin.com/in/marti-menendez/",
+      "displayText": "Martí Menéndez"
+    },
+    {
       "label": "INSTAGRAM",
       "url": "https://www.instagram.com/uepmorro/",
       "displayText": "@uepmorro"
