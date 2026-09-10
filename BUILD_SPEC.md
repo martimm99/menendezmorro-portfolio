@@ -1,8 +1,11 @@
 # MORRO — Portfolio Rebuild Build Spec
 
-**Version:** 1.22 (Approved)
+**Version:** 1.23 (Approved)
 **Date:** September 10, 2026
 **Status:** Approved — build authorized
+
+**Changes from v1.22:**
+- **Home: the cover background opens the current project.** Previously only the project title did (desktop already had a quiet `.cover-stage` click, undocumented; now formalised and extended to mobile). Desktop = click; mobile = **tap**, separated from a navigation swipe purely by movement — under ~10px of pointer travel opens the project, ~50px+ navigates prev/next, the band between does nothing. Uses `.cover-stage` containment so the title, header links, and preloader are unaffected. Implemented in `home.js` (`setupDrag` pointerup for touch; existing `.cover-stage` click for desktop). Also corrects a long-standing spec/code mismatch: §5.1 and §5.2 claimed the **Role label** opens the project on Home — it never did in code (only the title). Spec now matches: title + cover open the project; the role label does not.
 
 **Changes from v1.21:**
 - **Spec reconciled with the Home auto-advance timer (already shipped).** The "NEXT PROJECT" button on Home has, since ~June 2026, doubled as a 7-second auto-advance timer: its label fills left-to-right and, on reaching full, triggers a horizontal sweep to the next project (wrapping last → first). The spec previously listed "timers of any kind" as a non-goal and stated "no timers anywhere on the site" — both now corrected. Behaviour documented in §2 (Home UI elements, Animations) and §5.1 (new "Auto-advance" subsection): desktop/hover only; pauses while hovering the button (which also brightens it) or the project title; any manual navigation drains and resets it; the countdown does not start until the preloader has finished. Open accessibility gap noted in Appendix A (no dedicated pause control; not suppressed under `prefers-reduced-motion`).
@@ -243,7 +246,7 @@ The map is retained for historical reference only. **Legacy hash URLs are not re
 - **Mouse wheel / trackpad scroll** → horizontal sweep to next/previous project. (Both vertical and horizontal gestures map to horizontal navigation.)
 - **Drag (touchpad / touchscreen)** → horizontal sweep to next/previous project.
 - **Keyboard:** left/right arrows = previous/next project. Esc does nothing on Home.
-- **Click on the Project title or Role label** → navigate to that project's page via vertical sweep (Project slides down from top). The cover image itself and the Info row are NOT clickable for navigation.
+- **Open the current project:** click the **Project title**, or click (desktop) / tap (mobile) the **cover background**. Either triggers the vertical sweep to the project page (Project slides down from top). On mobile a cover **tap** is separated from a navigation **swipe** purely by pointer movement: under ~10px of travel = tap (opens the project); ~50px or more = swipe (previous / next project); the 10–50px band does nothing. The Role label and the Info row are **not** clickable for navigation.
 - **Click logo "MORRO"** → no-op on Home (already there).
 - **Click "Contact"** → navigate to Contact page via vertical sweep (Contact slides down from top).
 - **Click "NEXT PROJECT" button** (bottom-right, desktop/hover only) → horizontal sweep to the next project. Same as a wheel/arrow "next".
@@ -303,7 +306,7 @@ DESCRIPTION text never truncates with ellipsis — information is preserved. Lon
 ```
 
 **Entry:**
-- User clicks a project's title or role label on Home → vertical sweep (Project slides **down from top**). Page lands in the **Description section** at scroll position 0.
+- User clicks a project's title, or clicks/taps the cover background, on Home → vertical sweep (Project slides **down from top**). Page lands in the **Description section** at scroll position 0.
 - Direct URL access (`/gestion-reaviva`) → page loads in the Description section, scroll position 0 (no sweep animation, but the Line reveal still applies to description text).
 - On Project page entry, the description's **Line reveal** animation runs in two phases: lines on-screen at trigger time fire as a cascade waterfall (per-line staggered delay); lines below the fold are observed individually and each animates the moment it scrolls into the reading area. Neither phase replays on subsequent gallery↔description snaps.
 

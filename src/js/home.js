@@ -4,10 +4,11 @@
  * Responsibilities:
  *   - Render project[index]: cover (image or video), title, role, info row.
  *   - Handle wheel, drag (mouse/touch), and keyboard arrows → horizontal sweep.
- *   - Click on title or role → cross-shell navigation via
- *     window.location.assign('/<slug>'). The cross-document View
- *     Transitions API (@view-transition in base.css) plays the
- *     vertical sweep automatically across the page change.
+ *   - Click on the title, or on the cover background (desktop click /
+ *     mobile tap — a tap being distinguished from a swipe by movement),
+ *     → cross-shell navigation via window.location.assign('/<slug>').
+ *     The cross-document View Transitions API (@view-transition in
+ *     base.css) plays the vertical sweep automatically across the change.
  *   - Click on Contact link → router.navigateTo('/contact'), which
  *     reloads the dedicated contact.html shell via the same sweep.
  *   - Preload adjacent covers with fetchpriority="low" via Image() prefetch.
@@ -295,8 +296,9 @@ function setupClickHandlers() {
     e.preventDefault();
   });
 
-  // Desktop only: clicking the cover background opens the current project.
-  // No cursor or hover change — the cover stays visually inert.
+  // Desktop: clicking the cover background opens the current project. No
+  // cursor or hover change — the cover stays visually inert. Mobile has the
+  // equivalent tap in setupDrag's pointerup (guarded against swipes there).
   document.querySelector('.cover-stage')?.addEventListener('click', (e) => {
     if (window.innerWidth <= 599 || state.isAnimating) return;
     goToCurrentProject(e);
@@ -371,6 +373,9 @@ function setupDrag() {
   let startY = null;
   let pointerId = null;
   const THRESHOLD = 50;
+  // Pointer travel under this on BOTH axes counts as a stationary tap, not a
+  // swipe. A real swipe covers ≥ THRESHOLD px; the 10–50px band is neither.
+  const TAP_MOVE_MAX = 10;
 
   // Listen on document so swipes starting anywhere on screen work —
   // including over the title (z-index 70), which sits above .cover-stage.
@@ -385,12 +390,14 @@ function setupDrag() {
   document.addEventListener('pointerup', (e) => {
     if (pointerId !== e.pointerId || startX === null) {
       startX = null;
+      startY = null;
       pointerId = null;
       return;
     }
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
     startX = null;
+    startY = null;
     pointerId = null;
     const absDx = Math.abs(dx);
     const absDy = Math.abs(dy);
@@ -398,13 +405,32 @@ function setupDrag() {
     // a slightly diagonal left/right swipe always reads as horizontal.
     if (absDx >= THRESHOLD && absDx >= absDy) {
       userNavigate(dx < 0 ? 'next' : 'prev');
-    } else if (absDy >= THRESHOLD && absDy > absDx) {
+      return;
+    }
+    if (absDy >= THRESHOLD && absDy > absDx) {
       userNavigate(dy < 0 ? 'next' : 'prev');
+      return;
+    }
+
+    // Touch tap on the cover background → open the current project, same as
+    // tapping the title. Desktop uses the .cover-stage click handler in
+    // setupClickHandlers instead. The tight movement bound is what keeps a
+    // tap from ever being read as a swipe: swipes (≥ THRESHOLD) already
+    // returned above. .cover-stage containment excludes the title, header
+    // links, and the preloader (none are inside it).
+    if (
+      e.pointerType !== 'mouse' &&
+      absDx < TAP_MOVE_MAX &&
+      absDy < TAP_MOVE_MAX &&
+      e.target.closest('.cover-stage')
+    ) {
+      goToCurrentProject(e);
     }
   });
 
   document.addEventListener('pointercancel', () => {
     startX = null;
+    startY = null;
     pointerId = null;
   });
 }
