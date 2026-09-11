@@ -105,8 +105,33 @@ function renderInitial() {
   // empty until a navigation populates it (and promoteSlots clears it again).
   setSlotText('current', project);
   updateTitleLock('current', project);
+  revealTitleLockOnLoad(project);
   // One rAF so layout has settled with the loaded font before measuring.
   requestAnimationFrame(scaleTitleForMobile);
+}
+
+// The lock's own slide-in only ever plays on an actual navigate() call —
+// on first paint (page load, or a refresh that resumes directly on a
+// protected project) it would otherwise just be sitting there fully
+// visible from frame one. This plays a small pop instead, once, so
+// showing up "out of nowhere" reads as deliberate. See the
+// .is-load-revealing/.is-load-revealed comment in home.css for why two
+// classes and a forced reflow are needed to make a same-tick "hidden →
+// visible → animate" sequence actually animate instead of collapsing to
+// an instant jump.
+function revealTitleLockOnLoad(project) {
+  if (!project.protected) return;
+  const slot = document.querySelector('[data-lock-slot-current]');
+  if (!slot) return;
+  slot.classList.add('is-load-revealing');
+  void slot.offsetWidth; // commit the pre-reveal state before animating
+  requestAnimationFrame(() => {
+    slot.classList.remove('is-load-revealing');
+    slot.classList.add('is-load-revealed');
+  });
+  // Cleaned up once played so it can never linger and shadow the
+  // ordinary slide-animation classes on a later navigation.
+  setTimeout(() => slot.classList.remove('is-load-revealed'), 340);
 }
 
 // Lock badge next to the title for password-protected projects (see

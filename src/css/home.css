@@ -265,6 +265,26 @@
   opacity: 0.6;
 }
 
+/* One-off reveal for the very first time the lock appears (page load /
+ * hard refresh landing directly on a protected project) — navigate()'s
+ * own slide animation (see collectLockPair/slideTextSlots in home.js)
+ * only ever runs on an actual navigation, so without this the lock would
+ * just be sitting there fully visible from the first frame, unlike the
+ * title text (also "instant" there, but invisible text appearing
+ * instantly isn't noticeable the way a visible icon popping in is).
+ * home.js adds/removes these two classes once, right after paint;
+ * .is-load-revealed is cleaned up afterward so it can never linger and
+ * fight the ordinary slide classes on a later navigation. */
+.title-lock-clip .slot.is-load-revealing {
+  opacity: 0;
+  transform: scale(0.4);
+  transition: none;
+}
+
+.title-lock-clip .slot.is-load-revealed {
+  transition: opacity 220ms ease, transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
 .title-lock-clip svg {
   display: block;
   width: 100%;
@@ -685,8 +705,11 @@
    * way. The inner .slot already has its own transform for the
    * project-switch animation (translateY + clip-path); since our
    * translateX is on the parent slot-clip, the two transforms apply
-   * to separate elements and don't conflict. */
-  .project-title .slot-clip {
+   * to separate elements and don't conflict. The lock badge
+   * (.title-lock-clip) rides along the same way, for the same reason —
+   * its own reveal/slide transforms live on the inner .slot, not here. */
+  .project-title .slot-clip,
+  .title-lock-clip {
     transition: transform 280ms cubic-bezier(.33, 1, .55, 1);
   }
 
@@ -694,7 +717,8 @@
     transform: translateY(0);
   }
 
-  .project-title:hover .slot-clip {
+  .project-title:hover .slot-clip,
+  .project-title:hover .title-lock-clip {
     transform: translateX(0.7em);
   }
 }

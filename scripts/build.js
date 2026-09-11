@@ -151,22 +151,26 @@ function extractSvgInner(raw) {
 
 // Each stage file is independent artwork (Martí's own viewBox, own local
 // coordinate space, not pre-aligned to the others) — these offsets compose
-// them into one figure hanging from the gallows' hook, hand-tuned by
-// rendering the real files and reading off pixel coordinates. If the art
-// is ever redrawn with meaningfully different proportions, these need
-// re-tuning to match (render assets/icons/hangman/structure.svg alone,
-// find the drip/hook tip, and adjust from there). Written onto each stage
-// as the --hx/--hy custom properties password-gate.css positions it with —
-// in the same `transform` as the reveal animation's scale, not a separate
+// them into one figure hanging from the gallows' hook. Exact values, not
+// estimated: Martí supplied a reference SVG with the whole figure already
+// composed (assets/icons/hangman/full-composition-reference.svg — kept
+// for future re-tuning), and each offset here is that reference path's
+// own M-coordinate minus the same stage file's own M-coordinate — i.e.
+// precisely how far each standalone piece needs to move to land where it
+// does in the reference. If the art is ever redrawn with a different
+// local origin per piece, re-derive the same way against a fresh
+// reference rather than eyeballing it. Written onto each stage as the
+// --hx/--hy custom properties password-gate.css positions it with — in
+// the same `transform` as the reveal animation's scale, not a separate
 // wrapper element, because a CSS `transform` on an SVG element overrides
 // its own `transform` attribute rather than composing with it.
 const HANGMAN_OFFSETS = {
-  'head':      [52.5, 23],
-  'body':      [58.8, 40],
-  'arm-left':  [56, 44],
-  'arm-right': [49, 44],
-  'leg-left':  [56, 72],
-  'leg-right': [47, 72]
+  'head':      [50.81, 18.96],
+  'body':      [60.34, 35.46],
+  'arm-left':  [43.82, 38.45],
+  'arm-right': [61.06, 39.64],
+  'leg-left':  [45.33, 65.17],
+  'leg-right': [63.32, 65.92]
 };
 
 // One combined inline sprite for all 7 hangman stages, inlined directly
@@ -192,7 +196,8 @@ async function buildHangmanSprite() {
     const styleAttr = offset ? ` style="--hx:${offset[0]}px;--hy:${offset[1]}px"` : '';
     groups.push(`<g class="hangman-stage" data-stage="${stage}"${styleAttr}>${extractSvgInner(raw)}</g>`);
   }
-  return `<svg class="hangman-illustration" viewBox="0 0 75 125" fill="currentColor" aria-hidden="true" focusable="false">${groups.join('')}</svg>`;
+  // Matches the reference composition's own viewBox exactly.
+  return `<svg class="hangman-illustration" viewBox="0 0 87.68 119.79" fill="currentColor" aria-hidden="true" focusable="false">${groups.join('')}</svg>`;
 }
 
 // The gate's full static markup for one protected project — visible the

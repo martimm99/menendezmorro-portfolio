@@ -19,13 +19,20 @@ contact icon), not stroke line-art.
   design tool exports it. The build strips the wrapper and keeps only what's
   inside.
 - **Each file keeps its own natural viewBox/coordinate space** — they don't
-  need to share one canvas. `scripts/build.js`'s `HANGMAN_TRANSFORMS` places
-  each piece by hand (a `translate(x,y)` per stage) so they compose into one
-  figure hanging from the gallows' hook. **If you redraw a piece with
-  meaningfully different proportions or a different local origin, those
-  transforms will likely need re-tuning** — render `structure.svg` alone to
-  find the drip/hook tip, then adjust from there. A small size/shape tweak
-  within the same rough proportions usually doesn't need any change.
+  need to share one canvas. `scripts/build.js`'s `HANGMAN_OFFSETS` places
+  each piece by hand (an `[x, y]` offset per stage, written onto the piece
+  as CSS custom properties) so they compose into one figure hanging from
+  the gallows' hook.
+
+  `full-composition-reference.svg` in this folder is Martí's reference —
+  the whole figure already assembled once, at its intended positions. The
+  offsets in `HANGMAN_OFFSETS` are exactly `(that path's own M-coordinate
+  in the reference) − (the same piece's own M-coordinate in its standalone
+  file)`, i.e. precisely how far each piece needs to move. **If any piece
+  is redrawn, re-derive its offset the same way against a fresh
+  reference** — don't eyeball it from a screenshot; a few pixels off reads
+  as "the arm is in the wrong place," which is exactly what prompted this
+  approach over the original hand-estimated version.
 - **No hardcoded `fill`/`stroke` color** — the wrapping `<svg>` sets
   `fill="currentColor"` once (`buildHangmanSprite`); the sprite's actual
   color (white) comes from `password-gate.css`. A hardcoded color on a path
