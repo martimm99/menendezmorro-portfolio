@@ -148,6 +148,10 @@ export function initPasswordGate({ project, alreadyUnlocked, onUnlock }) {
     // Tapping the label already focuses the input natively; this covers
     // clicks that land slightly outside it (e.g. on the hangman side).
     gate.addEventListener('click', () => { if (!input.disabled) input.focus(); });
+
+    // Focus immediately so the visitor can start typing the instant the
+    // gate is interactive, with no click required first.
+    input.focus();
   }
 
   if (alreadyUnlocked) {
