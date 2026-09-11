@@ -74,7 +74,14 @@ const projectsSchema = {
           type: 'array',
           minItems: 0,
           items: { $ref: '#/$defs/media' }
-        }
+        },
+        // Password-protected projects. `password` is plain text here (this
+        // file lives in the repo, never shipped to the browser as-is) —
+        // scripts/build.js hashes it per character at build time and keeps
+        // the plaintext out of window.__SITE_DATA__ entirely. See
+        // BUILD_SPEC.md §5.5 and project_password_gate.md memory.
+        protected: { type: 'boolean' },
+        password:  { type: 'string' }
       }
     },
     link: {
@@ -206,6 +213,12 @@ function crossFieldChecks(projects) {
         warnings.push(`  projects.json${where}/media/${mIdx}: figma url is not a "/proto/" prototype link — the embed will show a static design, not a clickable prototype (BUILD_SPEC.md §6.1)`);
       }
     });
+    if (project.protected && !project.password) {
+      errors.push(`  projects.json${where}/password: required when "protected" is true`);
+    }
+    if (project.password && !project.protected) {
+      warnings.push(`  projects.json${where}: "password" set but "protected" is not true — it has no effect`);
+    }
   });
 
   return { errors, warnings };

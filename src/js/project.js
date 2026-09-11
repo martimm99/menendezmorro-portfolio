@@ -84,10 +84,27 @@ export function initProject(data, slug) {
   }
 
   updateHead(data.site, project);
+  // Logo + back arrow must work even while a protected project is still
+  // locked (they're the gate's own header chrome — see password-gate.css),
+  // so this always runs up front, never deferred to renderProjectContent.
+  setupNavigation(data.site);
+
+  if (project.protected) {
+    initProtectedProject(data, project, slug);
+    return;
+  }
+
+  renderProjectContent(data, project);
+}
+
+// Builds the gallery/description/fullscreen/progress-bar chrome from a
+// project object that's guaranteed to have its real content — either
+// because it was never protected, or because the password gate just
+// fetched it. See BUILD_SPEC.md §5.5 and project_password_gate.md memory.
+function renderProjectContent(data, project) {
   renderInfoRow(project);
   renderNextProject(project, data.projects);
   renderDescription(project);
-  setupNavigation(data.site);
   initFullscreen();
   triggerDescriptionReveal();
 
@@ -116,6 +133,71 @@ export function initProject(data, slug) {
   initProgressBar(galleryAPI);
 
   teardown = galleryAPI;
+}
+
+/* ---------- Password-protected projects ----------
+ *
+ * The gate's markup (blue screen, fields, hangman, status text) is already
+ * baked into this page's HTML at build time when the project is protected
+ * — see scripts/build.js buildPasswordGateBlock. Nothing here needs to
+ * build or show that UI; this only loads the small module that drives it
+ * (password-gate.js — never requested at all for a non-protected project)
+ * and supplies the two things it can't do itself: fetching the real
+ * content once the password is right, and remembering that across this
+ * project's page loads for the rest of the browser session. */
+
+const UNLOCKED_KEY = 'unlockedProjects';
+
+function isUnlocked(slug) {
+  try {
+    const raw = sessionStorage.getItem(UNLOCKED_KEY);
+    return raw ? JSON.parse(raw).includes(slug) : false;
+  } catch {
+    return false;
+  }
+}
+
+function markUnlocked(slug) {
+  try {
+    const raw = sessionStorage.getItem(UNLOCKED_KEY);
+    const list = raw ? JSON.parse(raw) : [];
+    if (!list.includes(slug)) list.push(slug);
+    sessionStorage.setItem(UNLOCKED_KEY, JSON.stringify(list));
+  } catch {
+    // sessionStorage unavailable — the gate still works, it just asks
+    // again on the next page load within the same visit.
+  }
+}
+
+// The protected fields (media, longDescription, links) for one project,
+// written by scripts/build.js to their own static file — never part of
+// window.__SITE_DATA__, not even on this project's own page. Fetched only
+// once the password gate has actually been passed.
+async function fetchGatedContent(slug) {
+  try {
+    const res = await fetch(`/assets/protected/${slug}.json`, { cache: 'no-store' });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+async function initProtectedProject(data, project, slug) {
+  const { initPasswordGate } = await import('./password-gate.js');
+  initPasswordGate({
+    project,
+    alreadyUnlocked: isUnlocked(slug),
+    onUnlock: async () => {
+      const gated = await fetchGatedContent(slug);
+      if (!gated) return false;
+      Object.assign(project, gated);
+      renderProjectContent(data, project);
+      markUnlocked(slug);
+      document.body.classList.add('is-unlocked');
+      return true;
+    }
+  });
 }
 
 /* ---------- Head metadata ---------- */

@@ -204,6 +204,11 @@
 
 .project-title {
   left: var(--page-pad-x);
+  /* Fixed positioning + only `left` set (no `right`) makes this box
+   * shrink-to-fit its own text content (up to max-width) rather than
+   * stretch to the available width — which is what lets the lock badge
+   * below sit at left: 100% and land right after the rendered text,
+   * whatever its length, with no JS measurement needed. */
   font-size: var(--fs-title);
   font-weight: var(--fw-regular);
   line-height: var(--lh-tight);
@@ -219,6 +224,30 @@
   line-height: var(--lh-tight);
   text-align: right;
   max-width: 40vw;
+}
+
+/* Small lock badge for password-protected projects — shown/hidden per
+ * project by home.js (project.protected), positioned by CSS alone (see
+ * the shrink-to-fit note on .project-title above), not JS measurement. */
+.project-title-lock {
+  position: absolute;
+  left: calc(100% + 0.35em);
+  top: 50%;
+  transform: translateY(-50%);
+  display: block;
+  width: 0.4em;
+  height: 0.4em;
+  opacity: 0.6;
+}
+
+.project-title-lock[hidden] {
+  display: none;
+}
+
+.project-title-lock svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 /* ---------- Info row ---------- */

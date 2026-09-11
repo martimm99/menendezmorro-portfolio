@@ -36,6 +36,7 @@
 
 import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -46,6 +47,13 @@ const ASSETS = join(projectRoot, 'assets');
 const CONTENT = join(projectRoot, 'content');
 const SITE_JSON = join(CONTENT, 'site.json');
 const PROJECTS_JSON = join(CONTENT, 'projects.json');
+const HANGMAN_DIR = join(ASSETS, 'icons', 'hangman');
+const HANGMAN_STAGES = ['structure', 'head', 'body', 'arm-left', 'arm-right', 'leg-left', 'leg-right'];
+// Fields kept OUT of window.__SITE_DATA__ for a protected project — the real
+// gallery/description/links. Written instead to a separate static JSON file
+// (public/assets/protected/<slug>.json), fetched only after the password
+// gate passes. See password-gate.js and BUILD_SPEC.md §5.5.
+const GATED_FIELDS = ['media', 'longDescription', 'links'];
 
 const COPY_DIRS = [
   { from: join(SRC, 'css'),   to: join(PUBLIC, 'css') },
@@ -68,13 +76,127 @@ async function readProjectsConfig() {
   return JSON.parse(await readFile(PROJECTS_JSON, 'utf8'));
 }
 
-// Produce the inline <script> tag that exposes the full site data on
-// window.__SITE_DATA__. JSON.stringify is escaped so that any literal
-// '</script>' inside copy strings can't break out of the tag.
-function buildSiteDataScript(site, projectsDoc) {
-  const data = { projects: projectsDoc.projects, site };
+// Produce the inline <script> tag that exposes the site data on
+// window.__SITE_DATA__ — shared across every page. `projects` is the
+// already-sanitised public list (see splitProtectedContent): a protected
+// project's real content is never in here, on any page, including its own.
+// JSON.stringify is escaped so that any literal '</script>' inside copy
+// strings can't break out of the tag.
+function buildSiteDataScript(site, projects) {
+  const data = { projects, site };
   const json = JSON.stringify(data).replace(/<\/(script)/gi, '<\\/$1');
   return `<script>window.__SITE_DATA__=${json};</script>`;
+}
+
+/* ---------- Password-protected projects ----------
+ *
+ * A protected project's real content (gallery, long description, links)
+ * never enters window.__SITE_DATA__ — not even on that project's own page.
+ * It's written to its own static JSON file instead, fetched by
+ * password-gate.js only once the visitor has typed the correct password.
+ * Everything client-side needs to RUN the gate (field count, and a
+ * per-character-position hash to validate each keystroke live) is derived
+ * here at build time from the plaintext; the plaintext itself never leaves
+ * this Node process. This is a soft gate, not real access control — see
+ * BUILD_SPEC.md §5.5 for what that does and doesn't mean. */
+
+function hashPositionalChar(index, char) {
+  return createHash('sha256').update(`${index}:${char.toUpperCase()}`).digest('hex');
+}
+
+// Splits the full project list into what's safe to inline everywhere
+// (publicProjects) and, per protected project, the gated payload that gets
+// written to its own file instead.
+function splitProtectedContent(projects) {
+  const publicProjects = [];
+  const protectedPayloads = [];
+  for (const project of projects) {
+    if (!project.protected) {
+      publicProjects.push(project);
+      continue;
+    }
+    const password = String(project.password || '');
+    const publicProject = { ...project };
+    const gated = {};
+    for (const field of GATED_FIELDS) {
+      gated[field] = project[field];
+      delete publicProject[field];
+    }
+    delete publicProject.password;
+    publicProject.passwordLength = password.length;
+    publicProject.passwordCharHashes = Array.from(password).map((ch, i) => hashPositionalChar(i, ch));
+    publicProjects.push(publicProject);
+    protectedPayloads.push({ slug: project.slug, data: gated });
+  }
+  return { publicProjects, protectedPayloads };
+}
+
+async function writeProtectedPayloads(payloads) {
+  if (payloads.length === 0) return;
+  const dir = join(PUBLIC, 'assets', 'protected');
+  await mkdir(dir, { recursive: true });
+  for (const { slug, data } of payloads) {
+    const json = JSON.stringify(data).replace(/<\/(script)/gi, '<\\/$1');
+    await writeFile(join(dir, `${slug}.json`), json);
+  }
+}
+
+// Pulls the inner markup out of a designer-exported <svg>...</svg> file
+// (viewBox/xmlns wrapper discarded — the shared wrapper built below
+// supplies those) so each stage file can just be normal, standalone SVG.
+function extractSvgInner(raw) {
+  const match = raw.match(/<svg[^>]*>([\s\S]*)<\/svg>/i);
+  return (match ? match[1] : raw).trim();
+}
+
+// One combined inline sprite for all 7 hangman stages, read once and reused
+// across every protected project's page — never a separate file per stage,
+// never a network request at all (it's inlined directly into the built
+// HTML of whichever project pages actually need it). Each stage's shapes
+// should use stroke="currentColor" with no hardcoded fill/stroke color, so
+// the sprite's own color (white, set in password-gate.css) applies to all
+// of them uniformly. Missing files degrade gracefully — a warning, and that
+// stage just never appears — rather than failing the build.
+let hangmanSpriteCache = null;
+async function buildHangmanSprite() {
+  if (hangmanSpriteCache !== null) return hangmanSpriteCache;
+  const groups = [];
+  for (const stage of HANGMAN_STAGES) {
+    const file = join(HANGMAN_DIR, `${stage}.svg`);
+    if (!existsSync(file)) {
+      console.warn(`build: assets/icons/hangman/${stage}.svg not found — password gate hangman will be incomplete.`);
+      continue;
+    }
+    const raw = await readFile(file, 'utf8');
+    const hiddenAttr = stage === 'structure' ? '' : ' hidden';
+    groups.push(`<g class="hangman-stage" data-stage="${stage}"${hiddenAttr}>${extractSvgInner(raw)}</g>`);
+  }
+  hangmanSpriteCache = `<svg class="hangman-illustration" viewBox="0 0 100 160" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${groups.join('')}</svg>`;
+  return hangmanSpriteCache;
+}
+
+// The gate's full static markup for one protected project — visible the
+// instant the page paints, no JS required to look correct (only to become
+// interactive). Field count matches the real password length; the hangman
+// sprite is shared. password-gate.js attaches all behaviour to this
+// already-rendered markup after a dynamic import.
+async function buildPasswordGateBlock(project) {
+  const password = String(project.password || '');
+  // Pre-rendered as all-blank ("_" per slot) — the correct static starting
+  // state, no JS needed to reach it. password-gate.js only ever rewrites a
+  // slot's own textContent, never the count of slots.
+  const fields = Array.from(password).map(() => '<span class="password-field-slot">_</span>').join('');
+  const hangmanSprite = await buildHangmanSprite();
+  return `<div class="password-gate" data-password-gate>
+      <div class="password-gate-row">
+        <label class="password-gate-fields" data-password-fields>
+          ${fields}
+          <input type="text" class="password-gate-input" data-password-input autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="text" maxlength="${password.length}" aria-label="Enter password">
+        </label>
+        <div class="password-gate-hangman" data-hangman>${hangmanSprite}</div>
+        <p class="password-gate-status" data-password-status>Password protected</p>
+      </div>
+    </div>`;
 }
 
 function buildAnalyticsScript(site) {
@@ -153,6 +275,11 @@ async function buildHtml(files, tokens) {
 // is served directly without server-side redirect rules.
 // Each project page gets its own canonical URL and meta tags baked in,
 // so search engines see correct per-project metadata even before JS runs.
+//
+// `projects` here is the FULL (un-sanitised) list — buildPasswordGateBlock
+// needs the plaintext password to compute per-character hashes and the
+// field count. That plaintext only ever exists inside this Node process;
+// it does not reach any of the written output.
 async function buildRoutedPages(projects, tokens) {
   const projectTemplate = await readFile(join(SRC, 'html', 'project.html'), 'utf8');
   const contactTemplate = await readFile(join(SRC, 'html', 'contact.html'), 'utf8');
@@ -166,7 +293,20 @@ async function buildRoutedPages(projects, tokens) {
     const pageOgImage = coverIsImage
       ? `${tokens.siteUrl}/${project.cover.replace(/^\//, '')}`
       : `${tokens.siteUrl}/${tokens.ogImage}`;
-    const projectTokens = { ...tokens, pageTitle, pageDescription, pageUrl, pageOgImage };
+    const isProtected = !!project.protected;
+    const projectTokens = {
+      ...tokens,
+      pageTitle, pageDescription, pageUrl, pageOgImage,
+      // Empty strings (or the normal white) for an ordinary project — zero
+      // added markup, zero extra request. Only a protected project's own
+      // built page carries these. projectBgColor matches password-gate.css's
+      // background exactly, so the very first paint (before any stylesheet
+      // has a chance to load) is already correct — no white-then-blue flash.
+      projectBodyClass:  isProtected ? ' is-password-protected' : '',
+      projectBgColor:    isProtected ? '#0055ff' : '#fff',
+      passwordGateStyles: isProtected ? '<link rel="stylesheet" href="/css/password-gate.css">' : '',
+      passwordGateBlock: isProtected ? await buildPasswordGateBlock(project) : ''
+    };
     const output = substituteTokens(projectTemplate, projectTokens);
     const dir = join(PUBLIC, project.slug);
     await mkdir(dir, { recursive: true });
@@ -187,15 +327,20 @@ async function main() {
   const projectSlugs = projectsDoc.projects.map((p) => p.slug);
   await cleanPublic(htmlFiles, projectSlugs);
   await copyDirs();
+
+  const { publicProjects, protectedPayloads } = splitProtectedContent(projectsDoc.projects);
+  await writeProtectedPayloads(protectedPayloads);
+
   const tokens = {
     ...site,
-    siteDataScript: buildSiteDataScript(site, projectsDoc),
+    siteDataScript: buildSiteDataScript(site, publicProjects),
     analyticsScript: buildAnalyticsScript(site),
     websiteStructuredData: buildWebsiteStructuredData(site),
   };
   await buildHtml(htmlFiles, tokens);
   await buildRoutedPages(projectsDoc.projects, tokens);
-  console.log(`build: ${htmlFiles.length} HTML template(s), ${projectSlugs.length} project page(s), contact page, ${COPY_DIRS.length} directories copied.`);
+  const protectedNote = protectedPayloads.length > 0 ? `, ${protectedPayloads.length} password-protected` : '';
+  console.log(`build: ${htmlFiles.length} HTML template(s), ${projectSlugs.length} project page(s)${protectedNote}, contact page, ${COPY_DIRS.length} directories copied.`);
 }
 
 main().catch((err) => {

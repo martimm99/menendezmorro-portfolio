@@ -1,8 +1,11 @@
 # MORRO — Portfolio Rebuild Build Spec
 
-**Version:** 1.24 (Approved)
+**Version:** 1.25 (Approved)
 **Date:** September 11, 2026
 **Status:** Approved — build authorized
+
+**Changes from v1.24:**
+- **New: password-protected projects (§5.5).** A project can be marked `protected` with a `password` in the CMS. Clicking it from Home shows a password screen instead of the project — same URL, same vertical sweep, just a different initial view. A soft gate, not real access control (the site has no server) — deliberately scoped that way; see §5.5 for exactly what it does and doesn't guarantee. The gated project's real gallery/description/links are held out of `window.__SITE_DATA__` entirely (on every page, including the project's own) and fetched from a separate static file only after the password is entered, so a casual view-source doesn't defeat it the way a purely-cosmetic lock screen would. Home shows a small lock badge beside a protected project's title. Zero added weight on any non-protected page — the gate's JS, its hangman artwork, and its stylesheet are only ever requested on a protected project's own page.
 
 **Changes from v1.23:**
 - **Image fullscreen: the X is back, repurposed and animated.** A prior version deliberately removed the fullscreen close button; it's now reinstated as the project page's existing top-right back arrow, which stays visible and on top while fullscreen is open instead of fading out with the rest of the chrome. Clicking it closes fullscreen (not "back to Home") while fullscreen is open; it reverts to normal Home navigation once closed. Its icon **morphs** between the X and two small diagonal arrows pointing at each other (a "compress" glyph on the same diagonal as the X), so the changed meaning is visible, not just implied — a true point-by-point geometry morph (not a cross-fade), ~620ms quintic ease. Desktop and mobile both get it. This also gives Figma prototype embeds (§5.2) a fully reliable close path, since Esc can be captured by the embedded prototype once it has focus. Implemented in `fullscreen.js` (`morphBackArrowIcon`, plus a capture-phase click interceptor) and `project.html` (the icon is now two independently-animatable `<polyline>`s instead of the static `#close` sprite reference). Corrects §5.2's and §5.4's stale descriptions — see below.
@@ -417,6 +420,35 @@ Triggered by clicking/tapping an image or video in the Project page Gallery. Beh
 - **Close:** click the back button (top-right, above the iframe — the reliable option), click the backdrop, or press Esc when focus is not inside the prototype iframe. Closing removes the iframe so the Figma viewer stops. Note: once focus is inside the cross-origin iframe, Esc is captured by Figma instead of reaching the page — the back button and backdrop click are unaffected by that, since Figma can't intercept a click landing outside its own iframe.
 - Frame size follows the poster's aspect ratio, or the media item's `aspect` override (`"16:9"`, `"9:16"`, …).
 
+### 5.5 Password-protected projects
+
+Any project can be marked `protected` with a `password` (set through the CMS). It changes nothing about the URL or navigation — clicking the project from Home still goes to `/<slug>` with the normal vertical sweep — only what that page shows before (and after) the password is entered.
+
+**What this is, plainly:** a soft gate for casual visitors — an accidental link, idle browsing, a search hit — the same kind of thing Cargo/Format/Squarespace's own "password protected page" features do. **It is not real access control.** The site has no server, so nothing here can be enforced the way an actual login would be; a visitor determined enough to look for the real content in a network request could still find it. What it *does* guarantee (see "What's actually protected" below) is that the real content isn't sitting in the page's initial source the way a purely cosmetic lock screen's would be — passing the gate is the only path a normal visitor has to it.
+
+**On the Home page:** a protected project's title carries a small lock badge (to the right of the title, same row). The cover image itself is unaffected — only the project's own page is gated.
+
+**Entering the project page (locked):**
+- All the normal project-page chrome — Get in touch, the info row, the gallery, the description — is absent. Logo and back arrow (X) are the only chrome shown, both recolored white for the screen's blue background; the back arrow keeps its normal "go Home" behavior (there's no fullscreen state to repurpose it for here).
+- Layout: a horizontal row, vertically centered — password fields (left) — a hangman illustration (center) — status text, "Password protected" (right). On mobile: hangman + fields centered as a stacked block; status text centered at the bottom. Logo top-left, X top-right, both at their normal size/position (mobile included — deliberately not hidden the way the ordinary project page hides its logo on mobile).
+- **Password entry is live, per character, not "type it all and submit."** Each keystroke is checked immediately against the correct character at that position. A wrong character is rejected outright — never inserted — so the field always shows a true, correct prefix of the password; the field row also plays a brief wiggle. A correct character appears in the field (uppercased) and the entry advances.
+- **Hangman:** 1 base "structure" stage (always shown) + 6 miss stages (head, body, left arm, right arm, left leg, right leg), one revealed per wrong character. On the 6th miss, status text changes to "Incorrect password," a 2s pause, then the same reverse sweep as the X/Esc takes the visitor back to Home.
+- **Success:** once every character has been entered correctly, the gate is replaced by the real project (gallery, description, links, the usual chrome) via the same reveal used elsewhere on the site — no separate "submit" step.
+- **Remembered for the session:** once unlocked, revisiting the same project's URL in the same browser tab skips straight to the real content (no gate) for the rest of that browsing session. Closing the tab clears it.
+
+**What's actually protected:** the project's gallery, long description, and links are never included in `window.__SITE_DATA__` — not on the project's own page, not on Home, not on any other project's page — the way every other field is. They're written instead to their own small static file, fetched only after the password check passes. This is the meaningful difference from a "gate that's just a UI overlay": on a purely cosmetic lock screen, the real content is already sitting in that same page's source, readable by anyone who looks, whether or not they ever see the lock. Here it genuinely is not — reaching it requires passing the gate (or directly guessing the fetch URL, which is not meaningfully harder than guessing the password itself, so it isn't treated as a materially different risk).
+
+**Performance — this must never cost anything on a non-protected page:**
+- The gate's interactivity (`password-gate.js`) is loaded via a dynamic `import()`, executed only when the current project is protected. On every other project page that `import()` line never runs, so the file is never requested.
+- The hangman artwork is one small inline sprite (all 7 stages combined, no separate requests), and — like the gate's stylesheet — is only present at all in the built HTML of a protected project's own page.
+- Hashing uses the browser's native Web Crypto API and Node's built-in `crypto` module at build time — no new runtime or dev dependency either way.
+
+### Data model additions (see also §6.1)
+
+- `protected` (boolean) and `password` (plain string) on a project, both optional. `password` is required when `protected` is true (enforced by `scripts/validate-data.js`).
+- The plaintext password exists only in `content/projects.json` (repo-side) and inside the Node build process — `scripts/build.js` never writes it to any built output. What ships instead: `passwordLength` (the character count — not a secret, needed to render the right number of fields) and `passwordCharHashes` (one SHA-256 hex digest per character position, salted with that position — `sha256("<index>:<UPPERCASE CHAR>")` — so the client can validate each keystroke live without ever holding the real password).
+- The gated fields (`media`, `longDescription`, `links`) are written to `assets/protected/<slug>.json` in the published site instead of being inlined anywhere.
+
 ---
 
 ## 6. Data model
@@ -464,6 +496,7 @@ Triggered by clicking/tapping an image or video in the Project page Gallery. Beh
 - `media[].alt` text: required for accessibility. Auto-generated as `<Project title> image N` if not provided in CMS.
 - `media[].caption`: optional. Per-image overlay text shown at bottom-left in Gallery and Image fullscreen. Empty/absent → no overlay rendered.
 - Videos: `poster` is optional but recommended (used as fallback if video fails to load).
+- `protected` (optional boolean) + `password` (optional string, required when `protected` is true) — see §5.5. `password` is plain text only in this file (repo-side, never shipped as-is) — the build hashes it per character before anything reaches a browser.
 - **`type: "figma"`** (Figma prototype embed) uses a different field set:
   - `url` (**required**) — the Figma share link (`https://www.figma.com/proto/…`), an `embed.figma.com` link, or a full `<iframe …>` embed snippet. The renderer normalises all three. `/proto/` links give a clickable prototype; `/design/` or `/file/` links embed a static canvas (validator warns).
   - `poster` (**required**) — still image shown in the filmstrip; its aspect ratio also sizes the fullscreen frame.
@@ -529,6 +562,8 @@ For each project, fields:
   - Display text (text, required if entry present)
 - Duration (text)
 - Cost (text)
+- Password protected (boolean, optional, default off) — see §5.5
+- Password (text, optional) — only used when "Password protected" is on. Plain text in the CMS; hashed at build time, never shipped as entered.
 - **Media** (list, drag-to-reorder):
   - Type (select: image / video / Prototype (Figma))
   - File (image or video upload) — image / video only

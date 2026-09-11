@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="project-page" style="background-color: #fff">
+<html lang="en" class="project-page" style="background-color: {{projectBgColor}}">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -29,12 +29,14 @@
     <link rel="stylesheet" href="/css/base.css">
     <link rel="stylesheet" href="/css/project.css">
     <link rel="stylesheet" href="/css/fullscreen.css">
+    {{passwordGateStyles}}
 
     {{analyticsScript}}
     {{siteDataScript}}
     <script type="module" src="/js/main.js"></script>
   </head>
-  <body class="project-page surface-description">
+  <body class="project-page surface-description{{projectBodyClass}}">
+    {{passwordGateBlock}}
     <div class="project-shell" data-project-shell>
       <section class="section-description" data-section-description>
         <div class="description-content" data-description-content></div>

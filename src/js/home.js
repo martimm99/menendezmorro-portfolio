@@ -104,8 +104,20 @@ function renderInitial() {
   // Only the "current" slot in each pair gets text. The "next" slot stays
   // empty until a navigation populates it (and promoteSlots clears it again).
   setSlotText('current', project);
+  updateTitleLock(project);
   // One rAF so layout has settled with the loaded font before measuring.
   requestAnimationFrame(scaleTitleForMobile);
+}
+
+// Small lock badge next to the title for password-protected projects (see
+// project_password_gate.md memory). Purely a visibility toggle — its
+// position is CSS-only (left: 100% of .project-title, which shrink-to-fits
+// its own text; see the comment on .project-title in home.css), so no
+// width measurement is needed here even though title length varies freely
+// per project.
+function updateTitleLock(project) {
+  const lock = document.querySelector('[data-title-lock]');
+  if (lock) lock.hidden = !project.protected;
 }
 
 function setSlotText(role, project) {
@@ -614,6 +626,7 @@ async function navigate(direction) {
 
   promoteSlots();
   scaleTitleForMobile();
+  updateTitleLock(nextProject);
   state.activeLayerIdx = 1 - state.activeLayerIdx;
   state.index = nextIndex;
   preloadAdjacent(state.index);
