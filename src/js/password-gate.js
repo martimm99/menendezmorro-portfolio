@@ -9,8 +9,8 @@
  * scripts/build.js buildPasswordGateBlock) — it already looks correct the
  * instant the page paints. This module only attaches BEHAVIOUR to that
  * already-rendered markup: capturing keystrokes, validating each one live,
- * driving the wiggle + hangman-stage reveal, and calling back into
- * project.js once the password is fully correct.
+ * driving the hangman-stage reveal, and calling back into project.js
+ * once the password is fully correct.
  *
  * Validation is per character, live, not "type it all then submit": each
  * project carries `passwordCharHashes`, one SHA-256 hex digest per
@@ -81,16 +81,6 @@ export function initPasswordGate({ project, alreadyUnlocked, onUnlock }) {
     slots[index].classList.remove('is-filled');
   }
 
-  function wiggle() {
-    // The forced reflow is only needed to restart the animation when it's
-    // already mid-play (consecutive misses) — skip it on the first miss,
-    // when there's nothing playing yet to restart.
-    const wasWiggling = fields.classList.contains('is-wiggling');
-    fields.classList.remove('is-wiggling');
-    if (wasWiggling) void fields.offsetWidth;
-    fields.classList.add('is-wiggling');
-  }
-
   function revealNextStage() {
     stages[missCount]?.classList.add('is-revealed');
   }
@@ -102,7 +92,6 @@ export function initPasswordGate({ project, alreadyUnlocked, onUnlock }) {
 
   function registerMiss() {
     missCount += 1;
-    wiggle();
     revealNextStage();
     if (missCount >= maxMisses) fail();
   }
@@ -157,11 +146,10 @@ export function initPasswordGate({ project, alreadyUnlocked, onUnlock }) {
       if (!(await unlock())) {
         // The gated-content fetch itself failed (offline, bad deploy,
         // etc.) — the password WAS right, so this must never be scored
-        // like a wrong guess (no wiggle, no hangman stage, no miss
-        // counted). Re-open the last slot so retyping that same,
-        // already-correct character retries the fetch through the
-        // normal keystroke path above, rather than leaving the page
-        // silently stuck.
+        // like a wrong guess (no hangman stage, no miss counted).
+        // Re-open the last slot so retyping that same, already-correct
+        // character retries the fetch through the normal keystroke path
+        // above, rather than leaving the page silently stuck.
         input.disabled = false;
         enteredCount -= 1;
         clearSlot(enteredCount);
