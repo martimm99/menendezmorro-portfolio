@@ -139,13 +139,16 @@ export function initPasswordGate({ project, alreadyUnlocked, onUnlock }) {
 
       if (!(await unlock())) {
         // The gated-content fetch itself failed (offline, bad deploy,
-        // etc.) — the password was right, but we still can't show the
-        // project. Treat it like a miss rather than leaving the page
+        // etc.) — the password WAS right, so this must never be scored
+        // like a wrong guess (no wiggle, no hangman stage, no miss
+        // counted). Re-open the last slot so retyping that same,
+        // already-correct character retries the fetch through the
+        // normal keystroke path above, rather than leaving the page
         // silently stuck.
         input.disabled = false;
         enteredCount -= 1;
         slots[enteredCount].textContent = '_';
-        registerMiss();
+        status.textContent = "Couldn't load — try again";
       }
     });
 
