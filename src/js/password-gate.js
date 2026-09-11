@@ -46,7 +46,7 @@ export function initPasswordGate({ project, alreadyUnlocked, onUnlock }) {
   // artwork (assets/icons/hangman/*.svg) changes what's inside each stage.
   const stages = Array.from(hangman.querySelectorAll('[data-stage]'));
   const hashes = project.passwordCharHashes || [];
-  const total  = project.passwordLength;
+  const total  = hashes.length;
   // Every stage but the always-visible "structure" is a miss; deriving
   // this from the DOM (like `stages` above) instead of a hardcoded 6
   // keeps it correct if a hangman stage is ever added or removed.
@@ -68,8 +68,12 @@ export function initPasswordGate({ project, alreadyUnlocked, onUnlock }) {
   let busy = false;
 
   function wiggle() {
+    // The forced reflow is only needed to restart the animation when it's
+    // already mid-play (consecutive misses) — skip it on the first miss,
+    // when there's nothing playing yet to restart.
+    const wasWiggling = fields.classList.contains('is-wiggling');
     fields.classList.remove('is-wiggling');
-    void fields.offsetWidth; // restart the animation so consecutive misses each replay it
+    if (wasWiggling) void fields.offsetWidth;
     fields.classList.add('is-wiggling');
   }
 

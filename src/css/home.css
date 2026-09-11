@@ -1,10 +1,17 @@
 /*
  * home.css — Home page layout and motion.
  *
- * Scoped to body.home-page so other pages can share the same shell HTML
- * without inheriting Home-specific styles. Tokens come from tokens.css;
- * page-level padding is defined here because 40px / 20px don't fit the
- * 8px global spacing scale but are page-wide concerns.
+ * Scoped to .home-page so other pages can share the same shell HTML
+ * without inheriting Home-specific styles. Note: both <html> and <body>
+ * carry this class (<html> needs it for the ::view-transition-old/new
+ * (root) selectors in base.css) — fine for the plain custom-property and
+ * overflow/touch-action rules below, but a `::before`/`::after` added
+ * under a bare `.home-page` selector would render on BOTH elements. See
+ * project.css's chrome-mask comment for the real bug that caused — scope
+ * any future pseudo-element rule here to `body.home-page` explicitly.
+ * Tokens come from tokens.css; page-level padding is defined here because
+ * 40px / 20px don't fit the 8px global spacing scale but are page-wide
+ * concerns.
  *
  * BUILD_SPEC.md §5.1 (Home), §2 (animation vocabulary).
  *

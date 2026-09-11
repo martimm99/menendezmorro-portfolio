@@ -90,7 +90,7 @@ export function initProject(data, slug) {
   setupNavigation(data.site);
 
   if (project.protected) {
-    initProtectedProject(data, project, slug);
+    initProtectedProject(data, project);
     return;
   }
 
@@ -186,17 +186,17 @@ async function fetchGatedContent(slug) {
   }
 }
 
-async function initProtectedProject(data, project, slug) {
+async function initProtectedProject(data, project) {
   const { initPasswordGate } = await import('./password-gate.js');
   initPasswordGate({
     project,
-    alreadyUnlocked: isUnlocked(slug),
+    alreadyUnlocked: isUnlocked(project.slug),
     onUnlock: async () => {
-      const gated = await fetchGatedContent(slug);
+      const gated = await fetchGatedContent(project.slug);
       if (!gated) return false;
       Object.assign(project, gated);
       renderProjectContent(data, project);
-      markUnlocked(slug);
+      markUnlocked(project.slug);
       document.body.classList.add('is-unlocked');
       return true;
     }

@@ -104,6 +104,16 @@ function hashPositionalChar(index, char) {
   return createHash('sha256').update(`${index}:${char.toUpperCase()}`).digest('hex');
 }
 
+// Pre-paint <html> background for a protected project's page (see
+// buildRoutedPages) — must match src/css/tokens.css's --color-accent /
+// --color-bg-light exactly, since this is what paints before any
+// stylesheet has loaded. Kept as a named constant (not inlined) so that
+// requirement is visible at the one place it's set, rather than a bare
+// hex literal; there's no build-time access to the CSS custom property
+// itself, so keeping the two in sync when the token changes is manual.
+const PROTECTED_BG_COLOR = '#0055ff'; // --color-accent
+const UNPROTECTED_BG_COLOR = '#fff'; // --color-bg-light
+
 // Splits the full project list into what's safe to inline everywhere
 // (publicProjects) and, per protected project, the gated payload that gets
 // written to its own file instead.
@@ -123,7 +133,6 @@ function splitProtectedContent(projects) {
       delete publicProject[field];
     }
     delete publicProject.password;
-    publicProject.passwordLength = password.length;
     publicProject.passwordCharHashes = Array.from(password).map((ch, i) => hashPositionalChar(i, ch));
     publicProjects.push(publicProject);
     protectedPayloads.push({ slug: project.slug, data: gated });
@@ -135,10 +144,14 @@ async function writeProtectedPayloads(payloads) {
   if (payloads.length === 0) return;
   const dir = join(PUBLIC, 'assets', 'protected');
   await mkdir(dir, { recursive: true });
-  for (const { slug, data } of payloads) {
-    const json = JSON.stringify(data).replace(/<\/(script)/gi, '<\\/$1');
-    await writeFile(join(dir, `${slug}.json`), json);
-  }
+  // Each write targets its own file — independent, so they run concurrently
+  // rather than one at a time. No <script>-tag escaping needed here: unlike
+  // buildSiteDataScript/buildWebsiteStructuredData, this JSON is served as
+  // its own file and only ever reaches the browser via fetch()+res.json(),
+  // never inlined into an HTML <script> element.
+  await Promise.all(payloads.map(({ slug, data }) =>
+    writeFile(join(dir, `${slug}.json`), JSON.stringify(data))
+  ));
 }
 
 // Pulls the inner markup out of a designer-exported <svg>...</svg> file
@@ -183,21 +196,31 @@ const HANGMAN_OFFSETS = {
 // one by adding .is-revealed, which is what plays the pop-in transition.
 // Missing files degrade gracefully — a warning, and that stage just never
 // appears — rather than failing the build.
-async function buildHangmanSprite() {
-  const groups = [];
-  for (const stage of HANGMAN_STAGES) {
-    const file = join(HANGMAN_DIR, `${stage}.svg`);
-    if (!existsSync(file)) {
-      console.warn(`build: assets/icons/hangman/${stage}.svg not found — password gate hangman will be incomplete.`);
-      continue;
-    }
-    const raw = await readFile(file, 'utf8');
-    const offset = HANGMAN_OFFSETS[stage];
-    const styleAttr = offset ? ` style="--hx:${offset[0]}px;--hy:${offset[1]}px"` : '';
-    groups.push(`<g class="hangman-stage" data-stage="${stage}"${styleAttr}>${extractSvgInner(raw)}</g>`);
+//
+// The sprite's markup depends only on the stage files + HANGMAN_OFFSETS,
+// never on which project is asking — memoized so N protected projects
+// read+parse the 7 SVGs once between them, not N times. The 7 reads
+// themselves are independent, so they run concurrently.
+let hangmanSpritePromise = null;
+
+function buildHangmanSprite() {
+  if (!hangmanSpritePromise) {
+    hangmanSpritePromise = Promise.all(HANGMAN_STAGES.map(async (stage) => {
+      const file = join(HANGMAN_DIR, `${stage}.svg`);
+      if (!existsSync(file)) {
+        console.warn(`build: assets/icons/hangman/${stage}.svg not found — password gate hangman will be incomplete.`);
+        return '';
+      }
+      const raw = await readFile(file, 'utf8');
+      const offset = HANGMAN_OFFSETS[stage];
+      const styleAttr = offset ? ` style="--hx:${offset[0]}px;--hy:${offset[1]}px"` : '';
+      return `<g class="hangman-stage" data-stage="${stage}"${styleAttr}>${extractSvgInner(raw)}</g>`;
+    })).then((groups) =>
+      // Matches the reference composition's own viewBox exactly.
+      `<svg class="hangman-illustration" viewBox="0 0 87.68 119.79" fill="currentColor" aria-hidden="true" focusable="false">${groups.join('')}</svg>`
+    );
   }
-  // Matches the reference composition's own viewBox exactly.
-  return `<svg class="hangman-illustration" viewBox="0 0 87.68 119.79" fill="currentColor" aria-hidden="true" focusable="false">${groups.join('')}</svg>`;
+  return hangmanSpritePromise;
 }
 
 // The gate's full static markup for one protected project — visible the
@@ -310,7 +333,10 @@ async function buildRoutedPages(projects, tokens) {
   const contactTemplate = await readFile(join(SRC, 'html', 'contact.html'), 'utf8');
   const contactOutput = substituteTokens(contactTemplate, tokens);
 
-  for (const project of projects) {
+  // Each project's page is independent of every other's — same template,
+  // own output file, no shared mutable state — so they build concurrently
+  // rather than one at a time.
+  await Promise.all(projects.map(async (project) => {
     const pageTitle = `${project.title} — ${tokens.siteTitle}`;
     const pageDescription = project.description || tokens.siteDescription;
     const pageUrl = `${tokens.siteUrl}/${project.slug}`;
@@ -325,10 +351,11 @@ async function buildRoutedPages(projects, tokens) {
       // Empty strings (or the normal white) for an ordinary project — zero
       // added markup, zero extra request. Only a protected project's own
       // built page carries these. projectBgColor matches password-gate.css's
-      // background exactly, so the very first paint (before any stylesheet
-      // has a chance to load) is already correct — no white-then-blue flash.
+      // background exactly (PROTECTED_BG_COLOR === --color-accent), so the
+      // very first paint (before any stylesheet has a chance to load) is
+      // already correct — no white-then-blue flash.
       projectBodyClass:  isProtected ? ' is-password-protected' : '',
-      projectBgColor:    isProtected ? '#0055ff' : '#fff',
+      projectBgColor:    isProtected ? PROTECTED_BG_COLOR : UNPROTECTED_BG_COLOR,
       passwordGateStyles: isProtected ? '<link rel="stylesheet" href="/css/password-gate.css">' : '',
       passwordGateBlock: isProtected ? await buildPasswordGateBlock(project) : ''
     };
@@ -336,7 +363,7 @@ async function buildRoutedPages(projects, tokens) {
     const dir = join(PUBLIC, project.slug);
     await mkdir(dir, { recursive: true });
     await writeFile(join(dir, 'index.html'), output);
-  }
+  }));
 
   const contactDir = join(PUBLIC, 'contact');
   await mkdir(contactDir, { recursive: true });
