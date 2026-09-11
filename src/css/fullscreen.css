@@ -113,14 +113,23 @@
 /* While the fullscreen state is open, chrome elements fade out smoothly.
  * The 0.2s transition here (higher specificity) controls the FADE-OUT speed.
  * The base transitions in project.css (0.6s, lower specificity) control the
- * FADE-IN speed when fullscreen closes — giving a slow, gentle restoration. */
+ * FADE-IN speed when fullscreen closes — giving a slow, gentle restoration.
+ * The back arrow is deliberately NOT in this list — see below. */
 .project-page.fullscreen-active .site-header,
 .project-page.fullscreen-active .static-get-in-touch,
-.project-page.fullscreen-active .static-info-row,
-.project-page.fullscreen-active .static-back-arrow {
+.project-page.fullscreen-active .static-info-row {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
+}
+
+/* The back arrow stays visible and clickable while fullscreen is open —
+ * it's repurposed to close the media instead of leaving the page (see
+ * fullscreen.js morphBackArrowIcon, and the document-level click
+ * interceptor in initFullscreen). Lifted above the stage so it sits on
+ * top of the backdrop and the expanded media rather than behind them. */
+.project-page.fullscreen-active .static-back-arrow {
+  z-index: calc(var(--z-fullscreen) + 1);
 }
 
 .project-page.fullscreen-active::before,

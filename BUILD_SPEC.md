@@ -1,8 +1,12 @@
 # MORRO — Portfolio Rebuild Build Spec
 
-**Version:** 1.23 (Approved)
-**Date:** September 10, 2026
+**Version:** 1.24 (Approved)
+**Date:** September 11, 2026
 **Status:** Approved — build authorized
+
+**Changes from v1.23:**
+- **Image fullscreen: the X is back, repurposed and animated.** A prior version deliberately removed the fullscreen close button; it's now reinstated as the project page's existing top-right back arrow, which stays visible and on top while fullscreen is open instead of fading out with the rest of the chrome. Clicking it closes fullscreen (not "back to Home") while fullscreen is open; it reverts to normal Home navigation once closed. Its icon **morphs** between the X and two small diagonal arrows pointing at each other (a "compress" glyph on the same diagonal as the X), so the changed meaning is visible, not just implied — a true point-by-point geometry morph (not a cross-fade), ~620ms quintic ease. Desktop and mobile both get it. This also gives Figma prototype embeds (§5.2) a fully reliable close path, since Esc can be captured by the embedded prototype once it has focus. Implemented in `fullscreen.js` (`morphBackArrowIcon`, plus a capture-phase click interceptor) and `project.html` (the icon is now two independently-animatable `<polyline>`s instead of the static `#close` sprite reference). Corrects §5.2's and §5.4's stale descriptions — see below.
+- **Spec correction: back arrow position.** §5.2 called it "bottom-right"; it has been top-right (beside Get in touch) since the Next Project feature shipped. Corrected here and in §5.4.
 
 **Changes from v1.22:**
 - **Home: the cover background opens the current project.** Previously only the project title did (desktop already had a quiet `.cover-stage` click, undocumented; now formalised and extended to mobile). Desktop = click; mobile = **tap**, separated from a navigation swipe purely by movement — under ~10px of pointer travel opens the project, ~50px+ navigates prev/next, the band between does nothing. Uses `.cover-stage` containment so the title, header links, and preloader are unaffected. Implemented in `home.js` (`setupDrag` pointerup for touch; existing `.cover-stage` click for desktop). Also corrects a long-standing spec/code mismatch: §5.1 and §5.2 claimed the **Role label** opens the project on Home — it never did in code (only the title). Spec now matches: title + cover open the project; the role label does not.
@@ -155,7 +159,7 @@ These terms are used consistently in code, documentation, and conversation.
 **Static elements** — always visible, fixed position, do NOT move when scrolling:
 - **Get in touch** link (top-right corner) — opens email client.
 - **Info row** — bottom-left, showing RESULTS / LINKS / DURATION for the current project. The RESULTS cell shows the word "Gallery" as an interactive link that triggers the snap-to-gallery animation.
-- **Back button** (bottom-right corner, X icon) — returns to Home via vertical sweep animation.
+- **Back button** (top-right corner, beside Get in touch, X icon) — returns to Home via vertical sweep animation. While Image fullscreen is open it stays visible (everything else fades) and is repurposed to close the fullscreen instead, with its icon morphing to signal the change — see §5.4.
 
 **Scrolling content** — changes as user scrolls vertically:
 - **Description section** — top portion of the page, white background, long-form text. Lands first on entry.
@@ -313,8 +317,8 @@ DESCRIPTION text never truncates with ellipsis — information is preserved. Lon
 **Static elements (do NOT move when scrolling):**
 - Get in touch link — top-right.
 - Info row (RESULTS / LINKS / DURATION) — bottom-left. The RESULTS cell shows `Gallery` as a clickable link that triggers the snap-to-gallery animation.
-- Back button (X icon) — bottom-right.
-- These are visible throughout both Gallery and Description sections.
+- Back button (X icon) — top-right, beside Get in touch.
+- These are visible throughout both Gallery and Description sections, and — the back button only — through Image fullscreen too (repurposed there; see §5.4).
 - Visual design and placement match the current live site exactly.
 
 **Get in touch behavior:** Clicking the "Get in touch" link **copies the email address to the clipboard** (does NOT open a mail client) and shows a brief toast popup with the text "Email copied" which fades out automatically after ~2 seconds. The toast appears at the **center of the viewport** (horizontally and vertically centered).
@@ -382,15 +386,18 @@ Triggered by clicking/tapping an image or video in the Project page Gallery. Beh
 
 - The clicked media animates from its current gallery position to a centered "expanded" position in the viewport.
 - Expanded size: **~90vw wide** (with ~5vw side margins) when the aspect ratio allows; capped in height to leave room for the X close button (top-right) and the caption (below the image). Aspect ratio is preserved (`object-fit: contain`).
-- While fullscreen is open, **all other project page elements are hidden** — header logo, Get in touch link, info row, back button, chrome masks, and the gallery itself. Only the expanded media, its caption (if any), and the fullscreen X button are visible.
+- While fullscreen is open, **all other project page elements are hidden** — header logo, Get in touch link, info row, chrome masks, and the gallery itself — **except the back button**, which stays visible in place, is lifted above the fullscreen layer, and is repurposed as the close control (see "Triggers to close" and the icon-morph note below). Only the expanded media, its caption (if any), and the back button (now doubling as the fullscreen X) are visible.
 - Closing reverses the animation: the media shrinks back to its original gallery position and the project page elements reappear.
 
 **No in-fullscreen navigation:** to view another image the user closes the current fullscreen and clicks a different gallery item. There is no arrow / swipe / wheel navigation between media items while fullscreen is open.
 
 **Triggers to close:**
 
-- Click the X button (top-right corner).
+- Click the back button (top-right) — while fullscreen is open this closes the fullscreen instead of navigating Home.
+- Click the backdrop (empty area outside the media).
 - Press Esc.
+
+**Back-button icon morph:** on open, the back button's X animates — a true point-by-point geometry morph, not a cross-fade — into two small diagonal arrows pointing at each other on the same diagonal (a "compress" glyph), signalling it now closes the media rather than leaving the page. Reverses on close. ~620ms, quintic ease-in-out, respects `prefers-reduced-motion` (jumps to the end state instead of animating). Its `aria-label` swaps between "Back to home" and "Close full-screen view" to match.
 
 **Caption in fullscreen:**
 
@@ -401,13 +408,13 @@ Triggered by clicking/tapping an image or video in the Project page Gallery. Beh
 
 - Full HTML5 controls visible (play / pause / scrub / volume / fullscreen). User can interact normally with the video.
 - Autoplays on entry, with sound when the browser allows it. If the browser blocks sound-on-autoplay, the video starts muted and the user can unmute with the visible controls.
-- Click X / Esc to close.
+- Click the back button, click the backdrop, or press Esc to close.
 
 **Figma prototype behavior in fullscreen:**
 
 - The poster still expands first (identical to an image). Once the expand animation settles, a live Figma `<iframe>` is mounted over the poster and fades in when it loads. The prototype is fully interactive — click through it normally.
 - Built from the stored `url` via Figma's `embed.figma.com` endpoint (`embed-host=menendezmorro`); a pasted full `<iframe>` snippet or `embed.figma.com` link is accepted too. The Figma file must be shared "Anyone with the link → can view" or visitors see a Figma login wall.
-- **Close:** click the backdrop (any area outside the prototype), or press Esc when focus is not inside the prototype iframe. Closing removes the iframe so the Figma viewer stops. Note: while focus is inside the cross-origin iframe, Esc is captured by Figma — the backdrop click is the reliable close.
+- **Close:** click the back button (top-right, above the iframe — the reliable option), click the backdrop, or press Esc when focus is not inside the prototype iframe. Closing removes the iframe so the Figma viewer stops. Note: once focus is inside the cross-origin iframe, Esc is captured by Figma instead of reaching the page — the back button and backdrop click are unaffected by that, since Figma can't intercept a click landing outside its own iframe.
 - Frame size follows the poster's aspect ratio, or the media item's `aspect` override (`"16:9"`, `"9:16"`, …).
 
 ---

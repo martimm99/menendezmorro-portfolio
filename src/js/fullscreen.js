@@ -3,18 +3,23 @@
  *
  * Per BUILD_SPEC.md v1.5 §5.4: clicking a gallery item expands the
  * media (via a FLIP-style transition on top/left/width/height) from
- * its in-gallery rect to a centered ~90vw position. Pressing Esc or
- * clicking anywhere outside the media closes by reversing the same
- * transition back to the gallery rect. No image-to-image navigation
- * while open — to view a different item close and click another.
+ * its in-gallery rect to a centered ~90vw position. Pressing Esc,
+ * clicking anywhere outside the media, or clicking the (repurposed)
+ * static back arrow closes by reversing the same transition back to
+ * the gallery rect. No image-to-image navigation while open — to view
+ * a different item close and click another.
  *
  * The module owns no UI on its own — it operates on the .fullscreen-
- * stage scaffold already present in project.html.
+ * stage scaffold already present in project.html, plus the page's
+ * existing .static-back-arrow (see morphBackArrowIcon below).
  *
  * Figma prototype items (`type: "figma"`) expand their poster still like
  * an image; once the expand settles, a live Figma embed <iframe> is
  * mounted over the poster and faded in. Closing removes the iframe (so
  * the Figma viewer stops) and collapses the poster back to the gallery.
+ * The back arrow's click-to-close (below) is the reliable way to close
+ * a Figma item — Esc can be swallowed by the embedded prototype once
+ * it has focus.
  */
 
 import { prefersReducedMotion } from './utils.js';
@@ -27,6 +32,13 @@ const SIDE_MARGIN_VW_MOBILE = 2;  // matches gallery's 96vw items so wide
                                   // images don't visually shrink on open
 const MOBILE_BREAKPOINT_PX = 768;
 const TOP_BOTTOM_MARGIN_PX = 80; // leaves room for the X button + caption
+
+// Back-arrow icon morph (X ↔ "compress" arrows) — see morphBackArrowIcon.
+const ICON_MORPH_MS = 620;
+const ICON_TOP_X        = [[6, 6], [12, 12], [18, 6]];
+const ICON_TOP_CLOSE     = [[4, 4], [10, 10], [10, 6]];
+const ICON_BOTTOM_X     = [[6, 18], [12, 12], [18, 18]];
+const ICON_BOTTOM_CLOSE  = [[14, 18], [14, 14], [20, 20]];
 
 const state = {
   isOpen: false,
@@ -51,6 +63,19 @@ export function initFullscreen() {
   // The backdrop is behind the media wrap in z-order, so clicks on the media
   // — including native video controls — go to the media, not the backdrop.
   backdrop?.addEventListener('click', () => { if (state.isOpen) closeFullscreen(); });
+
+  // The static back arrow stays visible and on top while fullscreen is open
+  // (see fullscreen.css) and closes fullscreen instead of navigating home.
+  // Capture phase on document, ahead of project.js's own bubble-phase
+  // "go home" listener on the same element, so it wins regardless of
+  // listener registration order.
+  document.addEventListener('click', (e) => {
+    if (!state.isOpen) return;
+    if (!e.target.closest('.static-back-arrow')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    closeFullscreen();
+  }, true);
 }
 
 export function openFullscreen(galleryItem) {
@@ -62,6 +87,10 @@ export function openFullscreen(galleryItem) {
   state.sourceItem = galleryItem;
   state.sourceRect = { top: sourceRect.top, left: sourceRect.left, width: sourceRect.width, height: sourceRect.height };
   state.isAnimating = true;
+
+  // Morph the back-arrow icon in parallel with the expand, so it reads
+  // "this now closes the media" from the first frame.
+  morphBackArrowIcon(/* toClose */ true);
 
   // Clone the media and place it inside the stage at the source rect.
   const clone = sourceMedia.cloneNode(true);
@@ -140,7 +169,10 @@ function closeFullscreen() {
   if (!stage || !state.isOpen || state.isAnimating) return;
   state.isAnimating = true;
 
-  // Fade out the caption / X immediately by removing is-open; meanwhile
+  // Morph the back-arrow icon back to the X in parallel with the collapse.
+  morphBackArrowIcon(/* toClose */ false);
+
+  // Fade out the caption immediately by removing is-open; meanwhile
   // animate the media back to the source rect.
   stage.classList.remove('is-open');
 
@@ -186,6 +218,62 @@ function closeFullscreen() {
     openerElement?.focus();
     openerElement = null;
   }, prefersReducedMotion() ? 0 : ANIMATION_MS + 20);
+}
+
+/* ---------- Back-arrow icon morph ---------- */
+
+// The static back arrow (top-right, present on every project-page state)
+// doubles as the fullscreen close control while a media item is expanded.
+// Its icon morphs between the plain X and two small diagonal arrows
+// pointing at each other, so the change in meaning is visible, not just
+// implied. True point-by-point morph, not a cross-fade: the X's two
+// "^"/"V" chevrons — each a 3-point polyline sharing the center point —
+// rotate independently, the leg already aimed roughly at its target
+// direction grows into an arrow shaft, and the other leg swings in to
+// become the arrowhead's barb. Nothing is added or removed, so it's the
+// same technique family as the preloader's rAF-driven path animation,
+// just applied to <polyline> points instead of a path `d` string.
+// Choreography confirmed with Martí via an interactive preview before
+// implementation (2026-09-11).
+function easeInOutQuint(t) {
+  return t < 0.5 ? 16 * t ** 5 : 1 - (-2 * t + 2) ** 5 / 2;
+}
+
+function lerpPoints(from, to, t) {
+  return from.map((p, i) => {
+    const q = to[i];
+    return `${p[0] + (q[0] - p[0]) * t},${p[1] + (q[1] - p[1]) * t}`;
+  }).join(' ');
+}
+
+function morphBackArrowIcon(toClose) {
+  const backArrow = document.querySelector('.static-back-arrow');
+  const topSeg = backArrow?.querySelector('[data-arrow-seg="top"]');
+  const bottomSeg = backArrow?.querySelector('[data-arrow-seg="bottom"]');
+  if (!backArrow || !topSeg || !bottomSeg) return;
+
+  backArrow.setAttribute('aria-label', toClose ? 'Close full-screen view' : 'Back to home');
+
+  const topFrom = toClose ? ICON_TOP_X : ICON_TOP_CLOSE;
+  const topTo = toClose ? ICON_TOP_CLOSE : ICON_TOP_X;
+  const bottomFrom = toClose ? ICON_BOTTOM_X : ICON_BOTTOM_CLOSE;
+  const bottomTo = toClose ? ICON_BOTTOM_CLOSE : ICON_BOTTOM_X;
+
+  if (prefersReducedMotion()) {
+    topSeg.setAttribute('points', lerpPoints(topFrom, topTo, 1));
+    bottomSeg.setAttribute('points', lerpPoints(bottomFrom, bottomTo, 1));
+    return;
+  }
+
+  let start = null;
+  function tick(now) {
+    if (start === null) start = now;
+    const eased = easeInOutQuint(Math.min((now - start) / ICON_MORPH_MS, 1));
+    topSeg.setAttribute('points', lerpPoints(topFrom, topTo, eased));
+    bottomSeg.setAttribute('points', lerpPoints(bottomFrom, bottomTo, eased));
+    if (now - start < ICON_MORPH_MS) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
 }
 
 /* ---------- Helpers ---------- */
