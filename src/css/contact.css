@@ -33,8 +33,13 @@
  * visible on top while text behind the mask disappears. Background
  * matches the page so the mask itself is invisible — only its masking
  * effect on overlapping content is visible. */
-.contact-page::before,
-.contact-page::after {
+/* Scoped to body.contact-page, not bare .contact-page — <html> also
+ * carries this class (for ::view-transition-old/new(root) in base.css),
+ * so an unqualified selector would generate a second, untargetable copy
+ * of this mask on <html> too. See project.css's identical chrome-mask
+ * comment for the bug this caused there. */
+body.contact-page::before,
+body.contact-page::after {
   content: '';
   position: fixed;
   left: 0;
@@ -44,12 +49,12 @@
   pointer-events: none;
 }
 
-.contact-page::before {
+body.contact-page::before {
   top: 0;
   height: var(--chrome-mask-top);
 }
 
-.contact-page::after {
+body.contact-page::after {
   bottom: 0;
   height: var(--chrome-mask-bottom);
 }

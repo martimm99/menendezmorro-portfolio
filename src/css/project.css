@@ -28,9 +28,20 @@
  * so static elements remain visible on top of the mask but scrolling
  * description text disappears behind it. Background matches the page so
  * the mask is invisible against the section's white surface — only the
- * masking effect on scrolling content is visible. */
-.project-page::before,
-.project-page::after {
+ * masking effect on scrolling content is visible.
+ *
+ * Scoped to body.project-page specifically, not just .project-page:
+ * <html> also carries the project-page class (needed for the
+ * ::view-transition-old/new(root) selectors in base.css), so a bare
+ * `.project-page::before` would generate a SECOND, independent pair of
+ * mask pseudo-elements on <html> — invisible normally (it matches the
+ * same page background), but never hidden by the password-gate or
+ * fullscreen "hide the mask" rules below, since both of those key off
+ * classes (`is-password-protected`, `fullscreen-active`) that only ever
+ * get added to <body>. That stray html-level mask is what showed up as
+ * unremovable white bars over the (differently-colored) password gate. */
+body.project-page::before,
+body.project-page::after {
   content: '';
   position: fixed;
   left: 0;
@@ -40,12 +51,12 @@
   pointer-events: none;
 }
 
-.project-page::before {
+body.project-page::before {
   top: 0;
   height: var(--chrome-mask-top);
 }
 
-.project-page::after {
+body.project-page::after {
   bottom: 0;
   height: var(--chrome-mask-bottom);
 }
