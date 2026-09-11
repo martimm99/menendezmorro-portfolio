@@ -104,20 +104,40 @@ function renderInitial() {
   // Only the "current" slot in each pair gets text. The "next" slot stays
   // empty until a navigation populates it (and promoteSlots clears it again).
   setSlotText('current', project);
-  updateTitleLock(project);
+  updateTitleLock('current', project);
   // One rAF so layout has settled with the loaded font before measuring.
   requestAnimationFrame(scaleTitleForMobile);
 }
 
-// Small lock badge next to the title for password-protected projects (see
-// project_password_gate.md memory). Purely a visibility toggle — its
-// position is CSS-only (left: 100% of .project-title, which shrink-to-fits
-// its own text; see the comment on .project-title in home.css), so no
-// width measurement is needed here even though title length varies freely
-// per project.
-function updateTitleLock(project) {
-  const lock = document.querySelector('[data-title-lock]');
-  if (lock) lock.hidden = !project.protected;
+// Lock badge next to the title for password-protected projects (see
+// project_password_gate.md memory). Its own current/next slot-clip pair,
+// structurally parallel to the title text's own two slot-clips above —
+// navigate() feeds this pair into the same slideTextSlots() call used for
+// the text, so the lock slides in/out with the exact same movement,
+// timing, and easing as the title itself, rather than just popping
+// visible. Position is CSS-only (see .title-lock-clip in home.css).
+function updateTitleLock(role, project) {
+  const clip = document.querySelector(role === 'current' ? '[data-lock-clip-current]' : '[data-lock-clip-next]');
+  if (clip) clip.hidden = !project.protected;
+}
+
+function collectLockPair() {
+  return {
+    current: document.querySelector('[data-lock-slot-current]'),
+    next:    document.querySelector('[data-lock-slot-next]')
+  };
+}
+
+// Mirrors promoteSlots() below, but for visibility (hidden) rather than
+// text content — the lock has no text, just a per-project on/off state.
+function promoteLockSlot() {
+  const currentClip = document.querySelector('[data-lock-clip-current]');
+  const nextClip = document.querySelector('[data-lock-clip-next]');
+  currentClip.hidden = nextClip.hidden;
+  nextClip.hidden = true;
+  const { current, next } = collectLockPair();
+  current.classList.add('is-active');
+  next.classList.remove('is-active');
 }
 
 function setSlotText(role, project) {
@@ -613,20 +633,23 @@ async function navigate(direction) {
 
   // Set the queued text values on the "next" slots in sync.
   setSlotText('next', nextProject);
+  updateTitleLock('next', nextProject);
   // Pre-scale the incoming slot-clip to the correct font-size before the sweep
   // starts so the title slides in at the right size from frame one.
   prescaleTitleForMobile(nextProject.title);
 
   // Run cover sweep and text slide in parallel; they share duration and easing.
-  const pairs = collectSlotPairs();
+  // The lock's current/next pair rides along in the same slideTextSlots()
+  // call as the text pairs, so it moves with the exact same animation.
+  const pairs = [...collectSlotPairs(), collectLockPair()];
   await Promise.all([
     horizontalSweep({ activeLayer, nextLayer, direction }),
     slideTextSlots(pairs, direction)
   ]);
 
   promoteSlots();
+  promoteLockSlot();
   scaleTitleForMobile();
-  updateTitleLock(nextProject);
   state.activeLayerIdx = 1 - state.activeLayerIdx;
   state.index = nextIndex;
   preloadAdjacent(state.index);

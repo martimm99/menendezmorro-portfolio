@@ -226,25 +226,46 @@
   max-width: 40vw;
 }
 
-/* Small lock badge for password-protected projects — shown/hidden per
- * project by home.js (project.protected), positioned by CSS alone (see
- * the shrink-to-fit note on .project-title above), not JS measurement. */
-.project-title-lock {
+/* Lock badge for password-protected projects. Always absolutely
+ * positioned (never in-flow) so it can never affect .project-title's own
+ * shrink-to-fit width — see home.js updateTitleLock/collectLockPair for
+ * how its current/next pair (matching the title text's own current/next
+ * slot-clips above) gets folded into the same slideTextSlots() call, so
+ * it slides in and out with the exact same movement as the title.
+ *
+ * Desktop: left: 100% of .project-title lands right after the title text,
+ * because .project-title shrink-to-fits its own content on desktop (see
+ * the comment on .project-title above) — no width measurement needed.
+ * Mobile: .project-title becomes a full-width block instead (see the
+ * mobile media query below) — shrink-to-fit no longer applies, so
+ * left: 100% would land off past the page edge regardless of the title's
+ * length. right: 0 anchors it to the title box's own right edge instead,
+ * which — since that box spans the full content width — is the right
+ * side of the screen, independent of title length. */
+.title-lock-clip {
   position: absolute;
-  left: calc(100% + 0.35em);
-  top: 50%;
-  transform: translateY(-50%);
-  display: block;
-  width: 0.4em;
-  height: 0.4em;
-  opacity: 0.6;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  margin-left: 0.35em;
+  width: 0.7em;
+  overflow: hidden;
+  pointer-events: none;
 }
 
-.project-title-lock[hidden] {
+.title-lock-clip[hidden] {
   display: none;
 }
 
-.project-title-lock svg {
+.title-lock-clip .slot {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  width: 0.55em;
+  opacity: 0.6;
+}
+
+.title-lock-clip svg {
   display: block;
   width: 100%;
   height: 100%;
@@ -330,6 +351,12 @@
     font-size: var(--fs-title-mobile);
     max-width: none;
     margin: 0 0 var(--space-4); /* fixed gap to role below */
+  }
+
+  .title-lock-clip {
+    left: auto;
+    right: 0;
+    margin-left: 0;
   }
 
   .project-role {
