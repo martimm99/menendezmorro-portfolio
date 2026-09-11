@@ -230,10 +230,11 @@ function buildHangmanSprite() {
 // already-rendered markup after a dynamic import.
 async function buildPasswordGateBlock(project) {
   const password = String(project.password || '');
-  // Pre-rendered as all-blank ("_" per slot) — the correct static starting
-  // state, no JS needed to reach it. password-gate.js only ever rewrites a
-  // slot's own textContent, never the count of slots.
-  const fields = Array.from(password).map(() => '<span class="password-field-slot">_</span>').join('');
+  // Pre-rendered as all-blank (empty, with the blank line drawn by CSS —
+  // see .password-field-slot's border-bottom) — the correct static
+  // starting state, no JS needed to reach it. password-gate.js only ever
+  // rewrites a slot's own textContent, never the count of slots.
+  const fields = Array.from(password).map(() => '<span class="password-field-slot"></span>').join('');
   const hangmanSprite = await buildHangmanSprite();
   return `<div class="password-gate" data-password-gate>
       <div class="password-gate-row">

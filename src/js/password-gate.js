@@ -23,7 +23,7 @@
 
 import { forceRevealAndNavigate } from './utils.js';
 
-const REDIRECT_DELAY_MS = 2000;
+const REDIRECT_DELAY_MS = 1000;
 const encoder = new TextEncoder();
 
 async function hashPositionalChar(index, char) {
@@ -83,8 +83,6 @@ export function initPasswordGate({ project, alreadyUnlocked, onUnlock }) {
 
   function fail() {
     input.disabled = true;
-    status.textContent = 'Incorrect password';
-    status.classList.add('is-incorrect');
     setTimeout(() => forceRevealAndNavigate('/'), REDIRECT_DELAY_MS);
   }
 
@@ -106,13 +104,18 @@ export function initPasswordGate({ project, alreadyUnlocked, onUnlock }) {
 
   function wireInteractiveGate() {
     input.addEventListener('keydown', async (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        forceRevealAndNavigate('/');
+        return;
+      }
       if (input.disabled || busy) { e.preventDefault(); return; }
 
       if (e.key === 'Backspace') {
         e.preventDefault();
         if (enteredCount > 0) {
           enteredCount -= 1;
-          slots[enteredCount].textContent = '_';
+          slots[enteredCount].textContent = '';
         }
         return;
       }
@@ -147,7 +150,7 @@ export function initPasswordGate({ project, alreadyUnlocked, onUnlock }) {
         // silently stuck.
         input.disabled = false;
         enteredCount -= 1;
-        slots[enteredCount].textContent = '_';
+        slots[enteredCount].textContent = '';
         status.textContent = "Couldn't load — try again";
       }
     });
