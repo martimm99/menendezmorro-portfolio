@@ -107,7 +107,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--page-pad-y) var(--page-pad-x);
+  /* max() so the notch's own safe area (viewport-fit=cover, see
+   * project.html) pushes the logo down on notched phones, without
+   * changing anything on devices that report 0. */
+  padding: max(var(--page-pad-y), env(safe-area-inset-top)) var(--page-pad-x);
   color: var(--color-fg-light);
   pointer-events: none;
   transition: opacity 0.6s var(--ease-ui);
@@ -146,7 +149,7 @@
 
 .static-get-in-touch {
   position: fixed;
-  top: var(--page-pad-y);
+  top: max(var(--page-pad-y), env(safe-area-inset-top));
   right: calc(var(--page-pad-x) + 44px + var(--space-3));
   z-index: var(--z-info);
   display: flex;
@@ -186,7 +189,7 @@
   position: fixed;
   left: var(--page-pad-x);
   right: var(--page-pad-x);
-  bottom: var(--page-pad-y);
+  bottom: max(var(--page-pad-y), env(safe-area-inset-bottom));
   z-index: var(--z-info);
   margin: 0;
   display: flex;
@@ -357,7 +360,7 @@
 .static-back-arrow {
   position: fixed;
   right: var(--page-pad-x);
-  top: var(--page-pad-y);
+  top: max(var(--page-pad-y), env(safe-area-inset-top));
   z-index: var(--z-info);
   display: inline-flex;
   align-items: center;
@@ -671,7 +674,7 @@
 @media (max-width: 600px) {
   /* Mobile static-element positions match the legacy live site. */
   .static-get-in-touch {
-    top: var(--page-pad-y);
+    top: max(var(--page-pad-y), env(safe-area-inset-top));
     left: var(--page-pad-x);
     right: auto;
     font-size: clamp(18px, 4.8vw, 20px);
