@@ -148,19 +148,22 @@ function renderProjectContent(data, project) {
 
 const UNLOCKED_KEY = 'unlockedProjects';
 
-function isUnlocked(slug) {
+function getUnlockedList() {
   try {
     const raw = sessionStorage.getItem(UNLOCKED_KEY);
-    return raw ? JSON.parse(raw).includes(slug) : false;
+    return raw ? JSON.parse(raw) : [];
   } catch {
-    return false;
+    return [];
   }
+}
+
+function isUnlocked(slug) {
+  return getUnlockedList().includes(slug);
 }
 
 function markUnlocked(slug) {
   try {
-    const raw = sessionStorage.getItem(UNLOCKED_KEY);
-    const list = raw ? JSON.parse(raw) : [];
+    const list = getUnlockedList();
     if (!list.includes(slug)) list.push(slug);
     sessionStorage.setItem(UNLOCKED_KEY, JSON.stringify(list));
   } catch {

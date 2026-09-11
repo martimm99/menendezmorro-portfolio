@@ -23,11 +23,11 @@
 
 import { forceRevealAndNavigate } from './utils.js';
 
-const MAX_MISSES = 6;
 const REDIRECT_DELAY_MS = 2000;
+const encoder = new TextEncoder();
 
 async function hashPositionalChar(index, char) {
-  const bytes = new TextEncoder().encode(`${index}:${char.toUpperCase()}`);
+  const bytes = encoder.encode(`${index}:${char.toUpperCase()}`);
   const digest = await crypto.subtle.digest('SHA-256', bytes);
   return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join('');
 }
@@ -46,7 +46,11 @@ export function initPasswordGate({ project, alreadyUnlocked, onUnlock }) {
   // artwork (assets/icons/hangman/*.svg) changes what's inside each stage.
   const stages = Array.from(hangman.querySelectorAll('[data-stage]'));
   const hashes = project.passwordCharHashes || [];
-  const total  = project.passwordLength ?? hashes.length;
+  const total  = project.passwordLength;
+  // Every stage but the always-visible "structure" is a miss; deriving
+  // this from the DOM (like `stages` above) instead of a hardcoded 6
+  // keeps it correct if a hangman stage is ever added or removed.
+  const maxMisses = stages.length - 1;
 
   if (!window.crypto?.subtle) {
     status.textContent = 'Password check unavailable in this browser';
@@ -56,8 +60,12 @@ export function initPasswordGate({ project, alreadyUnlocked, onUnlock }) {
 
   let enteredCount = 0;
   let missCount = 0;
+  // `busy` guards the async gap of a single keystroke's hash check — kept
+  // separate from input.disabled (which marks the gate's terminal states,
+  // see fail()/unlock()) because disabling a focused input blurs it, and
+  // re-enabling doesn't restore focus; doing that on every keystroke would
+  // silently stop capturing the next one.
   let busy = false;
-  let gameOver = false;
 
   function wiggle() {
     fields.classList.remove('is-wiggling');
@@ -70,7 +78,6 @@ export function initPasswordGate({ project, alreadyUnlocked, onUnlock }) {
   }
 
   function fail() {
-    gameOver = true;
     input.disabled = true;
     status.textContent = 'Incorrect password';
     status.classList.add('is-incorrect');
@@ -81,7 +88,7 @@ export function initPasswordGate({ project, alreadyUnlocked, onUnlock }) {
     missCount += 1;
     wiggle();
     revealNextStage();
-    if (missCount >= MAX_MISSES) fail();
+    if (missCount >= maxMisses) fail();
   }
 
   async function unlock() {
@@ -95,7 +102,7 @@ export function initPasswordGate({ project, alreadyUnlocked, onUnlock }) {
 
   function wireInteractiveGate() {
     input.addEventListener('keydown', async (e) => {
-      if (gameOver || busy) { e.preventDefault(); return; }
+      if (input.disabled || busy) { e.preventDefault(); return; }
 
       if (e.key === 'Backspace') {
         e.preventDefault();
@@ -116,7 +123,6 @@ export function initPasswordGate({ project, alreadyUnlocked, onUnlock }) {
       busy = true;
       const hash = await hashPositionalChar(enteredCount, e.key);
       busy = false;
-      if (gameOver) return; // the game could have ended while this hash was computing
 
       if (hash !== hashes[enteredCount]) {
         registerMiss();
@@ -141,7 +147,7 @@ export function initPasswordGate({ project, alreadyUnlocked, onUnlock }) {
 
     // Tapping the label already focuses the input natively; this covers
     // clicks that land slightly outside it (e.g. on the hangman side).
-    gate.addEventListener('click', () => { if (!gameOver) input.focus(); });
+    gate.addEventListener('click', () => { if (!input.disabled) input.focus(); });
   }
 
   if (alreadyUnlocked) {
