@@ -66,7 +66,7 @@ export function initPasswordGate({ project, alreadyUnlocked, onUnlock }) {
   }
 
   function revealNextStage() {
-    stages[missCount]?.removeAttribute('hidden');
+    stages[missCount]?.classList.add('is-revealed');
   }
 
   function fail() {

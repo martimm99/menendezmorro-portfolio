@@ -149,14 +149,35 @@ function extractSvgInner(raw) {
   return (match ? match[1] : raw).trim();
 }
 
+// Each stage file is independent artwork (Martí's own viewBox, own local
+// coordinate space, not pre-aligned to the others) — these translations
+// compose them into one figure hanging from the gallows' hook, hand-tuned
+// by rendering the real files and reading off pixel coordinates. If the
+// art is ever redrawn with meaningfully different proportions, these need
+// re-tuning to match (render assets/icons/hangman/structure.svg alone,
+// find the drip/hook tip, and adjust from there).
+const HANGMAN_TRANSFORMS = {
+  'structure':  '',
+  'head':       'translate(52.5,23)',
+  'body':       'translate(58.8,40)',
+  'arm-left':   'translate(56,44)',
+  'arm-right':  'translate(49,44)',
+  'leg-left':   'translate(56,72)',
+  'leg-right':  'translate(47,72)'
+};
+
 // One combined inline sprite for all 7 hangman stages, read once and reused
 // across every protected project's page — never a separate file per stage,
 // never a network request at all (it's inlined directly into the built
 // HTML of whichever project pages actually need it). Each stage's shapes
-// should use stroke="currentColor" with no hardcoded fill/stroke color, so
-// the sprite's own color (white, set in password-gate.css) applies to all
-// of them uniformly. Missing files degrade gracefully — a warning, and that
-// stage just never appears — rather than failing the build.
+// are solid fills with no hardcoded color, so the sprite's own color
+// (white, set in password-gate.css via fill="currentColor" here) applies
+// uniformly. Non-structure stages start invisible via CSS alone (see
+// .hangman-stage in password-gate.css) — password-gate.js reveals one by
+// adding .is-revealed, which is what plays the pop-in transition; nothing
+// here needs the `hidden` attribute. Missing files degrade gracefully — a
+// warning, and that stage just never appears — rather than failing the
+// build.
 let hangmanSpriteCache = null;
 async function buildHangmanSprite() {
   if (hangmanSpriteCache !== null) return hangmanSpriteCache;
@@ -168,10 +189,20 @@ async function buildHangmanSprite() {
       continue;
     }
     const raw = await readFile(file, 'utf8');
-    const hiddenAttr = stage === 'structure' ? '' : ' hidden';
-    groups.push(`<g class="hangman-stage" data-stage="${stage}"${hiddenAttr}>${extractSvgInner(raw)}</g>`);
+    const transform = HANGMAN_TRANSFORMS[stage];
+    // Positioning (SVG `transform` attribute, on an outer <g>) and the
+    // reveal animation (CSS `transform`, on the inner .hangman-stage <g>)
+    // have to live on separate elements — a CSS `transform` on an element
+    // overrides its own SVG transform attribute rather than composing
+    // with it, which would otherwise fight the translate() above and
+    // reset each piece back to the sprite's origin the moment it's
+    // scaled in.
+    const positioned = transform
+      ? `<g transform="${transform}"><g class="hangman-stage" data-stage="${stage}">${extractSvgInner(raw)}</g></g>`
+      : `<g class="hangman-stage" data-stage="${stage}">${extractSvgInner(raw)}</g>`;
+    groups.push(positioned);
   }
-  hangmanSpriteCache = `<svg class="hangman-illustration" viewBox="0 0 100 160" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${groups.join('')}</svg>`;
+  hangmanSpriteCache = `<svg class="hangman-illustration" viewBox="0 0 75 125" fill="currentColor" aria-hidden="true" focusable="false">${groups.join('')}</svg>`;
   return hangmanSpriteCache;
 }
 

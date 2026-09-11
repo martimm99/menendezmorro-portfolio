@@ -6,9 +6,9 @@ on each wrong character: `structure` (shown immediately, not a "miss") →
 `head` → `body` → `arm-left` → `arm-right` → `leg-left` → `leg-right`
 (6th miss = game over).
 
-**These 7 files right now are simple placeholders** — swap them for the real
-artwork by replacing the files below (same filenames, same folder). No code
-changes needed.
+**This is the real artwork (as of 2026-09-11)** — solid hand-drawn shapes
+matching the site's ink-drip aesthetic (same family as the MORRO logo and the
+contact icon), not stroke line-art.
 
 ## Requirements for each file
 
@@ -18,12 +18,18 @@ changes needed.
 - **A normal, standalone `<svg viewBox="..." >...</svg>` file** — however your
   design tool exports it. The build strips the wrapper and keeps only what's
   inside.
-- **`viewBox="0 0 100 160"`**, same as these placeholders, so every stage lines
-  up in the same coordinate space without needing to reposition anything.
-- **Use `stroke="currentColor"` (or `fill="currentColor"` for solid shapes),
-  never a hardcoded color** — the sprite's color (white) is set once in
-  `password-gate.css`; a hardcoded color would override that and ignore
-  dark/light theming.
+- **Each file keeps its own natural viewBox/coordinate space** — they don't
+  need to share one canvas. `scripts/build.js`'s `HANGMAN_TRANSFORMS` places
+  each piece by hand (a `translate(x,y)` per stage) so they compose into one
+  figure hanging from the gallows' hook. **If you redraw a piece with
+  meaningfully different proportions or a different local origin, those
+  transforms will likely need re-tuning** — render `structure.svg` alone to
+  find the drip/hook tip, then adjust from there. A small size/shape tweak
+  within the same rough proportions usually doesn't need any change.
+- **No hardcoded `fill`/`stroke` color** — the wrapping `<svg>` sets
+  `fill="currentColor"` once (`buildHangmanSprite`); the sprite's actual
+  color (white) comes from `password-gate.css`. A hardcoded color on a path
+  would override that.
 
 ## Files
 
