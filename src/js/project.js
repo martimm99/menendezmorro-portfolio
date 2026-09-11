@@ -194,7 +194,7 @@ function renderInfoRow(project) {
   if (linksCell && linksSlot) {
     if (project.links && project.links.length > 0) {
       linksCell.hidden = false;
-      const arrowSvg = '<span class="info-arrow-clip" aria-hidden="true"><svg class="info-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><use href="/assets/icons/arrows.svg#arrow-ne"/></svg></span>';
+      const arrowSvg = '<span class="info-arrow-clip" aria-hidden="true"><svg class="info-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="butt" stroke-linejoin="miter" focusable="false"><use href="/assets/icons/arrows.svg#arrow-ne"/></svg></span>';
       linksSlot.innerHTML = project.links
         .map((l) => `<a href="${encodeURI(l.url)}" target="_blank" rel="noopener noreferrer" class="info-link">${arrowSvg}${escapeHtml(l.text)}</a>`)
         .join(', ');
@@ -216,8 +216,8 @@ function renderNextProject(project, allProjects) {
   if (!nextProject) return;
 
   cell.hidden = false;
-  const arrowSvg = '<span class="info-arrow-clip" aria-hidden="true"><svg class="info-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><use href="/assets/icons/arrows.svg#arrow-right"/></svg></span>';
-  const mobileArrow = '<svg class="info-next-arrow-mobile" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><use href="/assets/icons/arrows.svg#arrow-right"/></svg>';
+  const arrowSvg = '<span class="info-arrow-clip" aria-hidden="true"><svg class="info-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="butt" stroke-linejoin="miter" focusable="false"><use href="/assets/icons/arrows.svg#arrow-right"/></svg></span>';
+  const mobileArrow = '<svg class="info-next-arrow-mobile" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="butt" stroke-linejoin="miter" focusable="false"><use href="/assets/icons/arrows.svg#arrow-right"/></svg>';
   slot.innerHTML = `<a href="/${nextProject.slug}" class="info-link info-next-link">${arrowSvg}<span class="info-next-name">${escapeHtml(nextProject.title)}</span>${mobileArrow}</a>`;
 
   slot.querySelector('.info-next-link')?.addEventListener('click', (e) => {

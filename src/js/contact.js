@@ -84,7 +84,7 @@ function renderSocials(socials) {
   // link semantic: each social opens in a new tab. The arrow path
   // lives in the shared sprite at /assets/icons/arrows.svg so it
   // isn't duplicated across every call site.
-  const arrowSvg = '<span class="info-arrow-clip" aria-hidden="true"><svg class="info-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><use href="/assets/icons/arrows.svg#arrow-ne"/></svg></span>';
+  const arrowSvg = '<span class="info-arrow-clip" aria-hidden="true"><svg class="info-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="butt" stroke-linejoin="miter" focusable="false"><use href="/assets/icons/arrows.svg#arrow-ne"/></svg></span>';
   container.innerHTML = socials
     .map((s) => `
       <div class="info-cell">
