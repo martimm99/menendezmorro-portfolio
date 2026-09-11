@@ -285,8 +285,8 @@
 
 /* Bar: position: fixed so its vertical position is completely independent
  * of the flex row height (which varies with LINKS cell font scaling).
- * left/right are set by JS (positionBar()). Only the left edge moves on
- * DESCRIPTION hover — right stays fixed so the bar never reaches the X. */
+ * left/right are set by JS (positionBar()) and stay static regardless of
+ * DESCRIPTION's hover state — only the label text shifts for its arrow. */
 .info-progress-bar {
   position: fixed;
   bottom: 30px;
@@ -334,22 +334,21 @@
   left: 55%;
 }
 
-/* Hover arrows: slightly larger and thinner than the default info-arrow
- * size for external links, since the label font-size is the same but the
- * arrow reads better with a little more weight at this scale. */
+/* Hover arrows: larger than the default info-arrow size for external
+ * links, since the label font-size is the same but the arrow reads
+ * better with a little more presence at this scale. A small solid glyph
+ * like this has far less surrounding whitespace than the label text, so
+ * it reads darker/heavier than the text even at the same opacity — the
+ * explicit opacity below (compounding with .info-section-btn's 0.7)
+ * pulls it back down to match. */
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  .info-section-btn .info-arrow-clip { height: 0.9em; }
-  .info-section-btn:hover .info-arrow-clip { width: 0.9em; }
+  .info-section-btn .info-arrow-clip { height: 1.05em; }
+  .info-section-btn:hover .info-arrow-clip { width: 1.05em; }
   .info-section-btn .info-arrow {
-    width: 0.75em;
-    height: 0.75em;
+    width: 0.95em;
+    height: 0.95em;
     stroke-width: 1.25;
-  }
-
-  /* Transition left so the bar's edge eases when DESCRIPTION is hovered.
-   * The value is driven by JS (mouseenter/mouseleave on descBtn). */
-  .info-progress-bar {
-    transition: left 280ms cubic-bezier(.33, 1, .55, 1);
+    opacity: 0.75;
   }
 }
 

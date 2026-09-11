@@ -258,18 +258,18 @@ function initProgressBar(galleryAPI) {
   let smoothUntil = 0;
 
   let barBaseLeft = 0;
-  let isDescHover = false;
-  // 0.9em of --fs-label (13px) — matches the arrow-clip expansion on hover.
-  const descHoverShift = parseFloat(getComputedStyle(descBtn).fontSize) * 0.9;
 
   // Pins the bar's left/right to the nav-track's rendered position.
   // The bar is position: fixed so its vertical position is constant, but
   // its horizontal extent must be updated whenever the layout shifts.
+  // Stays put regardless of DESCRIPTION's hover state — only the label
+  // text shifts to make room for its arrow (see .info-arrow-clip), the
+  // bar itself is static.
   function positionBar() {
     const rect = navTrack.getBoundingClientRect();
     if (rect.width <= 0) return;
     barBaseLeft = rect.left;
-    progressBar.style.left  = `${barBaseLeft + (isDescHover ? descHoverShift : 0)}px`;
+    progressBar.style.left  = `${barBaseLeft}px`;
     progressBar.style.right = `${window.innerWidth - rect.right}px`;
   }
 
@@ -325,22 +325,6 @@ function initProgressBar(galleryAPI) {
     smoothUntil = performance.now() + durationMs;
     progressFill.style.transition = `transform ${durationMs}ms ease`;
     progressFill.style.transform = `scaleX(${targetP})`;
-  }
-
-  // Shift the bar's left edge on DESCRIPTION hover (pointer devices only).
-  // Right edge stays fixed — the bar gets narrower from the left, never
-  // reaching the X icon. JS drives this directly because inline style.left
-  // always outranks any CSS selector rule, so :has() cannot override it.
-  const mqlHover = window.matchMedia('(hover: hover) and (pointer: fine)');
-  if (mqlHover.matches) {
-    descBtn.addEventListener('mouseenter', () => {
-      isDescHover = true;
-      progressBar.style.left = `${barBaseLeft + descHoverShift}px`;
-    });
-    descBtn.addEventListener('mouseleave', () => {
-      isDescHover = false;
-      progressBar.style.left = `${barBaseLeft}px`;
-    });
   }
 
   // DESCRIPTION click: snap to description top. Animate bar back to 0.
