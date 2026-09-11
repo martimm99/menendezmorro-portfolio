@@ -67,6 +67,20 @@ export function initPasswordGate({ project, alreadyUnlocked, onUnlock }) {
   // silently stop capturing the next one.
   let busy = false;
 
+  // A slot's blank underline (password-gate.css) is drawn for an empty
+  // slot and hidden once .is-filled is set — these two keep textContent
+  // and that class in sync at every one of this file's three "un/fill a
+  // slot" call sites instead of repeating the pair each time.
+  function fillSlot(index, char) {
+    slots[index].textContent = char;
+    slots[index].classList.add('is-filled');
+  }
+
+  function clearSlot(index) {
+    slots[index].textContent = '';
+    slots[index].classList.remove('is-filled');
+  }
+
   function wiggle() {
     // The forced reflow is only needed to restart the animation when it's
     // already mid-play (consecutive misses) — skip it on the first miss,
@@ -115,7 +129,7 @@ export function initPasswordGate({ project, alreadyUnlocked, onUnlock }) {
         e.preventDefault();
         if (enteredCount > 0) {
           enteredCount -= 1;
-          slots[enteredCount].textContent = '';
+          clearSlot(enteredCount);
         }
         return;
       }
@@ -136,7 +150,7 @@ export function initPasswordGate({ project, alreadyUnlocked, onUnlock }) {
         return;
       }
 
-      slots[enteredCount].textContent = e.key.toUpperCase();
+      fillSlot(enteredCount, e.key.toUpperCase());
       enteredCount += 1;
       if (enteredCount < total) return;
 
@@ -150,7 +164,7 @@ export function initPasswordGate({ project, alreadyUnlocked, onUnlock }) {
         // silently stuck.
         input.disabled = false;
         enteredCount -= 1;
-        slots[enteredCount].textContent = '';
+        clearSlot(enteredCount);
         status.textContent = "Couldn't load — try again";
       }
     });
