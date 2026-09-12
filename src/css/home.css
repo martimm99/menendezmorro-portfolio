@@ -234,19 +234,27 @@
 /* Lock badge for password-protected projects — inline content appended
  * right after the title text itself (see home.js buildTitleHtml), not a
  * separately-positioned overlay. Being literal inline content is what
- * makes it wrap naturally to sit after the last word on any number of
- * lines (mobile titles can wrap to two), and lets it ride along
+ * makes it wrap naturally with the text (it sits before the title, so it
+ * always lands at the very start, before the first word, regardless of
+ * how many lines the title wraps to), and lets it ride along
  * automatically with whatever slide/reveal animation the title's own
  * .slot-clip gets — that element's existing overflow:hidden clips the
  * icon together with the text as one unit, and its hover-move rule
  * (below) already moves both together, so neither needs its own
- * duplicate handling. */
+ * duplicate handling.
+ *
+ * vertical-align: a flex container with no text-baseline-participating
+ * child (the SVG) synthesizes its baseline from its own margin box —
+ * browsers land that a bit above the surrounding text's real baseline,
+ * so the icon read as "floating" above the text. -0.15em nudges it down
+ * to sit flush with the baseline, same height as a capital letter;
+ * tuned by eye against the rendered title, not derived from a formula. */
 .title-lock-icon {
   display: inline-flex;
   align-items: center;
-  vertical-align: middle;
-  margin-left: 0.3em;
-  height: 0.7em;
+  vertical-align: -0.15em;
+  margin-right: 0.3em;
+  height: 0.55em;
   opacity: 0.6;
   pointer-events: none;
 }

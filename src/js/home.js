@@ -135,11 +135,10 @@ function revealTitleLockOnLoad(project) {
   setTimeout(() => icon.classList.remove('is-load-revealed'), 340);
 }
 
-// Builds the title slot's own markup: the title text, plus — for a
-// password-protected project — a trailing inline lock icon right after it.
-// Being literal inline content (not a separately-positioned overlay) is
-// what makes the icon land after the last word on any number of lines, and
-// what lets it ride along automatically with whichever slide/reveal
+// Builds the title slot's own markup: for a password-protected project, a
+// leading inline lock icon right before the title text; otherwise just the
+// text. Being literal inline content (not a separately-positioned overlay)
+// is what lets it ride along automatically with whichever slide/reveal
 // animation the title's own slot-clip pair gets, with no extra
 // synchronization code (see the old updateTitleLock/collectLockPair/
 // promoteLockSlot, removed in favor of this). Closed vs open reflects
@@ -150,7 +149,8 @@ function buildTitleHtml(project) {
   const title = escapeHtml(project.title);
   if (!project.protected) return title;
   const symbol = isProjectUnlocked(project.slug) ? 'lock-open' : 'lock-closed';
-  return `${title}<span class="title-lock-icon" aria-hidden="true"><svg viewBox="0 0 71.16 93.16" fill="none" stroke="currentColor" stroke-width="7" focusable="false"><use href="/assets/icons/arrows.svg#${symbol}"/></svg></span>`;
+  const icon = `<span class="title-lock-icon" aria-hidden="true"><svg viewBox="0 0 71.16 93.16" fill="none" stroke="currentColor" stroke-width="7" focusable="false"><use href="/assets/icons/arrows.svg#${symbol}"/></svg></span>`;
+  return `${icon}${title}`;
 }
 
 function setSlotText(role, project) {
