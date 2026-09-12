@@ -210,13 +210,17 @@ async function initProtectedProject(data, project) {
       // navigation. Browsers without VT support just run reveal()
       // directly, same as before this existed.
       if (document.startViewTransition) {
-        // .ready rejects (harmlessly) whenever the browser skips the
-        // animation itself — e.g. prefers-reduced-motion, or the tab
-        // being backgrounded/hidden at that instant — while the DOM
-        // update still applies via reveal() either way. Left unhandled,
-        // that surfaces as an "Uncaught (in promise)" console error for
-        // something that isn't actually a failure.
-        document.startViewTransition(reveal).ready.catch(() => {});
+        // .ready rejects with InvalidStateError (harmlessly) whenever
+        // the browser skips the animation itself — e.g.
+        // prefers-reduced-motion, or the tab being backgrounded/hidden
+        // at that instant — while the DOM update still applies via
+        // reveal() either way. Only that specific, documented case is
+        // swallowed; anything else (a real bug inside reveal() itself
+        // would reject .ready with the same error) is logged rather
+        // than silently lost.
+        document.startViewTransition(reveal).ready.catch((err) => {
+          if (err?.name !== 'InvalidStateError') console.error(err);
+        });
       } else {
         reveal();
       }
