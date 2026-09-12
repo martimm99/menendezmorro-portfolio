@@ -243,16 +243,16 @@
  * (below) already moves both together, so neither needs its own
  * duplicate handling.
  *
- * vertical-align: a flex container with no text-baseline-participating
- * child (the SVG) synthesizes its baseline from its own margin box —
- * browsers land that a bit above the surrounding text's real baseline,
- * so the icon read as "floating" above the text. -0.15em nudges it down
- * to sit flush with the baseline, same height as a capital letter;
- * tuned by eye against the rendered title, not derived from a formula. */
+ * vertical-align: middle — a -0.15em length value was tried here and
+ * confirmed (screenshot from a real browser) to push the icon too far
+ * down, well past center; this session's own testing tool doesn't
+ * render this kind of font-metric-dependent alignment closely enough
+ * to the real thing to keep tuning it blind, so back to the plain
+ * keyword until checked live again. */
 .title-lock-icon {
   display: inline-flex;
   align-items: center;
-  vertical-align: -0.15em;
+  vertical-align: middle;
   margin-right: 0.3em;
   height: 0.55em;
   opacity: 0.6;
