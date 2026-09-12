@@ -14,6 +14,12 @@
 .project-page {
   --page-pad-x: 40px;
   --page-pad-y: 20px;
+  /* Notch/home-indicator-aware padding for every edge-pinned element on
+   * this page (header, back arrow, get-in-touch, info row, and the
+   * password gate) — env() resolves to 0 on non-notched devices/browsers,
+   * so max() is a no-op there and this always reduces to --page-pad-y. */
+  --safe-pad-top: max(var(--page-pad-y), env(safe-area-inset-top));
+  --safe-pad-bottom: max(var(--page-pad-y), env(safe-area-inset-bottom));
   --chrome-mask-top: 100px;
   --chrome-mask-bottom: 100px;
   --cursor-color: var(--project-highlight);
@@ -118,10 +124,10 @@ body.project-page::after {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  /* max() so the notch's own safe area (viewport-fit=cover, see
-   * project.html) pushes the logo down on notched phones, without
-   * changing anything on devices that report 0. */
-  padding: max(var(--page-pad-y), env(safe-area-inset-top)) var(--page-pad-x);
+  /* --safe-pad-top (defined above) pushes the logo down on notched
+   * phones (viewport-fit=cover, see project.html), without changing
+   * anything on devices that report 0. */
+  padding: var(--safe-pad-top) var(--page-pad-x);
   color: var(--color-fg-light);
   pointer-events: none;
   transition: opacity 0.6s var(--ease-ui);
@@ -160,7 +166,7 @@ body.project-page::after {
 
 .static-get-in-touch {
   position: fixed;
-  top: max(var(--page-pad-y), env(safe-area-inset-top));
+  top: var(--safe-pad-top);
   right: calc(var(--page-pad-x) + 44px + var(--space-3));
   z-index: var(--z-info);
   display: flex;
@@ -200,7 +206,7 @@ body.project-page::after {
   position: fixed;
   left: var(--page-pad-x);
   right: var(--page-pad-x);
-  bottom: max(var(--page-pad-y), env(safe-area-inset-bottom));
+  bottom: var(--safe-pad-bottom);
   z-index: var(--z-info);
   margin: 0;
   display: flex;
@@ -371,7 +377,7 @@ body.project-page::after {
 .static-back-arrow {
   position: fixed;
   right: var(--page-pad-x);
-  top: max(var(--page-pad-y), env(safe-area-inset-top));
+  top: var(--safe-pad-top);
   z-index: var(--z-info);
   display: inline-flex;
   align-items: center;
@@ -685,7 +691,7 @@ body.project-page::after {
 @media (max-width: 600px) {
   /* Mobile static-element positions match the legacy live site. */
   .static-get-in-touch {
-    top: max(var(--page-pad-y), env(safe-area-inset-top));
+    top: var(--safe-pad-top);
     left: var(--page-pad-x);
     right: auto;
     font-size: clamp(18px, 4.8vw, 20px);
