@@ -66,22 +66,14 @@
         <span class="title-arrow-clip" aria-hidden="true">
           <svg class="title-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="butt" stroke-linejoin="miter" focusable="false"><use href="/assets/icons/arrows.svg#arrow-se"/></svg>
         </span>
+        <!-- Lock badge (for password-protected projects) is injected by
+             home.js as part of each slot's own innerHTML, right after the
+             title text — see setSlotText — so it wraps naturally after the
+             last word on any number of lines, and rides along with
+             whichever slot (current/next) is animating with zero extra
+             synchronization code. -->
         <span class="slot-clip"><span class="slot is-active" data-slot-current data-project-title></span></span>
         <span class="slot-clip" aria-hidden="true"><span class="slot" data-slot-next data-project-title></span></span>
-        <!-- Lock badge for password-protected projects: its own slot-clip
-             pair (current/next), same mechanism as the title text above,
-             so home.js can fold it into the same slideTextSlots() call and
-             it slides in/out with the exact same movement as the title. -->
-        <span class="title-lock-clip" data-lock-clip-current hidden>
-          <span class="slot is-active" data-lock-slot-current aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="butt" stroke-linejoin="miter" focusable="false"><use href="/assets/icons/arrows.svg#lock"/></svg>
-          </span>
-        </span>
-        <span class="title-lock-clip" data-lock-clip-next hidden aria-hidden="true">
-          <span class="slot" data-lock-slot-next aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="butt" stroke-linejoin="miter" focusable="false"><use href="/assets/icons/arrows.svg#lock"/></svg>
-          </span>
-        </span>
       </h1>
 
       <p class="project-role">

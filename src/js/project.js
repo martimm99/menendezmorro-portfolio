@@ -36,7 +36,9 @@ import {
   assignRevealLineDelays,
   arrivedViaViewTransition,
   forceRevealAndNavigate,
-  setupScrollReveal
+  setupScrollReveal,
+  isProjectUnlocked,
+  markProjectUnlocked
 } from './utils.js';
 
 const SNAP_DURATION_MS = 1000;
@@ -146,32 +148,6 @@ function renderProjectContent(data, project, { viaSweep = false } = {}) {
  * content once the password is right, and remembering that across this
  * project's page loads for the rest of the browser session. */
 
-const UNLOCKED_KEY = 'unlockedProjects';
-
-function getUnlockedList() {
-  try {
-    const raw = sessionStorage.getItem(UNLOCKED_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function isUnlocked(slug) {
-  return getUnlockedList().includes(slug);
-}
-
-function markUnlocked(slug) {
-  try {
-    const list = getUnlockedList();
-    if (!list.includes(slug)) list.push(slug);
-    sessionStorage.setItem(UNLOCKED_KEY, JSON.stringify(list));
-  } catch {
-    // sessionStorage unavailable — the gate still works, it just asks
-    // again on the next page load within the same visit.
-  }
-}
-
 // The protected fields (media, longDescription, links) for one project,
 // written by scripts/build.js to their own static file — never part of
 // window.__SITE_DATA__, not even on this project's own page. Fetched only
@@ -190,7 +166,7 @@ async function initProtectedProject(data, project) {
   const { initPasswordGate } = await import('./password-gate.js');
   initPasswordGate({
     project,
-    alreadyUnlocked: isUnlocked(project.slug),
+    alreadyUnlocked: isProjectUnlocked(project.slug),
     onUnlock: async () => {
       const gated = await fetchGatedContent(project.slug);
       if (!gated) return false;
@@ -225,7 +201,7 @@ async function initProtectedProject(data, project) {
         reveal();
       }
 
-      markUnlocked(project.slug);
+      markProjectUnlocked(project.slug);
       return true;
     }
   });

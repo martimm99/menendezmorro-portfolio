@@ -7,6 +7,38 @@ export function prefersReducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
+const UNLOCKED_PROJECTS_KEY = 'unlockedProjects';
+
+/**
+ * Password-protected projects the visitor has already unlocked this
+ * session (project.js writes to this; home.js reads it too, to show the
+ * open- vs closed-lock badge on a project's title). sessionStorage is
+ * per-tab and cleared on close, so a fresh tab always asks again.
+ */
+export function getUnlockedProjects() {
+  try {
+    const raw = sessionStorage.getItem(UNLOCKED_PROJECTS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function isProjectUnlocked(slug) {
+  return getUnlockedProjects().includes(slug);
+}
+
+export function markProjectUnlocked(slug) {
+  try {
+    const list = getUnlockedProjects();
+    if (!list.includes(slug)) list.push(slug);
+    sessionStorage.setItem(UNLOCKED_PROJECTS_KEY, JSON.stringify(list));
+  } catch {
+    // sessionStorage unavailable — the gate still works, it just asks
+    // again on the next page load within the same visit.
+  }
+}
+
 export function escapeHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;')

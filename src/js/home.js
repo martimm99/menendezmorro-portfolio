@@ -20,6 +20,7 @@
 
 import { horizontalSweep, slideTextSlots } from './transitions.js';
 import { navigateTo } from './router.js';
+import { escapeHtml, arrivedViaViewTransition, isProjectUnlocked } from './utils.js';
 
 let state = {
   data: null,
@@ -104,70 +105,57 @@ function renderInitial() {
   // Only the "current" slot in each pair gets text. The "next" slot stays
   // empty until a navigation populates it (and promoteSlots clears it again).
   setSlotText('current', project);
-  updateTitleLock('current', project);
   revealTitleLockOnLoad(project);
   // One rAF so layout has settled with the loaded font before measuring.
   requestAnimationFrame(scaleTitleForMobile);
 }
 
-// The lock's own slide-in only ever plays on an actual navigate() call —
-// on first paint (page load, or a refresh that resumes directly on a
-// protected project) it would otherwise just be sitting there fully
-// visible from frame one. This plays a small pop instead, once, so
-// showing up "out of nowhere" reads as deliberate. See the
-// .is-load-revealing/.is-load-revealed comment in home.css for why two
-// classes and a forced reflow are needed to make a same-tick "hidden →
-// visible → animate" sequence actually animate instead of collapsing to
-// an instant jump.
+// A newly-appeared lock icon gets its own small pop so it doesn't just sit
+// there fully formed from frame one — but only on a genuine first paint.
+// If the page instead arrived via the cross-document sweep
+// (arrivedViaViewTransition()), the whole page — title, icon, everything —
+// is already being revealed together as one root-level snapshot; a second,
+// differently-timed animation on top of that would fight it rather than
+// match it. On an ordinary navigate() between projects, no extra handling
+// is needed at all: the icon lives inside the title's own slot now (see
+// setSlotText/buildTitleHtml), so it rides along with whatever animation
+// the title text itself gets, automatically.
 function revealTitleLockOnLoad(project) {
-  if (!project.protected) return;
-  const slot = document.querySelector('[data-lock-slot-current]');
-  if (!slot) return;
-  slot.classList.add('is-load-revealing');
-  void slot.offsetWidth; // commit the pre-reveal state before animating
+  if (!project.protected || arrivedViaViewTransition()) return;
+  const icon = document.querySelector('[data-slot-current][data-project-title] .title-lock-icon');
+  if (!icon) return;
+  icon.classList.add('is-load-revealing');
+  void icon.offsetWidth; // commit the pre-reveal state before animating
   requestAnimationFrame(() => {
-    slot.classList.remove('is-load-revealing');
-    slot.classList.add('is-load-revealed');
+    icon.classList.remove('is-load-revealing');
+    icon.classList.add('is-load-revealed');
   });
   // Cleaned up once played so it can never linger and shadow the
   // ordinary slide-animation classes on a later navigation.
-  setTimeout(() => slot.classList.remove('is-load-revealed'), 340);
+  setTimeout(() => icon.classList.remove('is-load-revealed'), 340);
 }
 
-// Lock badge next to the title for password-protected projects (see
-// project_password_gate.md memory). Its own current/next slot-clip pair,
-// structurally parallel to the title text's own two slot-clips above —
-// navigate() feeds this pair into the same slideTextSlots() call used for
-// the text, so the lock slides in/out with the exact same movement,
-// timing, and easing as the title itself, rather than just popping
-// visible. Position is CSS-only (see .title-lock-clip in home.css).
-function updateTitleLock(role, project) {
-  const clip = document.querySelector(role === 'current' ? '[data-lock-clip-current]' : '[data-lock-clip-next]');
-  if (clip) clip.hidden = !project.protected;
-}
-
-function collectLockPair() {
-  return {
-    current: document.querySelector('[data-lock-slot-current]'),
-    next:    document.querySelector('[data-lock-slot-next]')
-  };
-}
-
-// Mirrors promoteSlots() below, but for visibility (hidden) rather than
-// text content — the lock has no text, just a per-project on/off state.
-function promoteLockSlot() {
-  const currentClip = document.querySelector('[data-lock-clip-current]');
-  const nextClip = document.querySelector('[data-lock-clip-next]');
-  currentClip.hidden = nextClip.hidden;
-  nextClip.hidden = true;
-  const { current, next } = collectLockPair();
-  current.classList.add('is-active');
-  next.classList.remove('is-active');
+// Builds the title slot's own markup: the title text, plus — for a
+// password-protected project — a trailing inline lock icon right after it.
+// Being literal inline content (not a separately-positioned overlay) is
+// what makes the icon land after the last word on any number of lines, and
+// what lets it ride along automatically with whichever slide/reveal
+// animation the title's own slot-clip pair gets, with no extra
+// synchronization code (see the old updateTitleLock/collectLockPair/
+// promoteLockSlot, removed in favor of this). Closed vs open reflects
+// whether this project has already been unlocked this session (see
+// project_password_gate.md memory) — same sessionStorage state
+// project.js's own gate reads/writes, via utils.js.
+function buildTitleHtml(project) {
+  const title = escapeHtml(project.title);
+  if (!project.protected) return title;
+  const symbol = isProjectUnlocked(project.slug) ? 'lock-open' : 'lock-closed';
+  return `${title}<span class="title-lock-icon" aria-hidden="true"><svg viewBox="0 0 71.16 93.16" fill="none" stroke="currentColor" stroke-width="7" focusable="false"><use href="/assets/icons/arrows.svg#${symbol}"/></svg></span>`;
 }
 
 function setSlotText(role, project) {
   const selector = role === 'current' ? '[data-slot-current]' : '[data-slot-next]';
-  document.querySelector(`${selector}[data-project-title]`).textContent = project.title;
+  document.querySelector(`${selector}[data-project-title]`).innerHTML = buildTitleHtml(project);
   document.querySelector(`${selector}[data-project-role]`).textContent  = project.role;
   document.querySelector(`${selector}[data-info-location]`).textContent = project.location;
   document.querySelector(`${selector}[data-info-year]`).textContent     = project.year;
@@ -187,10 +175,12 @@ function collectSlotPairs() {
 // next slot is invisible (empty) at default position — ready to be re-
 // populated and re-animated on the following navigation.
 function promoteSlots() {
+  // innerHTML, not textContent — the title slot's content can include the
+  // lock icon (see buildTitleHtml), which textContent would silently drop.
   const pairs = collectSlotPairs();
   for (const { current, next } of pairs) {
-    current.textContent = next.textContent;
-    next.textContent = '';
+    current.innerHTML = next.innerHTML;
+    next.innerHTML = '';
     current.classList.add('is-active');
     next.classList.remove('is-active');
   }
@@ -656,24 +646,23 @@ async function navigate(direction) {
   const outgoingVideo = activeLayer.querySelector('video');
   if (outgoingVideo && state.videoObserver) state.videoObserver.unobserve(outgoingVideo);
 
-  // Set the queued text values on the "next" slots in sync.
+  // Set the queued text values on the "next" slots in sync. The lock icon
+  // (if any) is part of the title slot's own content now, so it rides
+  // along in the same slideTextSlots() call as the text with no separate
+  // pair to manage.
   setSlotText('next', nextProject);
-  updateTitleLock('next', nextProject);
   // Pre-scale the incoming slot-clip to the correct font-size before the sweep
   // starts so the title slides in at the right size from frame one.
   prescaleTitleForMobile(nextProject.title);
 
   // Run cover sweep and text slide in parallel; they share duration and easing.
-  // The lock's current/next pair rides along in the same slideTextSlots()
-  // call as the text pairs, so it moves with the exact same animation.
-  const pairs = [...collectSlotPairs(), collectLockPair()];
+  const pairs = collectSlotPairs();
   await Promise.all([
     horizontalSweep({ activeLayer, nextLayer, direction }),
     slideTextSlots(pairs, direction)
   ]);
 
   promoteSlots();
-  promoteLockSlot();
   scaleTitleForMobile();
   state.activeLayerIdx = 1 - state.activeLayerIdx;
   state.index = nextIndex;
