@@ -243,16 +243,21 @@
  * (below) already moves both together, so neither needs its own
  * duplicate handling.
  *
- * vertical-align: middle — a -0.15em length value was tried here and
- * confirmed (screenshot from a real browser) to push the icon too far
- * down, well past center; this session's own testing tool doesn't
- * render this kind of font-metric-dependent alignment closely enough
- * to the real thing to keep tuning it blind, so back to the plain
- * keyword until checked live again. */
+ * vertical-align: middle gets close but still sits a bit low against
+ * this particular font's cap-height (confirmed live) — nudged up with
+ * `transform` (a pure paint-time shift, independent of the actual
+ * alignment/line-height math, so it can't interact with or undo
+ * `middle` the way a competing vertical-align length could) rather
+ * than another vertical-align value. Sign is unambiguous here:
+ * negative Y is up. Tuned in small steps against real-browser
+ * screenshots, not this session's own testing tool (confirmed earlier
+ * to not render this kind of font-metric alignment closely enough to
+ * the real thing to guess blind). */
 .title-lock-icon {
   display: inline-flex;
   align-items: center;
   vertical-align: middle;
+  transform: translateY(-0.06em);
   margin-right: 0.3em;
   height: 0.55em;
   opacity: 0.6;
