@@ -7,6 +7,19 @@ export function prefersReducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
+/**
+ * A project marked `hidden` (BUILD_SPEC.md §6.1) is excluded from every
+ * listing driven off window.__SITE_DATA__ — Home's rotation, the
+ * preloader's "which cover do we wait for" resolution, and the Next
+ * Project link all need to agree on this same filtered set, or one of
+ * them can silently resume/preload/link to a project meant to stay
+ * unlisted. One shared function instead of three independent copies of
+ * `.filter((p) => !p.hidden)` is what keeps them agreeing.
+ */
+export function getVisibleProjects(projects) {
+  return projects.filter((p) => !p.hidden);
+}
+
 const UNLOCKED_PROJECTS_KEY = 'unlockedProjects';
 
 /**

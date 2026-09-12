@@ -38,7 +38,8 @@ import {
   forceRevealAndNavigate,
   setupScrollReveal,
   isProjectUnlocked,
-  markProjectUnlocked
+  markProjectUnlocked,
+  getVisibleProjects
 } from './utils.js';
 
 const SNAP_DURATION_MS = 1000;
@@ -151,10 +152,17 @@ function renderProjectContent(data, project, { viaSweep = false } = {}) {
 // The protected fields (media, longDescription, links) for one project,
 // written by scripts/build.js to their own static file — never part of
 // window.__SITE_DATA__, not even on this project's own page. Fetched only
-// once the password gate has actually been passed.
+// once the password gate has actually been passed. Ordinary HTTP caching
+// is fine here (no cache: 'no-store') — the file is static per deploy, and
+// this runs on every page load of an already-unlocked project (not just
+// the first unlock), so letting the browser reuse a cached response
+// avoids a full re-fetch of the whole gallery/description payload every
+// single time — this is a soft gate, not real access control (see
+// BUILD_SPEC.md §5.5), so there's nothing sensitive-per-request being
+// bypassed by allowing the cache.
 async function fetchGatedContent(slug) {
   try {
-    const res = await fetch(`/assets/protected/${slug}.json`, { cache: 'no-store' });
+    const res = await fetch(`/assets/protected/${slug}.json`);
     if (!res.ok) return null;
     return await res.json();
   } catch {
@@ -307,7 +315,7 @@ function renderNextProject(project, allProjects) {
   // length below lands on the first visible project — a reasonable
   // fallback rather than requiring a hidden project to have a "correct"
   // position in a sequence it isn't part of.
-  const visibleProjects = allProjects.filter((p) => !p.hidden);
+  const visibleProjects = getVisibleProjects(allProjects);
   const currentIndex = visibleProjects.findIndex((p) => p.slug === project.slug);
   const nextProject = visibleProjects[(currentIndex + 1) % visibleProjects.length];
   if (!nextProject) return;

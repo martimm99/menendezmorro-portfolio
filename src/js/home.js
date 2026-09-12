@@ -20,7 +20,7 @@
 
 import { horizontalSweep, slideTextSlots } from './transitions.js';
 import { navigateTo } from './router.js';
-import { escapeHtml, arrivedViaViewTransition, isProjectUnlocked } from './utils.js';
+import { escapeHtml, arrivedViaViewTransition, isProjectUnlocked, getVisibleProjects } from './utils.js';
 
 let state = {
   data: null,
@@ -57,7 +57,9 @@ export function initHome(data) {
   // this rotation. Filtering once, here, means every other function in
   // this file that indexes state.data.projects (navigate, resumeIndex,
   // preloadAdjacent, ...) automatically only ever sees visible projects.
-  state.data = { ...data, projects: data.projects.filter((p) => !p.hidden) };
+  // See utils.js getVisibleProjects — preloader.js and project.js's own
+  // Next Project link need this exact same filtered set too.
+  state.data = { ...data, projects: getVisibleProjects(data.projects) };
   state.layers = Array.from(document.querySelectorAll('.cover-layer'));
   state.activeLayerIdx = 0;
   // Must resolve against state.data (filtered), not the raw data param —
@@ -491,16 +493,24 @@ function setupDrag() {
   });
 }
 
+// Starts the rAF loop only if it isn't already running — every "resume/
+// start the timer" call site below needs this exact guard, so a
+// redundant call (e.g. a second event while it's already ticking) can
+// never stack a second concurrent rAF loop.
+function ensureTicking() {
+  if (!timerState.rafId) {
+    timerState.rafId = requestAnimationFrame(tickTimer);
+  }
+}
+
 function initTimer() {
   timerState.btn = document.querySelector('.next-btn');
   if (!timerState.btn) return;
 
   timerState.btn.addEventListener('mouseenter', () => {
     timerState.isHovering = true;
-    if (!timerState.rafId) {
-      timerState.lastTimestamp = null;
-      timerState.rafId = requestAnimationFrame(tickTimer);
-    }
+    if (!timerState.rafId) timerState.lastTimestamp = null;
+    ensureTicking();
   });
   timerState.btn.addEventListener('mouseleave', () => {
     timerState.isHovering = false;
@@ -515,9 +525,7 @@ function initTimer() {
     title.addEventListener('mouseleave', () => {
       timerState.isPaused = false;
       timerState.lastTimestamp = null;
-      if (!timerState.rafId) {
-        timerState.rafId = requestAnimationFrame(tickTimer);
-      }
+      ensureTicking();
     });
   }
 
@@ -535,9 +543,7 @@ function initTimer() {
 
 function startTimerLoop() {
   timerState.lastTimestamp = null;
-  if (!timerState.rafId) {
-    timerState.rafId = requestAnimationFrame(tickTimer);
-  }
+  ensureTicking();
 }
 
 // Called only by user-initiated navigation — fully resets timer and interrupts
@@ -548,9 +554,7 @@ function resetTimer() {
   timerState.draining = false;
   timerState.drainProgress = 0;
   timerState.lastTimestamp = null;
-  if (!timerState.rafId) {
-    timerState.rafId = requestAnimationFrame(tickTimer);
-  }
+  ensureTicking();
 }
 
 // User-initiated navigation: drains from the current visual position, then
@@ -564,9 +568,7 @@ function userNavigate(direction) {
     timerState.drainProgress = currentP;
     timerState.progress = 0;
     timerState.lastTimestamp = null;
-    if (!timerState.rafId) {
-      timerState.rafId = requestAnimationFrame(tickTimer);
-    }
+    ensureTicking();
   } else {
     resetTimer();
   }

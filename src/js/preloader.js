@@ -25,6 +25,8 @@
  * index.html, and remove the <link rel="preload"> for morro-logo.svg.
  */
 
+import { getVisibleProjects } from './utils.js';
+
 // Builds an easing function from CSS cubic-bezier control points using a
 // lookup table — accurate enough for 60fps animation, no Newton iteration needed.
 function cubicBezier(x1, y1, x2, y2) {
@@ -90,12 +92,19 @@ function waitForImage(src) {
   });
 }
 
+// Must resolve against the same hidden-filtered set home.js's own
+// resumeIndex() does (see utils.js getVisibleProjects) — otherwise this can
+// preload and gate exit on a hidden project's cover (reachable: its own
+// page writes lastProjectSlug just like any other, per BUILD_SPEC.md
+// §6.1), while Home itself lands on a different, visible project.
 function getActiveProject() {
   const data = window.__SITE_DATA__;
   if (!data?.projects?.length) return null;
+  const visible = getVisibleProjects(data.projects);
+  if (!visible.length) return null;
   let slug;
   try { slug = sessionStorage.getItem('lastProjectSlug'); } catch { /* ok */ }
-  return (slug && data.projects.find((p) => p.slug === slug)) || data.projects[0] || null;
+  return (slug && visible.find((p) => p.slug === slug)) || visible[0] || null;
 }
 
 function getCoverSrc(project) {
