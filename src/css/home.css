@@ -258,7 +258,7 @@
   align-items: center;
   vertical-align: middle;
   transform: translateY(-0.06em);
-  margin-right: 0.3em;
+  margin-right: 0.22em;
   height: 0.55em;
   opacity: 0.6;
   pointer-events: none;
@@ -382,6 +382,13 @@
     max-width: none;
     font-size: clamp(16px, 4vw, 20px);
     margin: 0;
+  }
+
+  /* A bit more breathing room than desktop's 0.22em — tighter spacing
+   * reads fine next to a shrink-to-fit desktop title, but feels cramped
+   * against the larger mobile title size. */
+  .title-lock-icon {
+    margin-right: 0.35em;
   }
 
 }
