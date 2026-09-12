@@ -120,6 +120,7 @@ collections:
               - { name: "coverAlt", label: "Cover alt text", widget: "string", required: false, hint: "Screen reader description of the cover image." }
               - { name: "protected", label: "Password protected", widget: "boolean", required: false, default: false, hint: "Gates this project behind a password screen. This is a soft gate for casual visitors, not real security — see BUILD_SPEC.md §5.5." }
               - { name: "password",  label: "Password", widget: "string", required: false, hint: "Only used when \"Password protected\" is on. Plain text here — the build hashes it per character before it ever reaches a visitor's browser." }
+              - { name: "hidden", label: "Hidden from portfolio", widget: "boolean", required: false, default: false, hint: "Removes this project from the Home page rotation and the sitemap. Its own page keeps working at menendezmorro.com/<slug> — share that link directly with whoever should see it." }
               - name: "media"
                 label: "Media"
                 label_singular: "Media item"

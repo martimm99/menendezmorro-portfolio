@@ -51,10 +51,19 @@ const timerState = {
 };
 
 export function initHome(data) {
-  state.data = data;
+  // Home only ever shows/cycles through non-hidden projects — a hidden
+  // project's own page still works via a direct URL (project.js resolves
+  // slugs against the full, unfiltered list), it just never appears in
+  // this rotation. Filtering once, here, means every other function in
+  // this file that indexes state.data.projects (navigate, resumeIndex,
+  // preloadAdjacent, ...) automatically only ever sees visible projects.
+  state.data = { ...data, projects: data.projects.filter((p) => !p.hidden) };
   state.layers = Array.from(document.querySelectorAll('.cover-layer'));
   state.activeLayerIdx = 0;
-  state.index = resumeIndex(data);
+  // Must resolve against state.data (filtered), not the raw data param —
+  // an index found in the full list wouldn't line up with state.data.projects,
+  // which every other function in this file indexes into.
+  state.index = resumeIndex(state.data);
 
   initVideoObserver();
   renderInitial();

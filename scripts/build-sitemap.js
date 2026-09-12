@@ -43,7 +43,10 @@ function xmlEscape(s) {
 const urls = [
   `${baseUrl}/`,
   `${baseUrl}/contact`,
-  ...projects.map((p) => `${baseUrl}/${p.slug}`)
+  // A hidden project (see BUILD_SPEC.md §6.1) is deliberately left out of
+  // the sitemap — its page still builds and works, it's just not offered
+  // up for search engines to discover on their own.
+  ...projects.filter((p) => !p.hidden).map((p) => `${baseUrl}/${p.slug}`)
 ];
 
 const xml = [

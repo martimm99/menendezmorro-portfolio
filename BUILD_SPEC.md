@@ -1,8 +1,11 @@
 # MORRO — Portfolio Rebuild Build Spec
 
-**Version:** 1.25 (Approved)
-**Date:** September 11, 2026
+**Version:** 1.26 (Approved)
+**Date:** September 12, 2026
 **Status:** Approved — build authorized
+
+**Changes from v1.25:**
+- **New: hidden projects (§6.1).** A project can be marked `hidden` in the CMS to remove it from the Home rotation and from `sitemap.xml`, while its own page keeps building and working normally at `/<slug>` — for sharing a project directly with specific people without featuring it on the portfolio. Independent of `protected` (§5.5): one is about discoverability, the other about access; a project can be either, both, or neither. No data is withheld from `window.__SITE_DATA__` for this — a hidden project's own page needs its data like any other, and this isn't a security boundary — the filtering happens client-side (`home.js`'s rotation, `project.js`'s Next Project link).
 
 **Changes from v1.24:**
 - **New: password-protected projects (§5.5).** A project can be marked `protected` with a `password` in the CMS. Clicking it from Home shows a password screen instead of the project — same URL, same vertical sweep, just a different initial view. A soft gate, not real access control (the site has no server) — deliberately scoped that way; see §5.5 for exactly what it does and doesn't guarantee. The gated project's real gallery/description/links are held out of `window.__SITE_DATA__` entirely (on every page, including the project's own) and fetched from a separate static file only after the password is entered, so a casual view-source doesn't defeat it the way a purely-cosmetic lock screen would. Home shows a small lock badge beside a protected project's title. Zero added weight on any non-protected page — the gate's JS, its hangman artwork, and its stylesheet are only ever requested on a protected project's own page.
@@ -497,6 +500,7 @@ Any project can be marked `protected` with a `password` (set through the CMS). I
 - `media[].caption`: optional. Per-image overlay text shown at bottom-left in Gallery and Image fullscreen. Empty/absent → no overlay rendered.
 - Videos: `poster` is optional but recommended (used as fallback if video fails to load).
 - `protected` (optional boolean) + `password` (optional string, required when `protected` is true) — see §5.5. `password` is plain text only in this file (repo-side, never shipped as-is) — the build hashes it per character before anything reaches a browser.
+- `hidden` (optional boolean, default off) — excludes the project from the Home rotation and from `sitemap.xml`; its own page at `/<slug>` still builds and works normally, for sharing with specific people without featuring it on the portfolio. Independent of `protected`: `hidden` is about discoverability, not access — a hidden project is not password-gated unless `protected` is also set, and a protected project is not hidden from Home unless `hidden` is also set. Not included in `window.__SITE_DATA__` filtering — every page still gets the full project list (a hidden project's own page needs its own data, and this isn't a security boundary); `home.js` filters its own rotation client-side, and `renderNextProject` (project.js) skips hidden projects when computing the Next Project link.
 - **`type: "figma"`** (Figma prototype embed) uses a different field set:
   - `url` (**required**) — the Figma share link (`https://www.figma.com/proto/…`), an `embed.figma.com` link, or a full `<iframe …>` embed snippet. The renderer normalises all three. `/proto/` links give a clickable prototype; `/design/` or `/file/` links embed a static canvas (validator warns).
   - `poster` (**required**) — still image shown in the filmstrip; its aspect ratio also sizes the fullscreen frame.
@@ -564,6 +568,7 @@ For each project, fields:
 - Cost (text)
 - Password protected (boolean, optional, default off) — see §5.5
 - Password (text, optional) — only used when "Password protected" is on. Plain text in the CMS; hashed at build time, never shipped as entered.
+- Hidden from portfolio (boolean, optional, default off) — see §6.1. Removes the project from Home and the sitemap; its own page keeps working at its normal URL.
 - **Media** (list, drag-to-reorder):
   - Type (select: image / video / Prototype (Figma))
   - File (image or video upload) — image / video only

@@ -300,8 +300,16 @@ function renderNextProject(project, allProjects) {
   const slot = document.querySelector('[data-next-project-link]');
   if (!cell || !slot) return;
 
-  const currentIndex = allProjects.findIndex((p) => p.slug === project.slug);
-  const nextProject = allProjects[(currentIndex + 1) % allProjects.length];
+  // A hidden project (see BUILD_SPEC.md §6.1) is excluded from this
+  // cycle just like it's excluded from Home — it's never a candidate to
+  // land on. If the current project is itself hidden (a direct visit),
+  // it won't be found in this filtered list either, and the (-1 + 1) %
+  // length below lands on the first visible project — a reasonable
+  // fallback rather than requiring a hidden project to have a "correct"
+  // position in a sequence it isn't part of.
+  const visibleProjects = allProjects.filter((p) => !p.hidden);
+  const currentIndex = visibleProjects.findIndex((p) => p.slug === project.slug);
+  const nextProject = visibleProjects[(currentIndex + 1) % visibleProjects.length];
   if (!nextProject) return;
 
   cell.hidden = false;

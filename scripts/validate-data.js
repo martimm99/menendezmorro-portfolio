@@ -81,7 +81,12 @@ const projectsSchema = {
         // the plaintext out of window.__SITE_DATA__ entirely. See
         // BUILD_SPEC.md §5.5 and project_password_gate.md memory.
         protected: { type: 'boolean' },
-        password:  { type: 'string' }
+        password:  { type: 'string' },
+        // Excluded from the Home rotation and the sitemap, but its own
+        // page at /<slug> is still built normally — for sharing a project
+        // directly with specific people without featuring it. Unrelated
+        // to `protected`: this is about discoverability, not access.
+        hidden: { type: 'boolean' }
       }
     },
     link: {
