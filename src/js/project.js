@@ -101,12 +101,12 @@ export function initProject(data, slug) {
 // project object that's guaranteed to have its real content — either
 // because it was never protected, or because the password gate just
 // fetched it. See BUILD_SPEC.md §5.5 and project_password_gate.md memory.
-function renderProjectContent(data, project) {
+function renderProjectContent(data, project, { viaSweep = false } = {}) {
   renderInfoRow(project);
   renderNextProject(project, data.projects);
   renderDescription(project);
   initFullscreen();
-  triggerDescriptionReveal();
+  triggerDescriptionReveal(viaSweep);
 
   const galleryAPI = initGallery({
     items: project.media,
@@ -194,10 +194,34 @@ async function initProtectedProject(data, project) {
     onUnlock: async () => {
       const gated = await fetchGatedContent(project.slug);
       if (!gated) return false;
-      Object.assign(project, gated);
-      renderProjectContent(data, project);
+
+      const reveal = () => {
+        Object.assign(project, gated);
+        renderProjectContent(data, project, { viaSweep: true });
+        document.body.classList.add('is-unlocked');
+      };
+
+      // Same vertical sweep as Home -> project: <html> is already
+      // .project-page throughout unlocking (only body gains
+      // .is-unlocked), so base.css's existing
+      // html.project-page::view-transition-old/new(root) rules apply
+      // unchanged — this just triggers them for a same-document DOM
+      // swap (gate -> real content) instead of a cross-document
+      // navigation. Browsers without VT support just run reveal()
+      // directly, same as before this existed.
+      if (document.startViewTransition) {
+        // .ready rejects (harmlessly) whenever the browser skips the
+        // animation itself — e.g. prefers-reduced-motion, or the tab
+        // being backgrounded/hidden at that instant — while the DOM
+        // update still applies via reveal() either way. Left unhandled,
+        // that surfaces as an "Uncaught (in promise)" console error for
+        // something that isn't actually a failure.
+        document.startViewTransition(reveal).ready.catch(() => {});
+      } else {
+        reveal();
+      }
+
       markUnlocked(project.slug);
-      document.body.classList.add('is-unlocked');
       return true;
     }
   });
@@ -561,10 +585,12 @@ function placeholderLongDescription(project) {
  *      visual line share a y-position, so they fire together and the
  *      line animates as one unit as the user scrolls into it.
  *
- * Initial trigger is delayed until the cross-document VT sweep (if
- * any) finishes, so the on-screen lines don't start animating before
- * the page is in place. */
-function triggerDescriptionReveal() {
+ * Initial trigger is delayed until the VT sweep (if any) finishes, so
+ * the on-screen lines don't start animating before the page is in
+ * place — cross-document (arrivedViaViewTransition(), Home -> project)
+ * or same-document (viaSweep, the password gate unlocking into this
+ * same page — see initProtectedProject's onUnlock). */
+function triggerDescriptionReveal(viaSweep = false) {
   const container = document.querySelector('[data-description-content]');
   if (!container) return;
   const clips = Array.from(container.querySelectorAll('.reveal-line-clip'));
@@ -573,7 +599,7 @@ function triggerDescriptionReveal() {
     clips.forEach((c) => c.classList.add('reveal-in'));
     return;
   }
-  const delay = arrivedViaViewTransition()
+  const delay = (arrivedViaViewTransition() || viaSweep)
     ? DESCRIPTION_REVEAL_DELAY_AFTER_SWEEP_MS
     : DESCRIPTION_REVEAL_DELAY_DIRECT_MS;
   setTimeout(() => {
