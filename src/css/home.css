@@ -384,11 +384,8 @@
     margin: 0;
   }
 
-  /* A bit more breathing room than desktop's 0.22em — tighter spacing
-   * reads fine next to a shrink-to-fit desktop title, but feels cramped
-   * against the larger mobile title size. */
   .title-lock-icon {
-    margin-right: 0.35em;
+    margin-right: 0.26em;
   }
 
 }
