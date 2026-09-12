@@ -294,10 +294,14 @@ const STATIC_PUBLIC_ENTRIES = new Set(['404.html', 'CNAME', '_redirects', 'robot
 
 async function cleanPublic() {
   await mkdir(PUBLIC, { recursive: true });
-  for (const entry of await readdir(PUBLIC)) {
-    if (STATIC_PUBLIC_ENTRIES.has(entry)) continue;
-    await rm(join(PUBLIC, entry), { recursive: true, force: true });
-  }
+  const entries = await readdir(PUBLIC);
+  // Each removal is independent, so they run concurrently rather than
+  // one at a time.
+  await Promise.all(
+    entries
+      .filter((entry) => !STATIC_PUBLIC_ENTRIES.has(entry))
+      .map((entry) => rm(join(PUBLIC, entry), { recursive: true, force: true }))
+  );
 }
 
 async function copyDirs() {
@@ -385,7 +389,6 @@ async function main() {
   const allHtmlFiles = await listSourceHtml();
   // project.html is rendered per-slug by buildRoutedPages; exclude from top-level output
   const htmlFiles = allHtmlFiles.filter((f) => f !== 'project.html');
-  const projectSlugs = projectsDoc.projects.map((p) => p.slug);
   await cleanPublic();
   await copyDirs();
 
@@ -401,7 +404,7 @@ async function main() {
   await buildHtml(htmlFiles, tokens);
   await buildRoutedPages(projectsDoc.projects, tokens);
   const protectedNote = protectedPayloads.length > 0 ? `, ${protectedPayloads.length} password-protected` : '';
-  console.log(`build: ${htmlFiles.length} HTML template(s), ${projectSlugs.length} project page(s)${protectedNote}, contact page, ${COPY_DIRS.length} directories copied.`);
+  console.log(`build: ${htmlFiles.length} HTML template(s), ${projectsDoc.projects.length} project page(s)${protectedNote}, contact page, ${COPY_DIRS.length} directories copied.`);
 }
 
 main().catch((err) => {

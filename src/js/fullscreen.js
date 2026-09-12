@@ -51,6 +51,7 @@ let stage, backdrop, mediaWrap, captionEl;
 let escListener = null;
 let trapListener = null;
 let openerElement = null;
+let embedRevealTimer = null;
 
 export function initFullscreen() {
   stage     = document.querySelector('[data-fullscreen-stage]');
@@ -184,6 +185,7 @@ function closeFullscreen() {
   // poster clone stays in the wrap and handles the collapse animation.
   const embed = mediaWrap.querySelector('iframe');
   if (embed) embed.remove();
+  clearTimeout(embedRevealTimer);
 
   // Recompute the source rect in case the layout moved while open
   // (e.g., window resize) — fall back to the stored rect.
@@ -385,7 +387,10 @@ function mountEmbed(galleryItem) {
   const reveal = () => iframe.classList.add('is-ready');
   iframe.addEventListener('load', reveal, { once: true });
   // Cross-origin load can be slow or (rarely) not fire — reveal anyway.
-  setTimeout(reveal, 2500);
+  // Stashed so closeFullscreen can cancel it on an early close (opening
+  // and closing within 2.5s is a completely normal interaction) — left
+  // running, it would fire after the iframe is already removed.
+  embedRevealTimer = setTimeout(reveal, 2500);
 
   mediaWrap.appendChild(iframe);
 }

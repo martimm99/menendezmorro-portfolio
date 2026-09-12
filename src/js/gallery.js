@@ -185,7 +185,6 @@ function renderItems({ items, projectTitle, track, onItemActivate }) {
     } else if (media.type === 'figma') {
       // The filmstrip shows the poster still with a small cue; the live
       // prototype is built by fullscreen.js when the item is opened.
-      fig.classList.add('is-embed');
       fig.dataset.embedUrl = media.url || '';
       if (media.aspect) fig.dataset.embedAspect = media.aspect;
       fig.appendChild(buildEmbedPoster(media, projectTitle, index));
@@ -214,11 +213,17 @@ function renderItems({ items, projectTitle, track, onItemActivate }) {
   track.appendChild(frag);
 }
 
-function buildPicture(media, projectTitle, index) {
-  const src = '/' + media.src.replace(/^\//, '');
+function normalizeMediaPath(path) {
+  return '/' + String(path || '').replace(/^\//, '');
+}
+
+// Shared eager/lazy + fetchPriority policy: the first two gallery items
+// (whichever media type) load eagerly since they're visible without
+// scrolling; item 0 gets 'high' priority as the very first thing shown.
+function buildResponsiveImg(src, alt, index) {
   const img = document.createElement('img');
   img.src = src;
-  img.alt = media.alt || `${projectTitle} image ${index + 1}`;
+  img.alt = alt;
   img.decoding = 'async';
   if (index < 2) {
     img.loading = 'eager';
@@ -230,26 +235,25 @@ function buildPicture(media, projectTitle, index) {
   return img;
 }
 
+function buildPicture(media, projectTitle, index) {
+  return buildResponsiveImg(
+    normalizeMediaPath(media.src),
+    media.alt || `${projectTitle} image ${index + 1}`,
+    index
+  );
+}
+
 function buildEmbedPoster(media, projectTitle, index) {
   // The cue is anchored to a wrapper that hugs the poster image, so it
   // stays on the image on mobile (where the caption is in-flow below the
   // figure and would otherwise push the cue down with it).
   const frame = document.createElement('span');
   frame.className = 'gallery-embed-frame';
-
-  const poster = '/' + String(media.poster || '').replace(/^\//, '');
-  const img = document.createElement('img');
-  img.src = poster;
-  img.alt = media.alt || `${projectTitle} prototype ${index + 1}`;
-  img.decoding = 'async';
-  if (index < 2) {
-    img.loading = 'eager';
-    if ('fetchPriority' in img) img.fetchPriority = index === 0 ? 'high' : 'low';
-  } else {
-    img.loading = 'lazy';
-    if ('fetchPriority' in img) img.fetchPriority = 'low';
-  }
-  frame.appendChild(img);
+  frame.appendChild(buildResponsiveImg(
+    normalizeMediaPath(media.poster),
+    media.alt || `${projectTitle} prototype ${index + 1}`,
+    index
+  ));
 
   const cue = document.createElement('span');
   cue.className = 'gallery-embed-cue';
@@ -261,16 +265,15 @@ function buildEmbedPoster(media, projectTitle, index) {
 }
 
 function buildVideo(media, projectTitle, index) {
-  const src = '/' + media.src.replace(/^\//, '');
   const video = document.createElement('video');
-  video.src = src;
+  video.src = normalizeMediaPath(media.src);
   video.muted = true;
   video.autoplay = true;
   video.loop = true;
   video.playsInline = true;
   video.preload = 'metadata';
   video.setAttribute('aria-label', media.alt || `${projectTitle} video ${index + 1}`);
-  if (media.poster) video.poster = '/' + media.poster.replace(/^\//, '');
+  if (media.poster) video.poster = normalizeMediaPath(media.poster);
   return video;
 }
 
