@@ -286,6 +286,10 @@ async function listSourceHtml() {
 // nameless removal loop this replaced would just leave its stale
 // public/<old-slug>/ page sitting there forever instead of it actually
 // disappearing on the next build.
+//
+// This list must match the un-ignored entries in .gitignore's own
+// public/* allowlist — the two can't share one source (JS vs. git
+// config), so if one changes, update the other too.
 const STATIC_PUBLIC_ENTRIES = new Set(['404.html', 'CNAME', '_redirects', 'robots.txt', 'admin']);
 
 async function cleanPublic() {

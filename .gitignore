@@ -35,6 +35,9 @@ yarn-error.log*
 # individually means a new/renamed/deleted project can never be
 # accidentally committed (or left orphaned in this file) just because
 # nobody remembered to update this list to match content/projects.json.
+# This list must match STATIC_PUBLIC_ENTRIES in scripts/build.js
+# (cleanPublic) — the two can't share one source (git config vs. JS),
+# so if one changes, update the other too.
 public/*
 !public/404.html
 !public/CNAME
