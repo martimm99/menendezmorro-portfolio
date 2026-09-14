@@ -564,7 +564,7 @@
       "highlightColor": "#0055FF",
       "coverAlt": "Titles cover",
       "location": "Girona",
-      "role": "Graphic Design",
+      "role": "Motion Graphics",
       "cover": "assets/media/titles/titles-1.mp4",
       "title": "TITLES",
       "links": [
@@ -663,6 +663,7 @@
           "alt": "architecture-14"
         }
       ],
+      "hidden": true,
       "slug": "architecture",
       "highlightColor": "#0055FF",
       "coverAlt": "architecture-cover",
@@ -855,6 +856,7 @@
           "alt": "concerts-35"
         }
       ],
+      "hidden": true,
       "slug": "concerts",
       "highlightColor": "#0055FF",
       "coverAlt": "",
@@ -870,6 +872,36 @@
       ],
       "type": "photo",
       "description": "Concert photography for artists, labels and media.",
+      "year": "2026",
+      "subcategory": []
+    },
+    {
+      "longDescription": "A custom description is being written to avoid AI generated content.\n\nThank you for your patience.",
+      "media": [
+        {
+          "type": "figma",
+          "url": "https://www.figma.com/proto/lnZ20xegomlMZ8MDp9bbeE/Marti-s-space?page-id=1081%3A1321&node-id=1081-1322&viewport=25%2C454%2C0.04&t=5yojeA6yR87N5SBY-1&scaling=contain&content-scaling=fixed&starting-point-node-id=1081%3A1322",
+          "alt": "Presentation of the case study",
+          "caption": "Presentation of the case study"
+        },
+        {
+          "type": "figma",
+          "url": "https://www.figma.com/proto/lnZ20xegomlMZ8MDp9bbeE/Marti-s-space?page-id=1010%3A6083&node-id=1010-8153&viewport=819%2C-529%2C0.41&t=Aq1edxcTEbJ6iqHh-1&scaling=scale-down&content-scaling=fixed&starting-point-node-id=1010%3A8153",
+          "alt": "Product prototype",
+          "caption": "Product prototype"
+        }
+      ],
+      "hidden": false,
+      "slug": "voices",
+      "protected": true,
+      "highlightColor": "#cb01fb",
+      "location": "Berlin",
+      "role": "Product design",
+      "title": "VOICES",
+      "links": [],
+      "type": "design",
+      "password": "SCOTT",
+      "description": "Product design for a fintech startup",
       "year": "2026",
       "subcategory": []
     }
