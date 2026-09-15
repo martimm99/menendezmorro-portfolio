@@ -232,7 +232,7 @@
       "subcategory": []
     },
     {
-      "longDescription": "A custom description is being written to avoid AI generated content.\n\nThank you for your patience.",
+      "longDescription": "Voices is a case study I built in a week for a Digital Designer role at a fintech company: designing a sample product flow and expanding the visual identity of a fictitious voice-activated financial transactions startup.\n\nThe brief left real decisions open. I defined the product as a standalone app connected to the user's bank, secure by design: it only ever touches money already transferred in. The bigger call was scope. Voice-activated payments alone felt thin, so I built the concept around agentic AI instead, an assistant that remembers preferences, asks the right questions, and always confirms before acting.\n\nThe visual identity and user flow evolved together. Early versions read as indecisive and were missing basics like transaction dates and recipient switching, so I paused, rethought from the user's side, and rebuilt around one idea: the Voices bubble, a companion that's always a tap away and adapts through every stage. The result: a complete user flow and a working Figma prototype.\n\nP.S. Shoutout to my colleagues at LIH for the insights and support.",
       "media": [
         {
           "type": "figma",
