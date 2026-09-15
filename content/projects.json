@@ -1,7 +1,7 @@
 {
   "projects": [
     {
-      "longDescription": "MORRO is a self-branding exercise.\n\nFrom the need of talking to the world from my own identity, the idea of defining my own visual identity materialised into this project. Years of postponing it and failed attempts led to collecting some learnings about what would work when visually defining myself, and what wouldn't.\n\nPrevious attempts to identify myself with a graphic identity taught me to not only aim for meaning, but also for a style I identified with. After extensive research and plenty of sketching and visual testing, I was able to rule out everything that didn't feel like me and to define what did feel like me: imperfect but clean design, relaxed shapes, warm tones and quotidian imagery.\n\nManual sketches turned into digital vectors that were then mixed with texture, typography, color and images, always keeping in mind the specific style that defines me. The visual identity that can be seen in the gallery of this project was the result of this process.\n\nThe idea of applying the new visual identity to a website was there from the beginning, and since MORRO is meant to be used as a personal brand, this portfolio was built with its branding as the base. Reference research, moodboard creation, sketching, code tests and working hand in hand with AI in its early days to code led to a very rudimentary first version, that served as a base to improve once Claude Code appeared.\n\nOne of the learnings and particularities of this portfolio is that after more than ten years of building different portfolios for myself, I knew that I needed more than a CMS or a template, but also that I needed some boundaries and help when it came to writing code. That's why I used Claude Code to build not only a front-end for the website, but also a simple back-end that allows me to manage the portfolio through GitHub without the need of AI, so once the portfolio was built I wouldn't depend on an AI agent to manage it.\n\nIf you made it here, thanks for reading and enjoy the gallery.",
+      "longDescription": "MORRO is a self-branding exercise.\n\nAfter years of putting it off and a couple of failed attempts, I finally figured out my own visual identity. Those earlier attempts taught me that meaning wasn't enough; I also needed a style that actually felt like me. After a lot of research, sketching and testing, that turned out to be imperfect but clean design, relaxed shapes, warm tones and everyday imagery.\n\nSketches turned into digital vectors, then got mixed with texture, type, color and photography. What you'll see in the gallery is the result.\n\nAfter this, it was time to build the website around the new identity. Moodboards, sketches, code tests and some early AI pair-coding got me a rough first version. Claude Code later helped me rebuild it properly: a front-end, plus a simple back-end I manage through GitHub, so I'm not stuck depending on AI just to keep the site running.\n\nThanks for reading.",
       "media": [
         {
           "type": "image",
@@ -85,8 +85,8 @@
       "slug": "morro",
       "highlightColor": "#0055FF",
       "coverAlt": "MORRO cover",
-      "location": "Mallorca",
-      "role": "Branding and Art Direction",
+      "location": "Worldwide",
+      "role": "Brand and Digital Design",
       "cover": "assets/media/morro-cover.jpg",
       "title": "MORRO",
       "links": [
@@ -96,7 +96,7 @@
         }
       ],
       "type": "design",
-      "description": "Digital design studio.",
+      "description": "Portfolio of design projects",
       "year": "2026",
       "subcategory": []
     },
@@ -227,7 +227,7 @@
         }
       ],
       "type": "design",
-      "description": "Digital solutions for the next in travel and mobility.",
+      "description": "Digital solutions for the next in travel and mobility",
       "year": "2026",
       "subcategory": []
     },
@@ -260,7 +260,7 @@
       "links": [],
       "type": "design",
       "password": "SCOTT",
-      "description": "Product design for a fintech startup",
+      "description": "Agentic AI for financial transactions",
       "year": "2026",
       "subcategory": []
     },
@@ -336,7 +336,7 @@
         }
       ],
       "type": "design",
-      "description": "Full-service gaming agency.",
+      "description": "Full-service gaming agency",
       "year": "2026",
       "subcategory": []
     },
@@ -396,7 +396,7 @@
       "highlightColor": "#0055FF",
       "coverAlt": "Gestión Reaviva cover",
       "location": "Mallorca",
-      "role": "Branding and Digital Design",
+      "role": "Brand and Digital Design",
       "cover": "assets/media/reaviva/gestion-reaviva-cover.jpg",
       "title": "GESTIÓN REAVIVA",
       "links": [
@@ -406,7 +406,7 @@
         }
       ],
       "type": "design",
-      "description": "Technical services for construction projects.",
+      "description": "Technical services for construction projects",
       "year": "2025",
       "subcategory": []
     },
@@ -518,7 +518,7 @@
         }
       ],
       "type": "design",
-      "description": "Performing arts festival.",
+      "description": "Performing arts festival",
       "year": "2026",
       "subcategory": []
     },
@@ -607,7 +607,7 @@
         }
       ],
       "type": "design",
-      "description": "Titles design for audiovisual projects.",
+      "description": "Titles design for audiovisual projects",
       "year": "2023",
       "subcategory": []
     },
